@@ -533,7 +533,7 @@ class TrainerClusterwise:
                     print('Cluster', i, ': ', np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters),
                           ' with pi = ', self.pi[i])
                 cluster_partition = min(cluster_partition, np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters))
-            if self.target:
+            if type(self.target):
                 pur = purity(clusters, self.target)
             else:
                 pur = None
@@ -574,7 +574,7 @@ class TrainerClusterwise:
                     for i in np.unique(clusters.cpu()):
                         print('Cluster', i, ': ', np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters),
                               ' with pi = ', self.pi[i])
-                if self.target:
+                if type(self.target):
                     random_pur = purity(clusters, self.target)
                 else:
                     random_pur = None
