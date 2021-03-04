@@ -83,7 +83,7 @@ if __name__ == '__main__':
         if args.verbose:
             print('Run {}/{}'.format(i + 1, args.n_runs))
         model = LSTMMultiplePointProcesses(args.n_classes + 1, args.hidden_size, args.num_layers, args.n_classes,
-                                           args.n_clusters, args.n_steps, dropout=args.dropout)
+                                           args.n_clusters, args.n_steps, dropout=args.dropout).to(args.device)
         optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
         trainer = TrainerClusterwise(model, optimizer, args.device, data, args.n_clusters, target=target,
                                      alpha=args.alpha, beta=args.beta, epsilon=args.epsilon, sigma_0=args.sigma_0,
