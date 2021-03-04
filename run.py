@@ -66,7 +66,7 @@ if __name__ == '__main__':
     # reading datasets
     if args.verbose:
         print('Reading dataset')
-    data, target = get_dataset(args.path_to_files, args.n_clusters, args.n_steps)
+    data, target = get_dataset(args.path_to_files, args.n_classes, args.n_steps)
     if args.verbose:
         print('Dataset is loaded')
 
