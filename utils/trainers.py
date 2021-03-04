@@ -189,7 +189,7 @@ class TrainerClusterwise:
         self.optimizer = optimizer
         self.device = device
         self.X = data.to(device)
-        if target:
+        if type(target):
             self.target = target.to(device)
         else:
             self.target = None
