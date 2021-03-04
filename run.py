@@ -103,7 +103,7 @@ if __name__ == '__main__':
                 print('Solution failed')
             continue
         if args.degenerate_eps:
-            if cluster_part < args.degenerate_eps/arg.n_clusters:
+            if cluster_part < args.degenerate_eps/args.n_clusters:
                 if args.verbose:
                     print("Degenerate solution")
                 continue
