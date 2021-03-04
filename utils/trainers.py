@@ -548,10 +548,10 @@ class TrainerClusterwise:
                     None
 
             outputs:
-                    losses -
-                    purities -
-                    cluster_part -
-                    all_stats -
+                    losses - list, list of losses obtained during training
+                    purities - list of [loss, purity, cluster_partition]
+                    cluster_part - the last cluster partition
+                    all_stats - all_stats on every EM-algorithm epoch
         """
         # preparing output templates
         losses = []
