@@ -523,7 +523,7 @@ class TrainerClusterwise:
         self.model.eval()
         with torch.no_grad():
             lambdas = self.model(self.X)
-            loss = self.loss(self.X.to('cpu'), lambdas.to('cpu'), self.gamma.to('cpu')).item()
+            loss = self.loss(self.X.to(self.device), lambdas.to(self.device), self.gamma.to(self.device)).item()
             gamma = self.compute_gamma(lambdas)
             clusters = torch.argmax(gamma, dim=0)
             if self.verbose:
