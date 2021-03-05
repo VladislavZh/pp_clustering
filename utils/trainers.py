@@ -523,6 +523,7 @@ class TrainerClusterwise:
         self.model.eval()
         with torch.no_grad():
             lambdas = self.model(self.X)
+            loss = self.loss(self.X, lambdas, self.gamma).item()
             gamma = self.compute_gamma(lambdas)
             clusters = torch.argmax(gamma, dim=0)
             if self.verbose:
@@ -538,7 +539,7 @@ class TrainerClusterwise:
             else:
                 pur = None
 
-        return log_likelihood_curve, [np.mean(ll), pur], cluster_partition
+        return log_likelihood_curve, [loss, pur], cluster_partition
 
     def train(self):
         """
@@ -601,8 +602,8 @@ class TrainerClusterwise:
             losses += ll
             purities.append(ll_pur + [cluster_part])
             if self.verbose:
-                print('On epoch {}/{} average loss = {}, purity = {}'.format(epoch + 1, self.max_epoch,
-                                                                             np.mean(ll), ll_pur[1]))
+                print('On epoch {}/{} loss = {}, purity = {}'.format(epoch + 1, self.max_epoch,
+                                                                             ll_pur[0], ll_pur[1]))
 
             # computing stats
             self.model.eval()
