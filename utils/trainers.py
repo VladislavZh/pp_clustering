@@ -523,7 +523,7 @@ class TrainerClusterwise:
         self.model.eval()
         with torch.no_grad():
             lambdas = self.model(self.X)
-            loss = self.loss(self.X, lambdas, self.gamma).item()
+            loss = self.loss(self.X.to('cpu'), lambdas.to('cpu'), self.gamma.to('cpu')).item()
             gamma = self.compute_gamma(lambdas)
             clusters = torch.argmax(gamma, dim=0)
             if self.verbose:
@@ -603,7 +603,7 @@ class TrainerClusterwise:
             purities.append(ll_pur + [cluster_part])
             if self.verbose:
                 print('On epoch {}/{} loss = {}, purity = {}'.format(epoch + 1, self.max_epoch,
-                                                                             ll_pur[0], ll_pur[1]))
+                                                                     ll_pur[0], ll_pur[1]))
 
             # computing stats
             self.model.eval()
