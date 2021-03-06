@@ -23,6 +23,6 @@
   "lr_update_param": 0.85,
   "batch_size": 150,
   "verbose": true,
-  "device": "cuda",
+  "device": "cuda:1",
   "save_best_model": true
 }
