@@ -93,6 +93,8 @@ if __name__ == '__main__':
                                            args.n_clusters, args.n_steps, dropout=args.dropout).to(args.device)
         optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
         best_model_path = path_to_results+'/exp_{}'.format(i)+'/best_model.pt'
+        create_folder(path_to_results + '/exp_{}'.format(i))
+        exp_folder = path_to_results + '/exp_{}'.format(i)
         trainer = TrainerClusterwise(model, optimizer, args.device, data, args.n_clusters, target=target,
                                      alpha=args.alpha, beta=args.beta, epsilon=args.epsilon, sigma_0=args.sigma_0,
                                      sigma_inf=args.sigma_inf, inf_epoch=args.inf_epoch, max_epoch=args.max_epoch,
@@ -113,8 +115,6 @@ if __name__ == '__main__':
                 continue
 
         # saving results
-        create_folder(path_to_results+'/exp_{}'.format(i))
-        exp_folder = path_to_results+'/exp_{}'.format(i)
         with open(exp_folder+'/losses.pkl', 'wb') as f:
             pickle.dump(losses, f)
         with open(exp_folder + '/results.pkl', 'wb') as f:
