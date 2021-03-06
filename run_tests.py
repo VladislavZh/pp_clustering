@@ -19,7 +19,9 @@ def experiment_runner(args):
     if args['verbose']:
         print('Preparing folders')
     create_folder('experiments')
-    create_folder('experiments/' + args['save_dir'])
+    path = args['save_dir'].split['/']
+    for i in range(len(path)):
+        create_folder('experiments/' + '/'.join(path[:i+1]))
     path_to_results = 'experiments/' + args['save_dir']
 
     # iterations over runs
@@ -81,7 +83,5 @@ if __name__ == "__main__":
             if params['verbose']:
                 print('Testing', key, '=', param_to_test)
             params[key] = param_to_test
-            create_folder(base_params['save_dir'])
             params['save_dir'] = base_params['save_dir'] + '/test_{}_{}'.format(key, param_to_test)
-            create_folder(params['save_dir'])
             experiment_runner(params)
