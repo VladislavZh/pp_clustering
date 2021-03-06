@@ -81,5 +81,7 @@ if __name__ == "__main__":
             if params['verbose']:
                 print('Testing', key, '=', param_to_test)
             params[key] = param_to_test
+            create_folder(base_params['save_dir'])
             params['save_dir'] = base_params['save_dir'] + '/test_{}_{}'.format(key, param_to_test)
+            create_folder(params['save_dir'])
             experiment_runner(params)
