@@ -60,7 +60,7 @@ def experiment_runner(args):
             pickle.dump(results, f)
         with open(exp_folder + '/stats.pkl', 'wb') as f:
             pickle.dump(stats, f)
-        with open(exp_folder+'/args.json', 'w') as f:
+        with open(exp_folder + '/args.json', 'w') as f:
             json.dump(args, f)
         torch.save(model.state_dict(), exp_folder + '/last_model.pt')
         i += 1
@@ -77,6 +77,8 @@ if __name__ == "__main__":
     for key in exp_params.keys():
         params = base_params.copy()
         for param_to_test in exp_params[key]:
+            if params.verbose:
+                print('Testing', key, '=', param_to_test)
             params[key] = param_to_test
             params['save_dir'] = base_params['save_dir'] + '/test_{}_{}'.format(key, param_to_test)
             experiment_runner(params)
