@@ -19,7 +19,7 @@ def experiment_runner(args):
     if args['verbose']:
         print('Preparing folders')
     create_folder('experiments')
-    path = args['save_dir'].split['/']
+    path = args['save_dir'].split('/')
     for i in range(len(path)):
         create_folder('experiments/' + '/'.join(path[:i+1]))
     path_to_results = 'experiments/' + args['save_dir']
