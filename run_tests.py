@@ -9,14 +9,14 @@ import json
 
 def experiment_runner(args):
     # reading datasets
-    if args.verbose:
+    if args['verbose']:
         print('Reading dataset')
-    data, target = get_dataset(args.path_to_files, args.n_classes, args.n_steps)
-    if args.verbose:
+    data, target = get_dataset(args['path_to_files'], args['n_classes'], args['n_steps'])
+    if args['verbose']:
         print('Dataset is loaded')
 
     # preparing folders
-    if args.verbose:
+    if args['verbose']:
         print('Preparing folders')
     create_folder('experiments')
     create_folder('experiments/' + args.save_dir)
@@ -24,30 +24,31 @@ def experiment_runner(args):
 
     # iterations over runs
     i = 0
-    while i < args.n_runs:
-        if args.verbose:
-            print('Run {}/{}'.format(i + 1, args.n_runs))
-        model = LSTMMultiplePointProcesses(args.n_classes + 1, args.hidden_size, args.num_layers, args.n_classes,
-                                           args.n_clusters, args.n_steps, dropout=args.dropout).to(args.device)
-        optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    while i < args['n_runs']:
+        if args['verbose']:
+            print('Run {}/{}'.format(i + 1, args['n_runs']))
+        model = LSTMMultiplePointProcesses(args['n_classes'] + 1, args['hidden_size'], args['num_layers'],
+                                           args['n_classes'], args['n_clusters'], args['n_steps'],
+                                           dropout=args['dropout']).to(args['device'])
+        optimizer = torch.optim.Adam(model.parameters(), lr=args['lr'], weight_decay=args['weight_decay'])
         best_model_path = path_to_results + '/exp_{}'.format(i) + '/best_model.pt'
-        trainer = TrainerClusterwise(model, optimizer, args.device, data, args.n_clusters, target=target,
-                                     alpha=args.alpha, beta=args.beta, epsilon=args.epsilon, sigma_0=args.sigma_0,
-                                     sigma_inf=args.sigma_inf, inf_epoch=args.inf_epoch, max_epoch=args.max_epoch,
-                                     max_m_step_epoch=args.max_m_step_epoch, lr_update_tol=args.lr_update_tol,
-                                     lr_update_param=args.lr_update_param, batch_size=args.batch_size,
-                                     verbose=args.verbose,
-                                     best_model_path=best_model_path if args.save_best_model else None)
+        trainer = TrainerClusterwise(model, optimizer, args['device'], data, args['n_clusters'], target=target,
+                                     alpha=args['alpha'], beta=args['beta'], epsilon=args['epsilon'],
+                                     sigma_0=args['sigma_0'], sigma_inf=args['sigma_inf'], inf_epoch=args['inf_epoch'],
+                                     max_epoch=args['max_epoch'], max_m_step_epoch=args['max_m_step_epoch'],
+                                     lr_update_tol=args['lr_update_tol'], lr_update_param=args['lr_update_param'],
+                                     batch_size=args['batch_size'], verbose=args['verbose'],
+                                     best_model_path=best_model_path if args['save_best_model'] else None)
         losses, results, cluster_part, stats = trainer.train()
 
         # results check
         if cluster_part is None:
-            if args.verbose:
+            if args['verbose']:
                 print('Solution failed')
             continue
-        if args.degenerate_eps:
-            if cluster_part < args.degenerate_eps / args.n_clusters:
-                if args.verbose:
+        if args['degenerate_eps']:
+            if cluster_part < args['degenerate_eps'] / args['n_clusters']:
+                if args['verbose']:
                     print("Degenerate solution")
                 continue
 
@@ -77,7 +78,7 @@ if __name__ == "__main__":
     for key in exp_params.keys():
         params = base_params.copy()
         for param_to_test in exp_params[key]:
-            if params.verbose:
+            if params['verbose']:
                 print('Testing', key, '=', param_to_test)
             params[key] = param_to_test
             params['save_dir'] = base_params['save_dir'] + '/test_{}_{}'.format(key, param_to_test)

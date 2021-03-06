@@ -122,6 +122,6 @@ if __name__ == '__main__':
         with open(exp_folder + '/stats.pkl', 'wb') as f:
             pickle.dump(stats, f)
         with open(exp_folder+'/args.json', 'w') as f:
-            json.dump(args, f)
+            json.dump(vars(args), f)
         torch.save(model.state_dict(), exp_folder+'/last_model.pt')
         i += 1
