@@ -136,7 +136,8 @@ class TrainerClusterwise:
 
     def __init__(self, model, optimizer, device, data, n_clusters, target=None,
                  alpha=1.0001, beta=0.001, epsilon=1e-8, sigma_0=5, sigma_inf=0.01, inf_epoch=50, max_epoch=50,
-                 max_m_step_epoch=50, lr_update_tol=25, lr_update_param=0.9, batch_size=150, verbose=False):
+                 max_m_step_epoch=50, lr_update_tol=25, lr_update_param=0.9, batch_size=150, verbose=False,
+                 best_model_path=None):
         """
             inputs:
                     model - torch.nn.Module, model to train
@@ -158,6 +159,7 @@ class TrainerClusterwise:
                     lr_update_param - float, learning rate multiplier
                     batch_size - int, batch size during neural net training
                     verbose - bool, if True, provides info during training
+                    best_model_path - str, where the best model according to loss should be saved or None
 
             parameters:
                     N - int, number of data points
@@ -183,6 +185,8 @@ class TrainerClusterwise:
                     gamma - torch.Tensor, size = (n_clusters, number of data points), probabilities p(k|x_n)
                     sigma - float, sigma of gaussian that is used for convolution with gamma for stabilization
                     tau - float, sigma decay
+                    best_model_path - str, where the best model according to loss should be saved or None
+                    prev_loss_model - float, loss obtained for the best model
         """
         self.N = data.shape[0]
         self.model = model
@@ -209,6 +213,8 @@ class TrainerClusterwise:
         self.sigma = sigma_0
         self.tau = -1 / inf_epoch * math.log(sigma_inf / sigma_0)
         self.verbose = verbose
+        self.best_model_path = best_model_path
+        self.prev_loss_model = 0
 
     def convolve(self, gamma):
         """
@@ -604,6 +610,13 @@ class TrainerClusterwise:
             if self.verbose:
                 print('On epoch {}/{} loss = {}, purity = {}'.format(epoch + 1, self.max_epoch,
                                                                      ll_pur[0], ll_pur[1]))
+
+            # saving model
+            if self.best_model_path and (ll_pur[0] < self.prev_loss_model or epoch == 0):
+                if self.verbose:
+                    print('Saving model')
+                torch.save(self.model.state_dict(), self.best_model_path)
+                self.prev_loss_model = ll_pur[0]
 
             # computing stats
             self.model.eval()

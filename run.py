@@ -9,6 +9,7 @@ from models.LSTM import LSTMMultiplePointProcesses
 from utils.file_system_utils import create_folder
 import torch
 import pickle
+import json
 
 
 def parse_arguments():
@@ -35,6 +36,8 @@ def parse_arguments():
                                                              'and skips degenerate solutions')
     parser.add_argument('--n_runs', type=int, default=5, help='number of starts, default - 5')
     parser.add_argument('--save_dir', type=str, required=True, help='saves results to experiments/save_dir, required')
+    parser.add_argument('--save_best_model', type=bool, default=True, help='if True, saves the state of the best '
+                                                                           'model according to loss')
     parser.add_argument('--alpha', type=float, default=1.0001, help='is used for prior distribution of lambdas, '
                                                                     'punishes small lambdas, default - 1.0001')
     parser.add_argument('--beta', type=float, default=0.001, help='is used for prior distribution of lambdas, '
@@ -89,12 +92,13 @@ if __name__ == '__main__':
         model = LSTMMultiplePointProcesses(args.n_classes + 1, args.hidden_size, args.num_layers, args.n_classes,
                                            args.n_clusters, args.n_steps, dropout=args.dropout).to(args.device)
         optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+        best_model_path = path_to_results+'/exp_{}'.format(i)+'/best_model.pt'
         trainer = TrainerClusterwise(model, optimizer, args.device, data, args.n_clusters, target=target,
                                      alpha=args.alpha, beta=args.beta, epsilon=args.epsilon, sigma_0=args.sigma_0,
                                      sigma_inf=args.sigma_inf, inf_epoch=args.inf_epoch, max_epoch=args.max_epoch,
                                      max_m_step_epoch=args.max_m_step_epoch, lr_update_tol=args.lr_update_tol,
                                      lr_update_param=args.lr_update_param, batch_size=args.batch_size,
-                                     verbose=args.verbose)
+                                     verbose=args.verbose, best_model_path=best_model_path if args.save_best_model else None)
         losses, results, cluster_part, stats = trainer.train()
 
         # results check
@@ -117,5 +121,7 @@ if __name__ == '__main__':
             pickle.dump(results, f)
         with open(exp_folder + '/stats.pkl', 'wb') as f:
             pickle.dump(stats, f)
-        torch.save(model.state_dict(), exp_folder+'/model.pt')
+        with open(exp_folder+'/args.json', 'w') as f:
+            json.dump(args, f)
+        torch.save(model.state_dict(), exp_folder+'/last_model.pt')
         i += 1
