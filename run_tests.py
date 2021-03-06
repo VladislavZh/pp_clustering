@@ -19,8 +19,8 @@ def experiment_runner(args):
     if args['verbose']:
         print('Preparing folders')
     create_folder('experiments')
-    create_folder('experiments/' + args.save_dir)
-    path_to_results = 'experiments/' + args.save_dir
+    create_folder('experiments/' + args['save_dir'])
+    path_to_results = 'experiments/' + args['save_dir']
 
     # iterations over runs
     i = 0
