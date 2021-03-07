@@ -1,5 +1,5 @@
 {
-  "path_to_files": "data/simulated/sin_K3_C5",
+  "path_to_files": "data/simulated/sin_K5_C5",
   "n_steps": 128,
   "n_clusters": 3,
   "n_classes": 5,
@@ -10,12 +10,12 @@
   "weight_decay": 1e-5,
   "degenerate_eps": null,
   "n_runs": 1,
-  "save_dir": "sin_K3_C5_tests",
+  "save_dir": "sin_K5_C5_tests",
   "alpha": 1.0001,
   "beta": 0.001,
   "epsilon": 1e-8,
-  "sigma_0": 3.0,
-  "sigma_inf": 0.01,
+  "sigma_0": 5.0,
+  "sigma_inf": 0.005,
   "inf_epoch": 50,
   "max_epoch": 50,
   "max_m_step_epoch": 50,
@@ -23,6 +23,6 @@
   "lr_update_param": 0.85,
   "batch_size": 150,
   "verbose": true,
-  "device": "cuda:1",
+  "device": "cuda:0",
   "save_best_model": true
 }
