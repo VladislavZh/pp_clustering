@@ -1,7 +1,7 @@
 {
   "path_to_files": "data/simulated/sin_K5_C5",
   "n_steps": 128,
-  "n_clusters": 3,
+  "n_clusters": 5,
   "n_classes": 5,
   "hidden_size": 128,
   "num_layers": 3,
