@@ -480,11 +480,18 @@ class TrainerClusterwise:
             self.update_checker += 1
             if self.update_checker >= self.lr_update_tol:
                 self.update_checker = 0
-                print('Updating lr')
+                lr = 0
+                if self.verbose:
+                    print('Updating lr')
                 for param_group in self.optimizer.param_groups:
                     param_group['lr'] *= self.lr_update_param
+                    lr = param_group['lr']
                 self.lr_update_param *= self.lr_update_param_changer
                 self.lr_update_param_changer *= self.lr_update_param_second_changer
+                if self.verbose:
+                    print('lr =', lr)
+                    print('lr_update_param =', self.lr_update_param)
+                    print('lr_update_param_changer =', self.lr_update_param_changer)
 
         # saving previous loss
         self.prev_loss = np.mean(log_likelihood)
