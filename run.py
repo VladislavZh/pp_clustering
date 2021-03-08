@@ -48,7 +48,7 @@ def parse_arguments():
                                                                    'convolution with gamma for stabilization, default '
                                                                    '- 5.0')
     parser.add_argument('--sigma_inf', type=float, default=0.005, help='sigma on epoch inf_epoch, is used for '
-                                                                       'computing decay, default - 0.01')
+                                                                       'computing decay, default - 0.005')
     parser.add_argument('--inf_epoch', type=int, default=50, help='when sigma_inf is achieved, used for computing '
                                                                   'decay, default - 50')
     parser.add_argument('--max_epoch', type=int, default=50, help='number of epochs of EM algorithm, default - 50')
@@ -56,7 +56,7 @@ def parse_arguments():
                                                                          'M-step, default - 50')
     parser.add_argument('--lr_update_tol', type=int, default=25, help='tolerance before updating learning rate, '
                                                                       'default - 25')
-    parser.add_argument('--lr_update_param', type=float, default=0.9, help='learning rate multiplier, default - 0.9')
+    parser.add_argument('--lr_update_param', type=float, default=0.85, help='learning rate multiplier, default - 0.85')
     parser.add_argument('--batch_size', type=int, default=150, help='batch size during neural net training, default - '
                                                                     '150')
     parser.add_argument('--verbose', type=bool, default=True, help='if true, prints logs, default - True')
