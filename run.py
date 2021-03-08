@@ -38,8 +38,8 @@ def parse_arguments():
     parser.add_argument('--save_dir', type=str, required=True, help='saves results to experiments/save_dir, required')
     parser.add_argument('--save_best_model', type=bool, default=True, help='if True, saves the state of the best '
                                                                            'model according to loss')
-    parser.add_argument('--alpha', type=float, default=1.0001, help='is used for prior distribution of lambdas, '
-                                                                    'punishes small lambdas, default - 1.0001')
+    parser.add_argument('--alpha', type=float, default=1.001, help='is used for prior distribution of lambdas, '
+                                                                   'punishes small lambdas, default - 1.001')
     parser.add_argument('--beta', type=float, default=0.001, help='is used for prior distribution of lambdas, '
                                                                   'punishes big lambdas, default - 0.001')
     parser.add_argument('--epsilon', type=float, default=1e-8, help='is used for log-s regularization log(x) -> log(x '
@@ -47,8 +47,8 @@ def parse_arguments():
     parser.add_argument('--sigma_0', type=float, default=5.0, help='initial sigma of gaussian that is used for '
                                                                    'convolution with gamma for stabilization, default '
                                                                    '- 5.0')
-    parser.add_argument('--sigma_inf', type=float, default=0.01, help='sigma on epoch inf_epoch, is used for '
-                                                                      'computing decay, default - 0.01')
+    parser.add_argument('--sigma_inf', type=float, default=0.005, help='sigma on epoch inf_epoch, is used for '
+                                                                       'computing decay, default - 0.01')
     parser.add_argument('--inf_epoch', type=int, default=50, help='when sigma_inf is achieved, used for computing '
                                                                   'decay, default - 50')
     parser.add_argument('--max_epoch', type=int, default=50, help='number of epochs of EM algorithm, default - 50')
@@ -92,7 +92,7 @@ if __name__ == '__main__':
         model = LSTMMultiplePointProcesses(args.n_classes + 1, args.hidden_size, args.num_layers, args.n_classes,
                                            args.n_clusters, args.n_steps, dropout=args.dropout).to(args.device)
         optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-        best_model_path = path_to_results+'/exp_{}'.format(i)+'/best_model.pt'
+        best_model_path = path_to_results + '/exp_{}'.format(i) + '/best_model.pt'
         create_folder(path_to_results + '/exp_{}'.format(i))
         exp_folder = path_to_results + '/exp_{}'.format(i)
         trainer = TrainerClusterwise(model, optimizer, args.device, data, args.n_clusters, target=target,
@@ -100,7 +100,8 @@ if __name__ == '__main__':
                                      sigma_inf=args.sigma_inf, inf_epoch=args.inf_epoch, max_epoch=args.max_epoch,
                                      max_m_step_epoch=args.max_m_step_epoch, lr_update_tol=args.lr_update_tol,
                                      lr_update_param=args.lr_update_param, batch_size=args.batch_size,
-                                     verbose=args.verbose, best_model_path=best_model_path if args.save_best_model else None)
+                                     verbose=args.verbose,
+                                     best_model_path=best_model_path if args.save_best_model else None)
         losses, results, cluster_part, stats = trainer.train()
 
         # results check
@@ -109,19 +110,19 @@ if __name__ == '__main__':
                 print('Solution failed')
             continue
         if args.degenerate_eps:
-            if cluster_part < args.degenerate_eps/args.n_clusters:
+            if cluster_part < args.degenerate_eps / args.n_clusters:
                 if args.verbose:
                     print("Degenerate solution")
                 continue
 
         # saving results
-        with open(exp_folder+'/losses.pkl', 'wb') as f:
+        with open(exp_folder + '/losses.pkl', 'wb') as f:
             pickle.dump(losses, f)
         with open(exp_folder + '/results.pkl', 'wb') as f:
             pickle.dump(results, f)
         with open(exp_folder + '/stats.pkl', 'wb') as f:
             pickle.dump(stats, f)
-        with open(exp_folder+'/args.json', 'w') as f:
+        with open(exp_folder + '/args.json', 'w') as f:
             json.dump(vars(args), f)
-        torch.save(model.state_dict(), exp_folder+'/last_model.pt')
+        torch.save(model.state_dict(), exp_folder + '/last_model.pt')
         i += 1
