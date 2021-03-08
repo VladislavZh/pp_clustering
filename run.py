@@ -40,13 +40,13 @@ def parse_arguments():
                                                                            'model according to loss')
     parser.add_argument('--alpha', type=float, default=1.001, help='is used for prior distribution of lambdas, '
                                                                    'punishes small lambdas, default - 1.001')
-    parser.add_argument('--beta', type=float, default=0.001, help='is used for prior distribution of lambdas, '
-                                                                  'punishes big lambdas, default - 0.001')
+    parser.add_argument('--beta', type=float, default=0.0005, help='is used for prior distribution of lambdas, '
+                                                                   'punishes big lambdas, default - 0.0005')
     parser.add_argument('--epsilon', type=float, default=1e-8, help='is used for log-s regularization log(x) -> log(x '
                                                                     '+ epsilon), default - 1e-8')
-    parser.add_argument('--sigma_0', type=float, default=5.0, help='initial sigma of gaussian that is used for '
+    parser.add_argument('--sigma_0', type=float, default=1.0, help='initial sigma of gaussian that is used for '
                                                                    'convolution with gamma for stabilization, default '
-                                                                   '- 5.0')
+                                                                   '- 1.0')
     parser.add_argument('--sigma_inf', type=float, default=0.005, help='sigma on epoch inf_epoch, is used for '
                                                                        'computing decay, default - 0.005')
     parser.add_argument('--inf_epoch', type=int, default=50, help='when sigma_inf is achieved, used for computing '
@@ -54,9 +54,9 @@ def parse_arguments():
     parser.add_argument('--max_epoch', type=int, default=50, help='number of epochs of EM algorithm, default - 50')
     parser.add_argument('--max_m_step_epoch', type=int, default=50, help='number of epochs of neural net training on '
                                                                          'M-step, default - 50')
-    parser.add_argument('--lr_update_tol', type=int, default=25, help='tolerance before updating learning rate, '
+    parser.add_argument('--lr_update_tol', type=int, default=35, help='tolerance before updating learning rate, '
                                                                       'default - 25')
-    parser.add_argument('--lr_update_param', type=float, default=0.85, help='learning rate multiplier, default - 0.85')
+    parser.add_argument('--lr_update_param', type=float, default=0.8, help='learning rate multiplier, default - 0.85')
     parser.add_argument('--batch_size', type=int, default=150, help='batch size during neural net training, default - '
                                                                     '150')
     parser.add_argument('--verbose', type=bool, default=True, help='if true, prints logs, default - True')
