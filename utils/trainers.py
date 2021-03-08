@@ -136,7 +136,8 @@ class TrainerClusterwise:
 
     def __init__(self, model, optimizer, device, data, n_clusters, target=None,
                  alpha=1.0001, beta=0.001, epsilon=1e-8, sigma_0=5, sigma_inf=0.01, inf_epoch=50, max_epoch=50,
-                 max_m_step_epoch=50, lr_update_tol=25, lr_update_param=0.9, lr_update_param_changer = 1.0, batch_size=150, verbose=False,
+                 max_m_step_epoch=50, lr_update_tol=25, lr_update_param=0.9, lr_update_param_changer=1.0,
+                 lr_update_param_second_changer=0.95, batch_size=150, verbose=False,
                  best_model_path=None):
         """
             inputs:
@@ -203,6 +204,7 @@ class TrainerClusterwise:
         self.max_epoch = max_epoch
         self.lr_update_tol = lr_update_tol
         self.lr_update_param_changer = lr_update_param_changer
+        self.lr_update_param_second_changer = lr_update_param_second_changer
         self.update_checker = -1
         self.alpha = alpha
         self.beta = beta
@@ -482,6 +484,7 @@ class TrainerClusterwise:
                 for param_group in self.optimizer.param_groups:
                     param_group['lr'] *= self.lr_update_param
                 self.lr_update_param *= self.lr_update_param_changer
+                self.lr_update_param_changer *= self.lr_update_param_second_changer
 
         # saving previous loss
         self.prev_loss = np.mean(log_likelihood)
