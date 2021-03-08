@@ -42,6 +42,7 @@ def experiment_runner(args):
                                      max_epoch=args['max_epoch'], max_m_step_epoch=args['max_m_step_epoch'],
                                      lr_update_tol=args['lr_update_tol'], lr_update_param=args['lr_update_param'],
                                      lr_update_param_changer=args['lr_update_param_changer'],
+                                     lr_update_param_second_changer=args['lr_update_param_second_changer']
                                      batch_size=args['batch_size'], verbose=args['verbose'],
                                      best_model_path=best_model_path if args['save_best_model'] else None)
         losses, results, cluster_part, stats = trainer.train()

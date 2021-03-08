@@ -105,8 +105,9 @@ if __name__ == '__main__':
                                      sigma_inf=args.sigma_inf, inf_epoch=args.inf_epoch, max_epoch=args.max_epoch,
                                      max_m_step_epoch=args.max_m_step_epoch, lr_update_tol=args.lr_update_tol,
                                      lr_update_param=args.lr_update_param,
-                                     lr_update_param_changer=args.lr_update_param_changer, batch_size=args.batch_size,
-                                     verbose=args.verbose,
+                                     lr_update_param_changer=args.lr_update_param_changer,
+                                     lr_update_param_second_changer=args.lr_param_second_changer,
+                                     batch_size=args.batch_size, verbose=args.verbose,
                                      best_model_path=best_model_path if args.save_best_model else None)
         losses, results, cluster_part, stats = trainer.train()
 
