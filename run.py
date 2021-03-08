@@ -57,6 +57,8 @@ def parse_arguments():
     parser.add_argument('--lr_update_tol', type=int, default=35, help='tolerance before updating learning rate, '
                                                                       'default - 25')
     parser.add_argument('--lr_update_param', type=float, default=0.8, help='learning rate multiplier, default - 0.85')
+    parser.add_argument('--lr_update_param_changer', type=float, default=1.02, help='lr_update_param multiplier, '
+                                                                                    'default - 1.02')
     parser.add_argument('--batch_size', type=int, default=150, help='batch size during neural net training, default - '
                                                                     '150')
     parser.add_argument('--verbose', type=bool, default=True, help='if true, prints logs, default - True')
@@ -99,7 +101,8 @@ if __name__ == '__main__':
                                      alpha=args.alpha, beta=args.beta, epsilon=args.epsilon, sigma_0=args.sigma_0,
                                      sigma_inf=args.sigma_inf, inf_epoch=args.inf_epoch, max_epoch=args.max_epoch,
                                      max_m_step_epoch=args.max_m_step_epoch, lr_update_tol=args.lr_update_tol,
-                                     lr_update_param=args.lr_update_param, batch_size=args.batch_size,
+                                     lr_update_param=args.lr_update_param,
+                                     lr_update_param_changer=args.lr_update_param_changer, batch_size=args.batch_size,
                                      verbose=args.verbose,
                                      best_model_path=best_model_path if args.save_best_model else None)
         losses, results, cluster_part, stats = trainer.train()

@@ -21,6 +21,7 @@
   "max_m_step_epoch": 50,
   "lr_update_tol": 25,
   "lr_update_param": 0.85,
+  "lr_update_param_changer": 1.02,
   "batch_size": 150,
   "verbose": true,
   "device": "cuda:0",

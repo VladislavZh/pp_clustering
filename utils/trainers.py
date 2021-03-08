@@ -136,7 +136,7 @@ class TrainerClusterwise:
 
     def __init__(self, model, optimizer, device, data, n_clusters, target=None,
                  alpha=1.0001, beta=0.001, epsilon=1e-8, sigma_0=5, sigma_inf=0.01, inf_epoch=50, max_epoch=50,
-                 max_m_step_epoch=50, lr_update_tol=25, lr_update_param=0.9, batch_size=150, verbose=False,
+                 max_m_step_epoch=50, lr_update_tol=25, lr_update_param=0.9, lr_update_param_changer = 1.0, batch_size=150, verbose=False,
                  best_model_path=None):
         """
             inputs:
@@ -157,6 +157,7 @@ class TrainerClusterwise:
                     max_m_step_epoch - int, number of epochs of neural net training on M-step
                     lr_update_tol - int, tolerance before updating learning rate
                     lr_update_param - float, learning rate multiplier
+                    lr_update_param_changer - float, multiplier of lr_update_param
                     batch_size - int, batch size during neural net training
                     verbose - bool, if True, provides info during training
                     best_model_path - str, where the best model according to loss should be saved or None
@@ -175,6 +176,7 @@ class TrainerClusterwise:
                     update_checker - int, checker, that is compared to tolerance, increased by one every time loss is
                                      greater then on the previous iteration
                     lr_update_param - float, learning rate multiplier
+                    lr_update_param_changer - float, multiplier of lr_update_param
                     alpha - float, used for prior distribution of lambdas, punishes small lambdas
                     beta - float, used for prior distribution of lambdas, punishes big lambdas
                     epsilon - float, used for log-s regularization log(x) -> log(x + epsilon)
@@ -200,6 +202,7 @@ class TrainerClusterwise:
         self.n_clusters = n_clusters
         self.max_epoch = max_epoch
         self.lr_update_tol = lr_update_tol
+        self.lr_update_param_changer = lr_update_param_changer
         self.update_checker = -1
         self.alpha = alpha
         self.beta = beta
@@ -478,6 +481,7 @@ class TrainerClusterwise:
                 print('Updating lr')
                 for param_group in self.optimizer.param_groups:
                     param_group['lr'] *= self.lr_update_param
+                self.lr_update_param *= self.lr_update_param_changer
 
         # saving previous loss
         self.prev_loss = np.mean(log_likelihood)
