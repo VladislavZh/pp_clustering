@@ -64,12 +64,19 @@ def get_partition(df, num_of_steps, num_of_classes, end_time=None):
     dt = end_time / num_of_steps
     res[:, 0] = end_time / num_of_steps
 
-    # iterations over event sequence
-    for i in range(len(df['time'])):
-        k = int(df['time'][i] / dt)
-        if k == num_of_steps:
-            k -= 1
-        res[k, int(df['event'][i]) + 1] += 1
+    # converting time to timestamps
+    df['time'] = (df['time'] / dt).astype(int)
+    df['time'].loc[df['time'] == num_of_steps] -= 1
+
+    # counting points
+    df = df.groupby(['time', 'event']).count()
+    df = df.reset_index()
+    df.columns = ['time', 'event', 'num']
+    df['event'] = df['event'].astype(int)
+
+    # computing partition
+    tmp = torch.Tensor(df.to_numpy()).long()
+    res[tmp[:, 0], tmp[:, 1] + 1] = tmp[:, 2].float()
 
     return res
 
