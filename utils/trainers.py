@@ -645,7 +645,10 @@ class TrainerClusterwise:
                 all_stats.append(dict())
                 all_stats[-1]['gamma'] = self.get_gamma_stats()
                 all_stats[-1]['model'] = self.get_model_stats()
-                lambdas = self.model(big_batch)
+                if big_batch is not None:
+                    lambdas = self.model(big_batch)
+                else:
+                    lambdas = self.model(self.X)
                 all_stats[-1]['lambdas'] = self.get_lambda_stats(lambdas)
 
             # M-step
@@ -677,6 +680,9 @@ class TrainerClusterwise:
                 all_stats.append(dict())
                 all_stats[-1]['gamma'] = self.get_gamma_stats()
                 all_stats[-1]['model'] = self.get_model_stats()
-                lambdas = self.model(self.X)
+                if big_batch is not None:
+                    lambdas = self.model(big_batch)
+                else:
+                    lambdas = self.model(self.X)
                 all_stats[-1]['lambdas'] = self.get_lambda_stats(lambdas)
         return losses, purities, cluster_part, all_stats
