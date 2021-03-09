@@ -524,7 +524,7 @@ class TrainerClusterwise:
 
         return log_likelihood
 
-    def m_step(self, big_batch=None):
+    def m_step(self, big_batch=None, ids=None):
         """
             Conducts M-step of EM-algorithm
 
@@ -586,7 +586,7 @@ class TrainerClusterwise:
                           ' with pi = ', self.pi[i])
                 cluster_partition = min(cluster_partition, np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters))
             if type(self.target):
-                pur = purity(clusters, self.target)
+                pur = purity(clusters, self.target[ids] if ids is not None else self.target)
             else:
                 pur = None
 
@@ -635,7 +635,7 @@ class TrainerClusterwise:
                         print('Cluster', i, ': ', np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters),
                               ' with pi = ', self.pi[i])
                 if type(self.target):
-                    random_pur = purity(clusters, self.target)
+                    random_pur = purity(clusters, self.target[ids])
                 else:
                     random_pur = None
                 if self.verbose:
@@ -645,13 +645,13 @@ class TrainerClusterwise:
                 all_stats.append(dict())
                 all_stats[-1]['gamma'] = self.get_gamma_stats()
                 all_stats[-1]['model'] = self.get_model_stats()
-                lambdas = self.model(self.X)
+                lambdas = self.model(big_batch)
                 all_stats[-1]['lambdas'] = self.get_lambda_stats(lambdas)
 
             # M-step
             if self.verbose:
                 print('Beginning m-step')
-            ll, ll_pur, cluster_part = self.m_step(big_batch=big_batch)
+            ll, ll_pur, cluster_part = self.m_step(big_batch=big_batch, ids=ids)
 
             # failure check
             if ll is None:
