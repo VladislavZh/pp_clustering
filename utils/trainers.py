@@ -138,7 +138,7 @@ class TrainerClusterwise:
                  alpha=1.0001, beta=0.001, epsilon=1e-8, sigma_0=5, sigma_inf=0.01, inf_epoch=50, max_epoch=50,
                  max_m_step_epoch=50, lr_update_tol=25, lr_update_param=0.9, lr_update_param_changer=1.0,
                  lr_update_param_second_changer=0.95, batch_size=150, verbose=False,
-                 best_model_path=None):
+                 best_model_path=None, max_computing_size=None):
         """
             inputs:
                     model - torch.nn.Module, model to train
@@ -159,9 +159,11 @@ class TrainerClusterwise:
                     lr_update_tol - int, tolerance before updating learning rate
                     lr_update_param - float, learning rate multiplier
                     lr_update_param_changer - float, multiplier of lr_update_param
+                    lr_update_param_second_changer - float, multiplier of lr_update_param_changer
                     batch_size - int, batch size during neural net training
                     verbose - bool, if True, provides info during training
                     best_model_path - str, where the best model according to loss should be saved or None
+                    max_computing_size - int, if not None, then constraints gamma size (one EM-algorithm step)
 
             parameters:
                     N - int, number of data points
@@ -178,6 +180,7 @@ class TrainerClusterwise:
                                      greater then on the previous iteration
                     lr_update_param - float, learning rate multiplier
                     lr_update_param_changer - float, multiplier of lr_update_param
+                    lr_update_param_second_changer - float, multiplier of lr_update_param_changer
                     alpha - float, used for prior distribution of lambdas, punishes small lambdas
                     beta - float, used for prior distribution of lambdas, punishes big lambdas
                     epsilon - float, used for log-s regularization log(x) -> log(x + epsilon)
@@ -190,16 +193,24 @@ class TrainerClusterwise:
                     tau - float, sigma decay
                     best_model_path - str, where the best model according to loss should be saved or None
                     prev_loss_model - float, loss obtained for the best model
+                    max_computing_size - int, if not None, then constraints gamma size (one EM-algorithm step)
         """
         self.N = data.shape[0]
         self.model = model
         self.optimizer = optimizer
         self.device = device
-        self.X = data.to(device)
-        if type(target):
-            self.target = target.to(device)
+        if max_computing_size is None:
+            self.X = data.to(device)
+            if type(target):
+                self.target = target.to(device)
+            else:
+                self.target = None
         else:
-            self.target = None
+            self.X = data
+            if type(target):
+                self.target = target
+            else:
+                self.target = None
         self.n_clusters = n_clusters
         self.max_epoch = max_epoch
         self.lr_update_tol = lr_update_tol
@@ -214,7 +225,11 @@ class TrainerClusterwise:
         self.max_m_step_epoch = max_m_step_epoch
         self.batch_size = batch_size
         self.pi = (torch.ones(n_clusters) / n_clusters).to(device)
-        self.gamma = torch.zeros(n_clusters, self.N).to(device)
+        if max_computing_size is None:
+            self.gamma = torch.zeros(n_clusters, self.N).to(device)
+        else:
+            self.gamma = torch.zeros(n_clusters, max_computing_size).to(device)
+        self.max_computing_size = max_computing_size
         self.sigma = sigma_0
         self.tau = -1 / inf_epoch * math.log(sigma_inf / sigma_0)
         self.verbose = verbose
@@ -427,7 +442,7 @@ class TrainerClusterwise:
 
         return stats
 
-    def e_step(self):
+    def e_step(self, ids=None):
         """
             Conducts E-step of EM-algorithms, saves the result to self.gamma
 
@@ -439,10 +454,14 @@ class TrainerClusterwise:
         """
         self.model.eval()
         with torch.no_grad():
-            lambdas = self.model(self.X)
-            self.gamma = self.compute_gamma(lambdas)
+            if ids is None:
+                lambdas = self.model(self.X)
+                self.gamma = self.compute_gamma(lambdas)
+            else:
+                lambdas = self.model(self.X[ids].to(self.device))
+                self.gamma = self.compute_gamma(lambdas, x=self.X[ids], size=(self.n_clusters, len(ids)))
 
-    def train_epoch(self):
+    def train_epoch(self, big_batch=None):
         """
             Conducts one epoch of Neural Net training
 
@@ -453,17 +472,24 @@ class TrainerClusterwise:
                     log_likelihood - list of losses obtained during iterations over minibatches
         """
         # preparing random indices
-        indices = np.random.permutation(self.N)
+        if self.max_computing_size is None:
+            indices = np.random.permutation(self.N)
+        else:
+            indices = np.random.permutation(self.max_computing_size)
 
         # setting model to training and preparing output template
         self.model.train()
         log_likelihood = []
 
         # iterations over minibatches
-        for iteration, start in enumerate(range(0, self.N - self.batch_size, self.batch_size)):
+        for iteration, start in enumerate(range(0, (self.N if self.max_computing_size is None
+                                                    else self.max_computing_size) - self.batch_size, self.batch_size)):
             # preparing batch
             batch_ids = indices[start:start + self.batch_size]
-            batch = self.X[batch_ids].to(self.device)
+            if self.max_computing_size is None:
+                batch = self.X[batch_ids].to(self.device)
+            else:
+                batch = big_batch[batch_ids].to(self.device)
 
             # one step of training
             self.optimizer.zero_grad()
@@ -498,7 +524,7 @@ class TrainerClusterwise:
 
         return log_likelihood
 
-    def m_step(self):
+    def m_step(self, big_batch=None):
         """
             Conducts M-step of EM-algorithm
 
@@ -522,7 +548,7 @@ class TrainerClusterwise:
         # iterations over M-step epochs
         for epoch in range(self.max_m_step_epoch):
             # one epoch training
-            ll = self.train_epoch()
+            ll = self.train_epoch(big_batch=big_batch)
             log_likelihood_curve += ll
 
             # checking for failure
@@ -542,9 +568,14 @@ class TrainerClusterwise:
         # evaluating model
         self.model.eval()
         with torch.no_grad():
-            lambdas = self.model(self.X)
-            gamma = self.compute_gamma(lambdas)
-            loss = self.loss(self.X.to(self.device), lambdas.to(self.device), gamma.to(self.device)).item()
+            if self.max_computing_size is None:
+                lambdas = self.model(self.X)
+                gamma = self.compute_gamma(lambdas)
+                loss = self.loss(self.X.to(self.device), lambdas.to(self.device), gamma.to(self.device)).item()
+            else:
+                lambdas = self.model(big_batch)
+                gamma = self.compute_gamma(lambdas, x=big_batch, size=(self.n_clusters, self.max_computing_size))
+                loss = self.loss(big_batch.to(self.device), lambdas.to(self.device), gamma.to(self.device)).item()
             clusters = torch.argmax(gamma, dim=0)
             if self.verbose:
                 print('Cluster partition')
@@ -584,8 +615,16 @@ class TrainerClusterwise:
         for epoch in range(self.max_epoch):
             if self.verbose:
                 print('Beginning e-step')
+            # preparing big_batch if needed
+            if self.max_computing_size is not None:
+                ids = np.random.permutation(self.N)[:self.max_computing_size]
+                big_batch = self.X[ids].to(self.device)
+            else:
+                ids = None
+                big_batch = None
+
             # E-step
-            self.e_step()
+            self.e_step(ids=ids)
 
             # Random model results
             if epoch == 0:
@@ -612,7 +651,7 @@ class TrainerClusterwise:
             # M-step
             if self.verbose:
                 print('Beginning m-step')
-            ll, ll_pur, cluster_part = self.m_step()
+            ll, ll_pur, cluster_part = self.m_step(big_batch=big_batch)
 
             # failure check
             if ll is None:

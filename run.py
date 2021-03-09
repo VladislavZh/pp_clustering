@@ -67,6 +67,8 @@ def parse_arguments():
     parser.add_argument('--verbose', type=bool, default=True, help='if true, prints logs, default - True')
     parser.add_argument('--device', type=str, default='cpu', help='device that should be used for training, default - '
                                                                   'cpu')
+    parser.add_argument('--max_computing_size', type=int, help='if provided, constraints the max number of processing '
+                                                               'point in one step of EM algorithm')
     args = parser.parse_args()
 
     return args
@@ -108,7 +110,8 @@ if __name__ == '__main__':
                                      lr_update_param_changer=args.lr_update_param_changer,
                                      lr_update_param_second_changer=args.lr_update_param_second_changer,
                                      batch_size=args.batch_size, verbose=args.verbose,
-                                     best_model_path=best_model_path if args.save_best_model else None)
+                                     best_model_path=best_model_path if args.save_best_model else None,
+                                     max_computing_size=args.max_computing_size)
         losses, results, cluster_part, stats = trainer.train()
 
         # results check
