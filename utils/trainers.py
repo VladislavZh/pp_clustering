@@ -635,7 +635,7 @@ class TrainerClusterwise:
                         print('Cluster', i, ': ', np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters),
                               ' with pi = ', self.pi[i])
                 if type(self.target):
-                    random_pur = purity(clusters, self.target[ids])
+                    random_pur = purity(clusters, self.target[ids] if ids is not None else self.target)
                 else:
                     random_pur = None
                 if self.verbose:

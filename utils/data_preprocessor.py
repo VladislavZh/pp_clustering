@@ -66,7 +66,8 @@ def get_partition(df, num_of_steps, num_of_classes, end_time=None):
 
     # converting time to timestamps
     df['time'] = (df['time'] / dt).astype(int)
-    df['time'].loc[df['time'] == num_of_steps] -= 1
+    mask = (df['time'] == num_of_steps)
+    df.loc[mask, 'time'] -= 1
 
     # counting points
     df = df.groupby(['time', 'event']).count()
