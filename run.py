@@ -57,9 +57,9 @@ def parse_arguments():
     parser.add_argument('--lr_update_tol', type=int, default=35, help='tolerance before updating learning rate, '
                                                                       'default - 25')
     parser.add_argument('--lr_update_param', type=float, default=0.8, help='learning rate multiplier, default - 0.85')
-    parser.add_argument('--lr_update_param_changer', type=float, default=1.02, help='lr_update_param multiplier, '
+    parser.add_argument('--lr_update_param_changer', type=float, default=1.05, help='lr_update_param multiplier, '
                                                                                     'default - 1.02')
-    parser.add_argument('--lr_update_param_second_changer', type=float, default=0.95, help='lr_update_param_changer '
+    parser.add_argument('--lr_update_param_second_changer', type=float, default=0.996, help='lr_update_param_changer '
                                                                                            'multiplier, '
                                                                                            'default - 0.95')
     parser.add_argument('--batch_size', type=int, default=150, help='batch size during neural net training, default - '
