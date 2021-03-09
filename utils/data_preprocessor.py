@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import torch
+import tqdm
 
 
 def cmp_to_key(mycmp):
@@ -98,7 +99,7 @@ def get_dataset(path_to_files, n_classes, n_steps):
     # reading data
     files = sorted(files, key=cmp_to_key(compare))
     data = torch.zeros(len(files), n_steps, n_classes + 1)
-    for i, f in enumerate(files):
+    for i, f in tqdm.tqdm(enumerate(files)):
         df = pd.read_csv(path_to_files + '/' + f)
         data[i, :, :] = get_partition(df, n_steps, n_classes)
 
