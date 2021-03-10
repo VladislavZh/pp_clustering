@@ -252,11 +252,11 @@ class TrainerClusterwise:
         gauss = gauss[:, None]
 
         # preparing output template
-        convoluted = torch.zeros_like(gamma)
+        convoluted = torch.zeros_like(gamma).to(self.device)
 
         # iterations over clusters
         for k in range(self.n_clusters):
-            convoluted[k, :] = torch.sum(gauss[self.n_clusters - k - 1:2 * self.n_clusters - k - 1, :] * gamma, dim=0)
+            convoluted[k, :] = torch.sum(gauss[self.n_clusters - k - 1:2 * self.n_clusters - k - 1, :] * gamma.to(self.device), dim=0)
 
         # normalization
         convoluted /= convoluted.sum(dim=0)
