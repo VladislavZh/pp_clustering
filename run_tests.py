@@ -44,7 +44,8 @@ def experiment_runner(args):
                                      lr_update_param_changer=args['lr_update_param_changer'],
                                      lr_update_param_second_changer=args['lr_update_param_second_changer'],
                                      batch_size=args['batch_size'], verbose=args['verbose'],
-                                     best_model_path=best_model_path if args['save_best_model'] else None)
+                                     best_model_path=best_model_path if args['save_best_model'] else None,
+                                     max_computing_size=args['max_computing_size'])
         losses, results, cluster_part, stats = trainer.train()
 
         # results check
