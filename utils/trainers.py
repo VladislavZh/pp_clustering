@@ -216,6 +216,7 @@ class TrainerClusterwise:
         self.lr_update_tol = lr_update_tol
         self.lr_update_param_changer = lr_update_param_changer
         self.lr_update_param_second_changer = lr_update_param_second_changer
+        self.default_lr_params = [lr_update_tol, lr_update_param_changer, lr_update_param_second_changer]
         self.update_checker = -1
         self.alpha = alpha
         self.beta = beta
@@ -512,8 +513,14 @@ class TrainerClusterwise:
                 for param_group in self.optimizer.param_groups:
                     param_group['lr'] *= self.lr_update_param
                     lr = param_group['lr']
-                self.lr_update_param *= self.lr_update_param_changer
-                self.lr_update_param_changer *= self.lr_update_param_second_changer
+                    if lr < 1e-4:
+                        param_group['lr'] = 0.01
+                if lr >= 1e-4:
+                    self.lr_update_param *= self.lr_update_param_changer
+                    self.lr_update_param_changer *= self.lr_update_param_second_changer
+                else:
+                    self.lr_update_param = self.default_lr_params[0]
+                    self.lr_update_param_changer = self.default_lr_params[1]
                 if self.verbose:
                     print('lr =', lr)
                     print('lr_update_param =', self.lr_update_param)
