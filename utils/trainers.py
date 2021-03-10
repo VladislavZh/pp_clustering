@@ -137,8 +137,8 @@ class TrainerClusterwise:
     def __init__(self, model, optimizer, device, data, n_clusters, target=None,
                  alpha=1.0001, beta=0.001, epsilon=1e-8, sigma_0=5, sigma_inf=0.01, inf_epoch=50, max_epoch=50,
                  max_m_step_epoch=50, lr_update_tol=25, lr_update_param=0.9, lr_update_param_changer=1.0,
-                 lr_update_param_second_changer=0.95, batch_size=150, verbose=False,
-                 best_model_path=None, max_computing_size=None):
+                 lr_update_param_second_changer=0.95, min_lr=None, updated_lr=None, batch_size=150, verbose=False,
+                 best_model_path=None, max_computing_size=None, full_purity=True):
         """
             inputs:
                     model - torch.nn.Module, model to train
@@ -160,10 +160,14 @@ class TrainerClusterwise:
                     lr_update_param - float, learning rate multiplier
                     lr_update_param_changer - float, multiplier of lr_update_param
                     lr_update_param_second_changer - float, multiplier of lr_update_param_changer
+                    min_lr - float - minimal lr value, when achieved lr is updated to updated_lr and update params set
+                             to default
+                    updated_lr - float, lr after achieving min_lr
                     batch_size - int, batch size during neural net training
                     verbose - bool, if True, provides info during training
                     best_model_path - str, where the best model according to loss should be saved or None
                     max_computing_size - int, if not None, then constraints gamma size (one EM-algorithm step)
+                    fool_purity - bool, if True, purity is computed on all dataset
 
             parameters:
                     N - int, number of data points
@@ -181,6 +185,9 @@ class TrainerClusterwise:
                     lr_update_param - float, learning rate multiplier
                     lr_update_param_changer - float, multiplier of lr_update_param
                     lr_update_param_second_changer - float, multiplier of lr_update_param_changer
+                    min_lr - float - minimal lr value, when achieved lr is updated to updated_lr and update params set
+                             to default
+                    updated_lr - float, lr after achieving min_lr
                     alpha - float, used for prior distribution of lambdas, punishes small lambdas
                     beta - float, used for prior distribution of lambdas, punishes big lambdas
                     epsilon - float, used for log-s regularization log(x) -> log(x + epsilon)
@@ -194,6 +201,7 @@ class TrainerClusterwise:
                     best_model_path - str, where the best model according to loss should be saved or None
                     prev_loss_model - float, loss obtained for the best model
                     max_computing_size - int, if not None, then constraints gamma size (one EM-algorithm step)
+                    fool_purity - bool, if True, purity is computed on all dataset
         """
         self.N = data.shape[0]
         self.model = model
@@ -217,6 +225,8 @@ class TrainerClusterwise:
         self.lr_update_param_changer = lr_update_param_changer
         self.lr_update_param_second_changer = lr_update_param_second_changer
         self.default_lr_params = [lr_update_param, lr_update_param_changer, lr_update_param_second_changer]
+        self.min_lr = min_lr
+        self.updated_lr = updated_lr
         self.update_checker = -1
         self.alpha = alpha
         self.beta = beta
@@ -236,6 +246,7 @@ class TrainerClusterwise:
         self.verbose = verbose
         self.best_model_path = best_model_path
         self.prev_loss_model = 0
+        self.full_purity = full_purity
 
     def convolve(self, gamma):
         """
@@ -256,7 +267,8 @@ class TrainerClusterwise:
 
         # iterations over clusters
         for k in range(self.n_clusters):
-            convoluted[k, :] = torch.sum(gauss[self.n_clusters - k - 1:2 * self.n_clusters - k - 1, :] * gamma.to(self.device), dim=0)
+            convoluted[k, :] = torch.sum(
+                gauss[self.n_clusters - k - 1:2 * self.n_clusters - k - 1, :] * gamma.to(self.device), dim=0)
 
         # normalization
         convoluted /= convoluted.sum(dim=0)
@@ -484,7 +496,7 @@ class TrainerClusterwise:
 
         # iterations over minibatches
         for iteration, start in enumerate(range(0, (self.N if self.max_computing_size is None
-                                                    else self.max_computing_size) - self.batch_size, self.batch_size)):
+        else self.max_computing_size) - self.batch_size, self.batch_size)):
             # preparing batch
             batch_ids = indices[start:start + self.batch_size]
             if self.max_computing_size is None:
@@ -513,15 +525,20 @@ class TrainerClusterwise:
                 for param_group in self.optimizer.param_groups:
                     param_group['lr'] *= self.lr_update_param
                     lr = param_group['lr']
-                    if lr < 1e-4:
-                        param_group['lr'] = 0.01
-                if lr >= 1e-4:
+                    if self.min_lr is not None:
+                        if lr < self.min_lr:
+                            param_group['lr'] = self.updated_lr
+                if self.min_lr is not None:
+                    if lr < self.min_lr:
+                        lr = 0.01
+                        self.lr_update_param = self.default_lr_params[0]
+                        self.lr_update_param_changer = self.default_lr_params[1]
+                    else:
+                        self.lr_update_param *= self.lr_update_param_changer
+                        self.lr_update_param_changer *= self.lr_update_param_second_changer
+                else:
                     self.lr_update_param *= self.lr_update_param_changer
                     self.lr_update_param_changer *= self.lr_update_param_second_changer
-                else:
-                    lr = 0.01
-                    self.lr_update_param = self.default_lr_params[0]
-                    self.lr_update_param_changer = self.default_lr_params[1]
                 if self.verbose:
                     print('lr =', lr)
                     print('lr_update_param =', self.lr_update_param)
@@ -576,8 +593,8 @@ class TrainerClusterwise:
         # evaluating model
         self.model.eval()
         with torch.no_grad():
-            if self.max_computing_size is None:
-                lambdas = self.model(self.X)
+            if self.max_computing_size is None or self.full_purity:
+                lambdas = self.model(self.X.to(self.device))
                 gamma = self.compute_gamma(lambdas)
                 loss = self.loss(self.X.to(self.device), lambdas.to(self.device), gamma.to(self.device)).item()
             else:
@@ -594,7 +611,7 @@ class TrainerClusterwise:
                           ' with pi = ', self.pi[i])
                 cluster_partition = min(cluster_partition, np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters))
             if type(self.target):
-                pur = purity(clusters, self.target[ids] if ids is not None else self.target)
+                pur = purity(clusters, self.target[ids] if ids is not None and not self.full_purity else self.target)
             else:
                 pur = None
 
@@ -636,14 +653,18 @@ class TrainerClusterwise:
 
             # Random model results
             if epoch == 0:
-                clusters = torch.argmax(self.gamma, dim=0)
+                if ids is None or not self.full_purity:
+                    clusters = torch.argmax(self.gamma, dim=0)
+                else:
+                    clusters = torch.argmax(self.compute_gamma((self.X.to(self.device))))
                 if self.verbose:
                     print('Cluster partition')
                     for i in np.unique(clusters.cpu()):
                         print('Cluster', i, ': ', np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters),
                               ' with pi = ', self.pi[i])
                 if type(self.target):
-                    random_pur = purity(clusters, self.target[ids] if ids is not None else self.target)
+                    random_pur = purity(clusters, self.target[ids] if ids is not None and not self.full_purity
+                                        else self.target)
                 else:
                     random_pur = None
                 if self.verbose:

@@ -69,6 +69,7 @@ def parse_arguments():
                                                                   'cpu')
     parser.add_argument('--max_computing_size', type=int, help='if provided, constraints the max number of processing '
                                                                'point in one step of EM algorithm')
+    parser.add_argument('--full_purity', type=bool, default=True, help='if true, uses all dataset to compute purity')
     args = parser.parse_args()
 
     return args
@@ -111,7 +112,7 @@ if __name__ == '__main__':
                                      lr_update_param_second_changer=args.lr_update_param_second_changer,
                                      batch_size=args.batch_size, verbose=args.verbose,
                                      best_model_path=best_model_path if args.save_best_model else None,
-                                     max_computing_size=args.max_computing_size)
+                                     max_computing_size=args.max_computing_size, full_purity=args.full_purity)
         losses, results, cluster_part, stats = trainer.train()
 
         # results check
