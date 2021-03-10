@@ -1,9 +1,9 @@
 {
   "path_to_files": "data/simulated/K5_C5",
-  "n_steps": 128,
+  "n_steps": 256,
   "n_clusters": 5,
   "n_classes": 5,
-  "hidden_size": 256,
+  "hidden_size": 128,
   "num_layers": 3,
   "dropout": 0.3,
   "lr": 0.035,
