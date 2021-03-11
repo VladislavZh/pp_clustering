@@ -25,7 +25,7 @@
   "lr_update_param_second_changer": 0.9995,
   "batch_size": 150,
   "verbose": true,
-  "device": "cuda:2",
+  "device": "cuda:0",
   "save_best_model": true,
   "max_computing_size": 400,
   "full_purity": true
