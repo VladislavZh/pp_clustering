@@ -10,7 +10,7 @@
   "weight_decay": 1e-5,
   "degenerate_eps": null,
   "n_runs": 5,
-  "save_dir": "K5_C5_lr_0.01_tests",
+  "save_dir": "K5_C5_lr_0.01_tests_fixed",
   "alpha": 1.0,
   "beta": 0.0,
   "epsilon": 1e-8,
