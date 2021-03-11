@@ -94,4 +94,5 @@ if __name__ == "__main__":
             params['save_dir'] = base_params['save_dir'] + '/test_{}_{}'.format(key, param_to_test)
             res = experiment_runner(params)
             best_results.append(res)
-    print(best_results)
+    for i in best_results:
+        print(i)
