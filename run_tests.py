@@ -27,6 +27,7 @@ def experiment_runner(args):
 
     # iterations over runs
     i = 0
+    all_results = []
     while i < args['n_runs']:
         if args['verbose']:
             print('Run {}/{}'.format(i + 1, args['n_runs']))
@@ -71,7 +72,8 @@ def experiment_runner(args):
         torch.save(model.state_dict(), exp_folder + '/last_model.pt')
         i += 1
         res = np.array(results)
-        return res[np.argmin(res, axis=0)[0]]
+        all_results.append(res[np.argmin(res, axis=0)[0]])
+    return all_results
 
 
 if __name__ == "__main__":
