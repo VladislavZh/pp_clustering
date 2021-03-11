@@ -5,6 +5,7 @@ from utils.file_system_utils import create_folder
 import torch
 import pickle
 import json
+import numpy as np
 
 
 def experiment_runner(args):
@@ -69,6 +70,8 @@ def experiment_runner(args):
             json.dump(args, f)
         torch.save(model.state_dict(), exp_folder + '/last_model.pt')
         i += 1
+        res = np.array(results)
+        return res[np.argmin(res, axis=0)[0]]
 
 
 if __name__ == "__main__":
@@ -79,6 +82,7 @@ if __name__ == "__main__":
         exp_params = json.load(f)
 
     # iterations over experimental parameters
+    best_results = []
     for key in exp_params.keys():
         params = base_params.copy()
         for param_to_test in exp_params[key]:
@@ -86,4 +90,6 @@ if __name__ == "__main__":
                 print('Testing', key, '=', param_to_test)
             params[key] = param_to_test
             params['save_dir'] = base_params['save_dir'] + '/test_{}_{}'.format(key, param_to_test)
-            experiment_runner(params)
+            res = experiment_runner(params)
+            best_results.append(res)
+    print(best_results)
