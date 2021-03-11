@@ -1,6 +1,6 @@
 {
   "path_to_files": "data/simulated/K5_C5",
-  "n_steps": 256,
+  "n_steps": 128,
   "n_clusters": 5,
   "n_classes": 5,
   "hidden_size": 128,
@@ -11,8 +11,8 @@
   "degenerate_eps": null,
   "n_runs": 4,
   "save_dir": "K5_C5_tests",
-  "alpha": 1.0002,
-  "beta": 0.0005,
+  "alpha": 1.0005,
+  "beta": 0.002,
   "epsilon": 1e-8,
   "sigma_0": 5.0,
   "sigma_inf": 0.005,
