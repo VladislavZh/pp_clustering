@@ -653,6 +653,9 @@ class TrainerClusterwise:
 
             # Random model results
             if epoch == 0:
+                print(ids, ids is None)
+                print(self.full_purity, not self.full_purity)
+                print((ids is None) or (not self.full_purity))
                 if (ids is None) or (not self.full_purity):
                     clusters = torch.argmax(self.gamma, dim=0)
                 else:
