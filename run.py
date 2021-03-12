@@ -69,7 +69,7 @@ def parse_arguments():
                                                                   'cpu')
     parser.add_argument('--max_computing_size', type=int, help='if provided, constraints the max number of processing '
                                                                'point in one step of EM algorithm')
-    parser.add_argument('--full_purity', type=bool, default=True, help='if true, uses all dataset to compute purity')
+    parser.add_argument('--full_purity', type=bool, default=False, help='if true, uses all dataset to compute purity')
     args = parser.parse_args()
 
     return args
