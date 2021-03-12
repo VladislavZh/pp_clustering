@@ -520,8 +520,8 @@ class TrainerClusterwise:
             if self.update_checker >= self.lr_update_tol:
                 self.update_checker = 0
                 lr = 0
-                if self.verbose:
-                    print('Updating lr')
+                # if self.verbose:
+                #     print('Updating lr')
                 for param_group in self.optimizer.param_groups:
                     param_group['lr'] *= self.lr_update_param
                     lr = param_group['lr']
