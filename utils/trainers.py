@@ -593,7 +593,7 @@ class TrainerClusterwise:
         # evaluating model
         self.model.eval()
         with torch.no_grad():
-            if self.max_computing_size is None or self.full_purity:
+            if (self.max_computing_size is None) or self.full_purity:
                 lambdas = self.model(self.X.to(self.device))
                 gamma = self.compute_gamma(lambdas, x=self.X, size=(self.n_clusters, self.N))
                 loss = self.loss(self.X.to(self.device), lambdas.to(self.device), gamma.to(self.device)).item()
@@ -611,7 +611,7 @@ class TrainerClusterwise:
                           ' with pi = ', self.pi[i])
                 cluster_partition = min(cluster_partition, np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters))
             if type(self.target):
-                pur = purity(clusters, self.target[ids] if ids is not None and not self.full_purity else self.target)
+                pur = purity(clusters, self.target[ids] if (ids is not None) and (not self.full_purity) else self.target)
             else:
                 pur = None
 
@@ -665,7 +665,7 @@ class TrainerClusterwise:
                               ' with pi = ', self.pi[i])
                 if type(self.target):
                     random_pur = purity(clusters,
-                                        self.target[ids] if ids is not None and not self.full_purity else self.target)
+                                        self.target[ids] if (ids is not None) and (not self.full_purity) else self.target)
                 else:
                     random_pur = None
                 if self.verbose:
