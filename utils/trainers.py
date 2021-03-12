@@ -496,7 +496,7 @@ class TrainerClusterwise:
 
         # iterations over minibatches
         for iteration, start in enumerate(range(0, (self.N if self.max_computing_size is None
-        else self.max_computing_size) - self.batch_size, self.batch_size)):
+                                                    else self.max_computing_size) - self.batch_size, self.batch_size)):
             # preparing batch
             batch_ids = indices[start:start + self.batch_size]
             if self.max_computing_size is None:
@@ -539,10 +539,10 @@ class TrainerClusterwise:
                 else:
                     self.lr_update_param *= self.lr_update_param_changer
                     self.lr_update_param_changer *= self.lr_update_param_second_changer
-                if self.verbose:
-                    print('lr =', lr)
-                    print('lr_update_param =', self.lr_update_param)
-                    print('lr_update_param_changer =', self.lr_update_param_changer)
+                # if self.verbose:
+                #     print('lr =', lr)
+                #     print('lr_update_param =', self.lr_update_param)
+                #     print('lr_update_param_changer =', self.lr_update_param_changer)
 
         # saving previous loss
         self.prev_loss = np.mean(log_likelihood)
@@ -684,6 +684,13 @@ class TrainerClusterwise:
             # M-step
             if self.verbose:
                 print('Beginning m-step')
+                for param_group in self.optimizer.param_groups:
+                    param_group['lr'] *= self.lr_update_param
+                    lr = param_group['lr']
+                    break
+                print('lr =', lr)
+                print('lr_update_param =', self.lr_update_param)
+                print('lr_update_param_changer =', self.lr_update_param_changer)
             ll, ll_pur, cluster_part = self.m_step(big_batch=big_batch, ids=ids)
 
             # failure check
