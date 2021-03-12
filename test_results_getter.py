@@ -30,7 +30,7 @@ if __name__ == "__main__":
         base_params = json.load(f)
     with open("exp_config.json", 'r') as f:
         exp_params = json.load(f)
-    path_to_data = base_params['path_to_data']
+    path_to_data = base_params['path_to_files']
     for key in exp_params.keys():
         for param_to_test in exp_params[key]:
             path_to_exp = base_params['save_dir'] + '/test_{}_{}'.format(key, param_to_test)

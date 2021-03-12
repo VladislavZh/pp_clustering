@@ -95,4 +95,5 @@ if __name__ == "__main__":
             res = experiment_runner(params)
             best_results.append(res)
     for i in best_results:
-        print(i)
+        for j in i:
+            print(j)
