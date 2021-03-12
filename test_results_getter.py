@@ -33,7 +33,7 @@ if __name__ == "__main__":
     path_to_data = base_params['path_to_files']
     for key in exp_params.keys():
         for param_to_test in exp_params[key]:
-            path_to_exp = 'pp_clustering/' + base_params['save_dir'] + '/test_{}_{}'.format(key, param_to_test)
+            path_to_exp = 'experiments/' + base_params['save_dir'] + '/test_{}_{}'.format(key, param_to_test)
             exp = 'test_{}_{}'.format(key, param_to_test)
             exp_runs = os.listdir(path_to_exp)
             print(format_title('Exp = {}'.format(exp)))
