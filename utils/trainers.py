@@ -611,7 +611,7 @@ class TrainerClusterwise:
                           ' with pi = ', self.pi[i])
                 cluster_partition = min(cluster_partition, np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters))
             if type(self.target):
-                pur = purity(clusters, self.target[ids] if (ids is not None) or self.full_purity else self.target)
+                pur = purity(clusters, self.target[ids] if ids is not None and not self.full_purity else self.target)
             else:
                 pur = None
 
