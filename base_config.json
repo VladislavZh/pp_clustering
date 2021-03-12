@@ -20,7 +20,7 @@
   "max_epoch": 50,
   "max_m_step_epoch": 50,
   "lr_update_tol": 0,
-  "lr_update_param": 0.9974976102732875,
+  "lr_update_param": 0.999,
   "lr_update_param_changer": 1.0,
   "lr_update_param_second_changer": 1.0,
   "batch_size": 150,
