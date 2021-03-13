@@ -6,7 +6,7 @@
   "hidden_size": 128,
   "num_layers": 3,
   "dropout": 0.3,
-  "lr": 0.001,
+  "lr": 0.1,
   "weight_decay": 1e-5,
   "degenerate_eps": null,
   "n_runs": 5,
