@@ -52,8 +52,11 @@ def parse_arguments():
     parser.add_argument('--inf_epoch', type=int, default=50, help='when sigma_inf is achieved, used for computing '
                                                                   'decay, default - 50')
     parser.add_argument('--max_epoch', type=int, default=50, help='number of epochs of EM algorithm, default - 50')
-    parser.add_argument('--max_m_step_epoch', type=int, default=50, help='number of epochs of neural net training on '
-                                                                         'M-step, default - 50')
+    parser.add_argument('--max_m_step_epoch', type=float, default=50, help='int(max_m_step_epoch) - number of epochs'
+                                                                           ' of neural net training on '
+                                                                           'M-step, default - 50')
+    parser.add_argument('--max_m_step_epoch_add', type=float, default=0.0, help='adder to max_m_step_epoch every '
+                                                                                'epoch of EM-algorithm, default - 0.0')
     parser.add_argument('--lr_update_tol', type=int, default=35, help='tolerance before updating learning rate, '
                                                                       'default - 25')
     parser.add_argument('--lr_update_param', type=float, default=0.8, help='learning rate multiplier, default - 0.8')
@@ -109,8 +112,8 @@ if __name__ == '__main__':
         trainer = TrainerClusterwise(model, optimizer, args.device, data, args.n_clusters, target=target,
                                      alpha=args.alpha, beta=args.beta, epsilon=args.epsilon, sigma_0=args.sigma_0,
                                      sigma_inf=args.sigma_inf, inf_epoch=args.inf_epoch, max_epoch=args.max_epoch,
-                                     max_m_step_epoch=args.max_m_step_epoch, lr_update_tol=args.lr_update_tol,
-                                     lr_update_param=args.lr_update_param,
+                                     max_m_step_epoch=args.max_m_step_epoch, max_m_step_epoch_add=args.max_m_step_add,
+                                     lr_update_tol=args.lr_update_tol, lr_update_param=args.lr_update_param,
                                      lr_update_param_changer=args.lr_update_param_changer,
                                      lr_update_param_second_changer=args.lr_update_param_second_changer,
                                      min_lr=args.min_lr, updated_lr=args.updated_lr,

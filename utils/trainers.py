@@ -136,9 +136,9 @@ class TrainerClusterwise:
 
     def __init__(self, model, optimizer, device, data, n_clusters, target=None,
                  alpha=1.0001, beta=0.001, epsilon=1e-8, sigma_0=5, sigma_inf=0.01, inf_epoch=50, max_epoch=50,
-                 max_m_step_epoch=50, lr_update_tol=25, lr_update_param=0.9, lr_update_param_changer=1.0,
-                 lr_update_param_second_changer=0.95, min_lr=None, updated_lr=None, batch_size=150, verbose=False,
-                 best_model_path=None, max_computing_size=None, full_purity=True):
+                 max_m_step_epoch=50, max_m_step_epoch_add=0, lr_update_tol=25, lr_update_param=0.9,
+                 lr_update_param_changer=1.0, lr_update_param_second_changer=0.95, min_lr=None, updated_lr=None,
+                 batch_size=150, verbose=False, best_model_path=None, max_computing_size=None, full_purity=True):
         """
             inputs:
                     model - torch.nn.Module, model to train
@@ -155,7 +155,8 @@ class TrainerClusterwise:
                     sigma_inf - float, sigma on epoch inf_epoch, used for computing decay
                     inf_epoch - int, epoch, when sigma_inf is achieved, used for computing decay
                     max_epoch - int, number of epochs of EM algorithm
-                    max_m_step_epoch - int, number of epochs of neural net training on M-step
+                    max_m_step_epoch - float, number of epochs of neural net training on M-step
+                    max_m_step_epoch_add - float, every iteration of EM-algorithm max_m_step_epoch+=max_m_step_epoch_add
                     lr_update_tol - int, tolerance before updating learning rate
                     lr_update_param - float, learning rate multiplier
                     lr_update_param_changer - float, multiplier of lr_update_param
@@ -234,6 +235,7 @@ class TrainerClusterwise:
         self.lr_update_param = lr_update_param
         self.prev_loss = 0
         self.max_m_step_epoch = max_m_step_epoch
+        self.max_m_step_epoch_add = max_m_step_epoch_add
         self.batch_size = batch_size
         self.pi = (torch.ones(n_clusters) / n_clusters).to(device)
         if max_computing_size is None:
@@ -571,7 +573,7 @@ class TrainerClusterwise:
         ll = []
 
         # iterations over M-step epochs
-        for epoch in range(self.max_m_step_epoch):
+        for epoch in range(int(self.max_m_step_epoch)):
             # one epoch training
             ll = self.train_epoch(big_batch=big_batch)
             log_likelihood_curve += ll
@@ -590,6 +592,8 @@ class TrainerClusterwise:
         if (torch.rand(1) > 0.5)[0]:
             self.model.random_permutation()
 
+        # updating max_m_step_epoch
+        self.max_m_step_epoch += self.max_m_step_epoch_add
         # evaluating model
         self.model.eval()
         with torch.no_grad():
