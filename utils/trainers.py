@@ -688,10 +688,10 @@ class TrainerClusterwise:
             # M-step
             if self.verbose:
                 print('Beginning m-step')
-                for param_group in self.optimizer.param_groups:
-                    param_group['lr'] *= self.lr_update_param
-                    lr = param_group['lr']
-                    break
+                # for param_group in self.optimizer.param_groups:
+                #     param_group['lr'] *= self.lr_update_param
+                #     lr = param_group['lr']
+                #     break
                 print('lr =', lr)
                 print('lr_update_param =', self.lr_update_param)
                 print('lr_update_param_changer =', self.lr_update_param_changer)
