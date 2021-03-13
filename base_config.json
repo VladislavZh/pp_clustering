@@ -28,7 +28,7 @@
   "updated_lr": 1e-3,
   "batch_size": 150,
   "verbose": true,
-  "device": "cuda:2",
+  "device": "cuda:3",
   "save_best_model": true,
   "max_computing_size": 400,
   "full_purity": true
