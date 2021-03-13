@@ -11,7 +11,7 @@
   "degenerate_eps": null,
   "n_runs": 5,
   "save_dir": "K2_C5_tests_fixed",
-  "alpha": 1.0003,
+  "alpha": 1.0005,
   "beta": 0.0007,
   "epsilon": 1e-8,
   "sigma_0": 0.3,
