@@ -1,3 +1,3 @@
 {
-  "sigma_inf": [0.002]
+  "max_m_step_epoch": [3]
 }
