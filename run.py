@@ -62,6 +62,9 @@ def parse_arguments():
     parser.add_argument('--lr_update_param_second_changer', type=float, default=0.999, help='lr_update_param_changer '
                                                                                             'multiplier, '
                                                                                             'default - 0.999')
+    parser.add_argument('--min_lr', type=float, help='if provided, defines the minimal available value of lr, '
+                                                     'if achieved updates to updated_lr')
+    parser.add_argument('--updated_lr', type=float, default=0.01, help='updates lr to it when min_lr is achieved')
     parser.add_argument('--batch_size', type=int, default=150, help='batch size during neural net training, default - '
                                                                     '150')
     parser.add_argument('--verbose', type=bool, default=True, help='if true, prints logs, default - True')
@@ -110,6 +113,7 @@ if __name__ == '__main__':
                                      lr_update_param=args.lr_update_param,
                                      lr_update_param_changer=args.lr_update_param_changer,
                                      lr_update_param_second_changer=args.lr_update_param_second_changer,
+                                     min_lr=args.min_lr, updated_lr=args.updated_lr,
                                      batch_size=args.batch_size, verbose=args.verbose,
                                      best_model_path=best_model_path if args.save_best_model else None,
                                      max_computing_size=args.max_computing_size, full_purity=args.full_purity)
