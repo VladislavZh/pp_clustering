@@ -476,7 +476,7 @@ class TrainerClusterwise:
                 lambdas = self.model(self.X[ids].to(self.device))
                 self.gamma = self.compute_gamma(lambdas, x=self.X[ids], size=(self.n_clusters, len(ids)))
 
-    def train_epoch(self, big_batch=None):
+    def train_epoch(self, epoch, big_batch=None):
         """
             Conducts one epoch of Neural Net training
 
@@ -515,7 +515,9 @@ class TrainerClusterwise:
 
             # saving results
             log_likelihood.append(loss.item())
-
+        if epoch == 10:
+            for param_group in self.optimizer.param_groups:
+                param_group['lr'] = 0.001
         # checking for lr update
         if np.mean(log_likelihood) > self.prev_loss:
             self.update_checker += 1
