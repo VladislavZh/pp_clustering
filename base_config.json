@@ -25,7 +25,7 @@
   "lr_update_param_changer": 1.0,
   "lr_update_param_second_changer": 1.0,
   "min_lr": 0.00027,
-  "updated_lr": 1e-2,
+  "updated_lr": 0.005,
   "batch_size": 150,
   "verbose": true,
   "device": "cuda:0",
