@@ -73,8 +73,9 @@ def experiment_runner(args):
             json.dump(args, f)
         torch.save(model.state_dict(), exp_folder + '/last_model.pt')
         i += 1
-        res = np.array(results)
-        all_results.append(res[np.argmin(res, axis=0)[0]])
+        results_on_run_i = np.array(results)
+        print('Run = {}: {}'.format(i, results_on_run_i))
+        all_results.append(results_on_run_i[np.argmin(results_on_run_i, axis=0)[0]])
     return all_results
 
 
@@ -94,6 +95,7 @@ if __name__ == "__main__":
                 print('Testing', key, '=', param_to_test)
             params[key] = param_to_test
             params['save_dir'] = base_params['save_dir'] + '/test_{}_{}'.format(key, param_to_test)
+            print('EXP: {} = {}'.format(key, param_to_test))
             res = experiment_runner(params)
             best_results.append(res)
     for i in best_results:
