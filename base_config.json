@@ -16,7 +16,7 @@
   "epsilon": 1e-8,
   "sigma_0": 0.3,
   "sigma_inf": 0.007,
-  "inf_epoch": 50,
+  "inf_epoch": 200,
   "max_epoch": 200,
   "max_m_step_epoch": 1,
   "max_m_step_epoch_add": 0.14,
