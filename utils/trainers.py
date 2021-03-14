@@ -554,7 +554,7 @@ class TrainerClusterwise:
 
         return log_likelihood
 
-    def m_step(self, epoch, big_batch=None, ids=None):
+    def m_step(self, em_epoch, big_batch=None, ids=None):
         """
             Conducts M-step of EM-algorithm
 
@@ -578,7 +578,7 @@ class TrainerClusterwise:
         # iterations over M-step epochs
         for epoch in range(int(self.max_m_step_epoch)):
             # one epoch training
-            ll = self.train_epoch(epoch, big_batch=big_batch)
+            ll = self.train_epoch(em_epoch, big_batch=big_batch)
             log_likelihood_curve += ll
 
             # checking for failure
