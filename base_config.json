@@ -21,7 +21,7 @@
   "max_m_step_epoch": 1,
   "max_m_step_epoch_add": 0.14,
   "lr_update_tol": 35,
-  "lr_update_param": 0.9,
+  "lr_update_param": 0.85,
   "lr_update_param_changer": 1.0,
   "lr_update_param_second_changer": 1.0,
   "min_lr": null,
