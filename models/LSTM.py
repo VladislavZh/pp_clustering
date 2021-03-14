@@ -268,7 +268,7 @@ class LSTMMultiplePointProcesses(nn.Module):
 
             # LSTM forward pass
             out, (hidden, cell) = self.lstm(s, (hidden0, cell0))
-            out = self.bn(out)
+            # out = self.bn(out)
 
             # finding lambdas
             if self.bidir:
