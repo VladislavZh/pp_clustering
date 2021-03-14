@@ -486,7 +486,6 @@ class TrainerClusterwise:
             outputs:
                     log_likelihood - list of losses obtained during iterations over minibatches
         """
-        print(em_epoch)
         # preparing random indices
         if self.max_computing_size is None:
             indices = np.random.permutation(self.N)
