@@ -516,10 +516,10 @@ class TrainerClusterwise:
 
             # saving results
             log_likelihood.append(loss.item())
-        if em_epoch == 10:
-            for param_group in self.optimizer.param_groups:
-                param_group['lr'] = 0.001
-                self.max_m_step_epoch = 6 + 10*self.max_m_step_epoch_add
+        # if em_epoch == 10:
+        #     for param_group in self.optimizer.param_groups:
+        #         param_group['lr'] = 0.001
+        #         self.max_m_step_epoch = 6 + 10*self.max_m_step_epoch_add
         # checking for lr update
         if np.mean(log_likelihood) > self.prev_loss:
             self.update_checker += 1
