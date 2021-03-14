@@ -311,7 +311,7 @@ class TrainerClusterwise:
         tmp3 = gamma.to(self.device) * tmp2
         loss1 = torch.sum(tmp3)
         loss2 = - torch.sum((self.alpha - 1) * torch.log(lambdas + self.epsilon) - self.beta * lambdas ** 2)
-        res = loss1
+        res = loss1 + loss2
 
         return res
 
