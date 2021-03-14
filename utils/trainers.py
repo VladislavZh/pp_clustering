@@ -311,7 +311,7 @@ class TrainerClusterwise:
         tmp3 = gamma.to(self.device) * tmp2
         loss1 = torch.sum(tmp3)
         loss2 = - torch.sum((self.alpha - 1) * torch.log(lambdas + self.epsilon) - self.beta * lambdas ** 2)
-        res = loss1
+        res = loss1 + loss2
 
         return res
 
@@ -573,7 +573,7 @@ class TrainerClusterwise:
         ll = []
 
         # iterations over M-step epochs
-        for epoch in range(int(min(11,self.max_m_step_epoch))):
+        for epoch in range(int(self.max_m_step_epoch)):
             # one epoch training
             ll = self.train_epoch(big_batch=big_batch)
             log_likelihood_curve += ll
