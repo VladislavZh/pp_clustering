@@ -573,7 +573,7 @@ class TrainerClusterwise:
         ll = []
 
         # iterations over M-step epochs
-        for epoch in range(int(self.max_m_step_epoch)):
+        for epoch in range(int(min(11,self.max_m_step_epoch))):
             # one epoch training
             ll = self.train_epoch(big_batch=big_batch)
             log_likelihood_curve += ll
