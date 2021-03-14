@@ -308,7 +308,7 @@ class TrainerClusterwise:
         convoluted_gamma = self.convolve(gamma)
 
         # computing loss
-        tmp3 = gamma * tmp2
+        tmp3 = gamma.to(self.device) * tmp2
         loss1 = torch.sum(tmp3)
         loss2 = - torch.sum((self.alpha - 1) * torch.log(lambdas + self.epsilon) - self.beta * lambdas ** 2)
         res = loss1 + loss2
