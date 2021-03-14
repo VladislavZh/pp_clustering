@@ -4,7 +4,7 @@
   "n_clusters": 5,
   "n_classes": 5,
   "hidden_size": 128,
-  "num_layers": 3,
+  "num_layers": 1,
   "dropout": 0.0,
   "lr": 0.001,
   "weight_decay": 1e-5,
