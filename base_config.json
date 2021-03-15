@@ -12,7 +12,7 @@
   "degenerate_eps": null,
   "n_runs": 5,
   "save_dir": "trunc_K5_C5",
-  "alpha": 1.0005,
+  "alpha": 1.0003,
   "beta": 0.0005,
   "epsilon": 1e-8,
   "sigma_0": 0.7,
