@@ -281,7 +281,7 @@ class TrainerClusterwise:
 
         return convoluted
 
-    def loss(self, partitions, lambdas, gamma):
+    def loss(self, partitions, lambdas, gamma, convolution=True):
         """
             Computes loss
 
@@ -309,10 +309,14 @@ class TrainerClusterwise:
         tmp2 = torch.sum(tmp1, dim=(2, 3))
 
         # modifying gamma
-        convoluted_gamma = self.convolve(gamma)
+        if convolution:
+            convoluted_gamma = self.convolve(gamma)
 
         # computing loss
-        tmp3 = convoluted_gamma * tmp2
+        if convolution:
+            tmp3 = convoluted_gamma * tmp2
+        else:
+            tmp3 = gamma.to(self.device) * tmp2
         loss1 = torch.sum(tmp3)
         loss2 = - torch.sum((self.alpha - 1) * torch.log(lambdas + self.epsilon) - self.beta * lambdas ** 2)
         res = loss1 + loss2
@@ -589,7 +593,7 @@ class TrainerClusterwise:
             lambdas = self.model(batch).to(self.device)
             gamma = torch.zeros(self.n_clusters, self.batch_size)
             gamma[prelabels[batch_ids], :] = 1
-            loss = self.loss(batch, lambdas, gamma)
+            loss = self.loss(batch, lambdas, gamma, convolution=False)
             loss.backward()
             self.optimizer.step()
 
