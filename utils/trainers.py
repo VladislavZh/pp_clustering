@@ -739,7 +739,7 @@ class TrainerClusterwise:
     def pretrain(self):
         x = np.array(self.X).reshape(self.X.size()[0], -1)
         kmeans = KMeans(n_clusters=self.n_clusters, random_state=0).fit(x)
-        prelabels = torch.Tensor(kmeans.labels_)
+        prelabels = torch.Tensor(kmeans.labels_).long()
         if self.verbose:
             print('Cluster partition')
             for i in np.unique(prelabels.cpu()):
