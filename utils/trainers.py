@@ -854,5 +854,5 @@ class TrainerClusterwise:
         for param_group in self.optimizer.param_groups:
             param_group['lr'] = self.lr
         for i, param in enumerate(self.model.parameters()):
-            param = self.pretrained_model[i].clone()
-            del self.pretrained_model
+            self.model.parameters[i] = self.pretrained_model[i].clone()
+        del self.pretrained_model
