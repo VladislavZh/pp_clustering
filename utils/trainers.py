@@ -703,7 +703,7 @@ class TrainerClusterwise:
                 print('lr =', lr)
                 print('lr_update_param =', self.lr_update_param)
                 print('lr_update_param_changer =', self.lr_update_param_changer)
-            ll, ll_pur, cluster_part = self.m_step(epoch, big_batch=big_batch, ids=ids)
+            ll, ll_pur, cluster_part = self.m_step(big_batch=big_batch, ids=ids)
 
             # failure check
             if ll is None:
