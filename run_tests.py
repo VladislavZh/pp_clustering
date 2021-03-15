@@ -43,6 +43,7 @@ def experiment_runner(args):
                                      sigma_0=args['sigma_0'], sigma_inf=args['sigma_inf'], inf_epoch=args['inf_epoch'],
                                      max_epoch=args['max_epoch'], max_m_step_epoch=args['max_m_step_epoch'],
                                      max_m_step_epoch_add=args['max_m_step_epoch_add'],
+                                     lr = args['lr'],
                                      lr_update_tol=args['lr_update_tol'], lr_update_param=args['lr_update_param'],
                                      lr_update_param_changer=args['lr_update_param_changer'],
                                      lr_update_param_second_changer=args['lr_update_param_second_changer'],
