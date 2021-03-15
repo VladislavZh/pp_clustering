@@ -256,7 +256,7 @@ class TrainerClusterwise:
         self.pretrain_step = pretrain_step
         self.pretrain_mul = pretrain_mul
         self.pretraining = pretraining
-        self.pretrained_model = None
+        self.pretrained_model = []
 
     def convolve(self, gamma):
         """
@@ -818,7 +818,9 @@ class TrainerClusterwise:
             loss = self.train_pretraining_epoch(big_batch_prelabels, big_batch=big_batch)
             if best_loss == -1 or loss < best_loss:
                 best_loss = loss
-                self.pretrained_model = self.model.clone()
+                self.pretrained_model = []
+                for param in self.model.parameters():
+                    self.pretrained_model.append(param.clone())
             if self.verbose:
                 self.model.eval()
                 with torch.no_grad():
@@ -851,4 +853,6 @@ class TrainerClusterwise:
                     param_group['lr'] *= self.pretrain_mul
         for param_group in self.optimizer.param_groups:
             param_group['lr'] = self.lr
-        self.model = self.pretrained_model.clone()
+        for i, param in enumerate(self.model.parameters()):
+            param = self.pretrained_model[i].clone()
+            del param
