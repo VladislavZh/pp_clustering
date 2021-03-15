@@ -256,6 +256,7 @@ class TrainerClusterwise:
         self.pretrain_step = pretrain_step
         self.pretrain_mul = pretrain_mul
         self.pretraining = pretraining
+        self.pretrained_model = None
 
     def convolve(self, gamma):
         """
@@ -802,6 +803,7 @@ class TrainerClusterwise:
         if self.verbose:
             print('Purity for kmeans model: {}'.format(pre_pur))
         print('Pretraining Neural Net')
+        best_loss = -1
         for epoch in range(self.pretrain_number_of_epochs):
             print('Pretraining epoch {}'.format(epoch))
             # preparing big_batch if needed
@@ -814,6 +816,9 @@ class TrainerClusterwise:
                 big_batch = None
                 big_batch_prelabels = prelabels
             loss = self.train_pretraining_epoch(big_batch_prelabels, big_batch=big_batch)
+            if best_loss == -1 or loss < best_loss:
+                best_loss = loss
+                self.pretrained_model = self.model.copy()
             if self.verbose:
                 self.model.eval()
                 with torch.no_grad():
@@ -846,3 +851,4 @@ class TrainerClusterwise:
                     param_group['lr'] *= self.pretrain_mul
         for param_group in self.optimizer.param_groups:
             param_group['lr'] = self.lr
+        self.model = self.pretrained_model.copy()
