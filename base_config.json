@@ -9,7 +9,7 @@
   "lr": 0.01,
   "weight_decay": 1e-5,
   "degenerate_eps": null,
-  "n_runs": 3,
+  "n_runs": 5,
   "save_dir": "trunc_K5_C5",
   "alpha": 1.0005,
   "beta": 0.0005,
