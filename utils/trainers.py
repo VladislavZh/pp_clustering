@@ -554,6 +554,48 @@ class TrainerClusterwise:
 
         return log_likelihood
 
+    def train_pretraining_epoch(self, prelabels, big_batch = None):
+        """
+            Conducts one epoch of Neural Net training
+
+            inputs:
+                    None
+
+            outputs:
+                    log_likelihood - list of losses obtained during iterations over minibatches
+        """
+        # preparing random indices
+        if self.max_computing_size is None:
+            indices = np.random.permutation(self.N)
+        else:
+            indices = np.random.permutation(self.max_computing_size)
+
+        # setting model to training and preparing output template
+        self.model.train()
+        log_likelihood = []
+
+        # iterations over minibatches
+        for iteration, start in enumerate(range(0, (self.N if self.max_computing_size is None
+        else self.max_computing_size) - self.batch_size, self.batch_size)):
+            # preparing batch
+            batch_ids = indices[start:start + self.batch_size]
+            if self.max_computing_size is None:
+                batch = self.X[batch_ids].to(self.device)
+            else:
+                batch = big_batch[batch_ids].to(self.device)
+
+            # one step of training
+            self.optimizer.zero_grad()
+            lambdas = self.model(batch).to(self.device)
+            gamma = torch.zeros(self.n_clusters, self.batch_size)
+            gamma[prelabels[batch_ids], :] = 1
+            loss = self.loss(batch, lambdas, gamma)
+            loss.backward()
+            self.optimizer.step()
+
+            # saving results
+            log_likelihood.append(loss.item())
+
     def m_step(self, big_batch=None, ids=None):
         """
             Conducts M-step of EM-algorithm
@@ -750,4 +792,43 @@ class TrainerClusterwise:
         else:
             pre_pur = None
         if self.verbose:
-            print('Purity for random model: {}'.format(pre_pur))
+            print('Purity for kmeans model: {}'.format(pre_pur))
+        print('Pretraining Neural Net')
+        for epoch in range(self.pretrain_number_of_epochs):
+            print('Pretraining epoch {}'.format(epoch))
+            # preparing big_batch if needed
+            if self.max_computing_size is not None:
+                ids = np.random.permutation(self.N)[:self.max_computing_size]
+                big_batch = self.X[ids].to(self.device)
+                big_batch_prelabels = prelabels[ids]
+            else:
+                ids = None
+                big_batch = None
+                big_batch_prelabels = prelabels
+            self.train_pretraining_epoch(big_batch_prelabels, big_batch=big_batch)
+            if self.verbose:
+                self.model.eval()
+                with torch.no_grad():
+                    if (self.max_computing_size is None) or self.full_purity:
+                        lambdas = self.model(self.X.to(self.device))
+                        gamma = self.compute_gamma(lambdas, x=self.X, size=(self.n_clusters, self.N))
+                    else:
+                        lambdas = self.model(big_batch)
+                        gamma = self.compute_gamma(lambdas, x=big_batch,
+                                                   size=(self.n_clusters, self.max_computing_size))
+                    clusters = torch.argmax(gamma, dim=0)
+                    if self.verbose:
+                        print('Cluster partition')
+                    cluster_partition = 2
+                    for i in np.unique(clusters.cpu()):
+                        if self.verbose:
+                            print('Cluster', i, ': ', np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters),
+                                  ' with pi = ', self.pi[i])
+                        cluster_partition = min(cluster_partition,
+                                                np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters))
+                    if type(self.target):
+                        pur = purity(clusters,
+                                     self.target[ids] if (ids is not None) and (not self.full_purity) else self.target)
+                    else:
+                        pur = None
+                    print('Purity: {}'.format(pur))
