@@ -51,6 +51,7 @@ def experiment_runner(args):
                                      best_model_path=best_model_path if args['save_best_model'] else None,
                                      max_computing_size=args['max_computing_size'], full_purity=args['full_purity'],
                                      pretrain_number_of_epochs=args["pretrain_number_of_epochs"],
+                                     pretrain_step=args['pretrain_step'], pretrain_mul=args['pretrain_mul'],
                                      pretraining=args["pretraining"])
         losses, results, cluster_part, stats = trainer.train()
 

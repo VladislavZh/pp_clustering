@@ -140,7 +140,7 @@ class TrainerClusterwise:
                  max_m_step_epoch=50, max_m_step_epoch_add=0, lr=1e-3, lr_update_tol=25, lr_update_param=0.9,
                  lr_update_param_changer=1.0, lr_update_param_second_changer=0.95, min_lr=None, updated_lr=None,
                  batch_size=150, verbose=False, best_model_path=None, max_computing_size=None, full_purity=True,
-                 pretrain_number_of_epochs=100, pretraining=True):
+                 pretrain_number_of_epochs=100, pretrain_step=None, pretrain_mul=0.1, pretraining=True):
         """
             inputs:
                     model - torch.nn.Module, model to train
@@ -253,6 +253,8 @@ class TrainerClusterwise:
         self.prev_loss_model = 0
         self.full_purity = full_purity
         self.pretrain_number_of_epochs = pretrain_number_of_epochs
+        self.pretrain_step = pretrain_step
+        self.pretrain_mul = pretrain_mul
         self.pretraining = pretraining
 
     def convolve(self, gamma):
@@ -839,5 +841,8 @@ class TrainerClusterwise:
                         pur = None
                     print('On epoch {}/{} loss = {}, purity = {}'.format(epoch + 1, self.pretrain_number_of_epochs,
                                                                          loss, pur))
+            if (epoch + 1) % self.pretrain_step == 0:
+                for param_group in self.optimizer.param_groups:
+                    param_group['lr'] *= self.pretrain_mul
         for param_group in self.optimizer.param_groups:
             param_group['lr'] = self.lr
