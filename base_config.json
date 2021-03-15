@@ -35,6 +35,6 @@
   "full_purity": true,
   "pretrain_number_of_epochs": 50,
   "pretrain_step": 10,
-  "pretrain_mul": 0.1,
+  "pretrain_mul": 0.4,
   "pretraining": true
 }
