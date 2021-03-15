@@ -5,6 +5,7 @@ import numpy as np
 from utils.metrics import purity
 import torch
 import math
+from sklearn.cluster import KMeans
 
 
 class TrainerSingle:
@@ -138,7 +139,8 @@ class TrainerClusterwise:
                  alpha=1.0001, beta=0.001, epsilon=1e-8, sigma_0=5, sigma_inf=0.01, inf_epoch=50, max_epoch=50,
                  max_m_step_epoch=50, max_m_step_epoch_add=0, lr_update_tol=25, lr_update_param=0.9,
                  lr_update_param_changer=1.0, lr_update_param_second_changer=0.95, min_lr=None, updated_lr=None,
-                 batch_size=150, verbose=False, best_model_path=None, max_computing_size=None, full_purity=True):
+                 batch_size=150, verbose=False, best_model_path=None, max_computing_size=None, full_purity=True,
+                 pretrain_number_of_epochs=100, pretraining=True):
         """
             inputs:
                     model - torch.nn.Module, model to train
@@ -249,6 +251,8 @@ class TrainerClusterwise:
         self.best_model_path = best_model_path
         self.prev_loss_model = 0
         self.full_purity = full_purity
+        self.pretrain_number_of_epochs = pretrain_number_of_epochs
+        self.pretraining = pretraining
 
     def convolve(self, gamma):
         """
@@ -476,7 +480,7 @@ class TrainerClusterwise:
                 lambdas = self.model(self.X[ids].to(self.device))
                 self.gamma = self.compute_gamma(lambdas, x=self.X[ids], size=(self.n_clusters, len(ids)))
 
-    def train_epoch(self, em_epoch, big_batch=None):
+    def train_epoch(self, big_batch=None):
         """
             Conducts one epoch of Neural Net training
 
@@ -498,7 +502,7 @@ class TrainerClusterwise:
 
         # iterations over minibatches
         for iteration, start in enumerate(range(0, (self.N if self.max_computing_size is None
-                                                    else self.max_computing_size) - self.batch_size, self.batch_size)):
+        else self.max_computing_size) - self.batch_size, self.batch_size)):
             # preparing batch
             batch_ids = indices[start:start + self.batch_size]
             if self.max_computing_size is None:
@@ -515,11 +519,7 @@ class TrainerClusterwise:
 
             # saving results
             log_likelihood.append(loss.item())
-        # if em_epoch == 10:
-        #     for param_group in self.optimizer.param_groups:
-        #         param_group['lr'] = 0.001
-        #         self.max_m_step_epoch = 6 + 10*self.max_m_step_epoch_add
-        # checking for lr update
+
         if np.mean(log_likelihood) > self.prev_loss:
             self.update_checker += 1
             if self.update_checker >= self.lr_update_tol:
@@ -554,7 +554,7 @@ class TrainerClusterwise:
 
         return log_likelihood
 
-    def m_step(self, em_epoch, big_batch=None, ids=None):
+    def m_step(self, big_batch=None, ids=None):
         """
             Conducts M-step of EM-algorithm
 
@@ -578,7 +578,7 @@ class TrainerClusterwise:
         # iterations over M-step epochs
         for epoch in range(int(self.max_m_step_epoch)):
             # one epoch training
-            ll = self.train_epoch(em_epoch, big_batch=big_batch)
+            ll = self.train_epoch(big_batch=big_batch)
             log_likelihood_curve += ll
 
             # checking for failure
@@ -618,7 +618,8 @@ class TrainerClusterwise:
                           ' with pi = ', self.pi[i])
                 cluster_partition = min(cluster_partition, np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters))
             if type(self.target):
-                pur = purity(clusters, self.target[ids] if (ids is not None) and (not self.full_purity) else self.target)
+                pur = purity(clusters,
+                             self.target[ids] if (ids is not None) and (not self.full_purity) else self.target)
             else:
                 pur = None
 
@@ -637,6 +638,10 @@ class TrainerClusterwise:
                     cluster_part - the last cluster partition
                     all_stats - all_stats on every EM-algorithm epoch
         """
+        # pretraining
+        if self.pretraining:
+            self.pretrain()
+
         # preparing output templates
         losses = []
         purities = []
@@ -672,7 +677,8 @@ class TrainerClusterwise:
                               ' with pi = ', self.pi[i])
                 if type(self.target):
                     random_pur = purity(clusters,
-                                        self.target[ids] if (ids is not None) and (not self.full_purity) else self.target)
+                                        self.target[ids] if (ids is not None) and (
+                                            not self.full_purity) else self.target)
                 else:
                     random_pur = None
                 if self.verbose:
@@ -729,3 +735,19 @@ class TrainerClusterwise:
                     lambdas = self.model(self.X)
                 all_stats[-1]['lambdas'] = self.get_lambda_stats(lambdas)
         return losses, purities, cluster_part, all_stats
+
+    def pretrain(self):
+        x = np.array(self.X).reshape(self.X.size()[0], -1)
+        kmeans = KMeans(n_clusters=self.n_clusters, random_state=0).fit(X)
+        prelabels = torch.Tensor(kmeans.labels_)
+        if self.verbose:
+            print('Cluster partition')
+            for i in np.unique(prelabels.cpu()):
+                print('Cluster', i, ': ', np.sum((prelabels.cpu() == i).cpu().numpy()) / len(prelabels),
+                      ' with pi = ', self.pi[i])
+        if type(self.target):
+            pre_pur = purity(prelabels, self.target)
+        else:
+            pre_pur = None
+        if self.verbose:
+            print('Purity for random model: {}'.format(pre_pur))

@@ -49,7 +49,9 @@ def experiment_runner(args):
                                      min_lr=args['min_lr'], updated_lr=args['updated_lr'],
                                      batch_size=args['batch_size'], verbose=args['verbose'],
                                      best_model_path=best_model_path if args['save_best_model'] else None,
-                                     max_computing_size=args['max_computing_size'], full_purity=args['full_purity'])
+                                     max_computing_size=args['max_computing_size'], full_purity=args['full_purity'],
+                                     pretrain_number_of_epochs=args["pretraining_number_of_epochs"],
+                                     pretraining=args["pretraining"])
         losses, results, cluster_part, stats = trainer.train()
 
         # results check
