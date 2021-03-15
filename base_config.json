@@ -6,7 +6,7 @@
   "hidden_size": 128,
   "num_layers": 3,
   "dropout": 0.3,
-  "lr": 0.001,
+  "lr": 0.01,
   "weight_decay": 1e-5,
   "degenerate_eps": null,
   "n_runs": 3,
@@ -32,6 +32,6 @@
   "save_best_model": true,
   "max_computing_size": 400,
   "full_purity": true,
-  "pretrain_number_of_epochs": 200,
+  "pretrain_number_of_epochs": 50,
   "pretraining": true
 }
