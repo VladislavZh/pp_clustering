@@ -818,9 +818,7 @@ class TrainerClusterwise:
             loss = self.train_pretraining_epoch(big_batch_prelabels, big_batch=big_batch)
             if best_loss == -1 or loss < best_loss:
                 best_loss = loss
-                self.pretrained_model = []
-                for param in self.model.parameters():
-                    self.pretrained_model.append(param.clone())
+                torch.save(self.model.state_dict(),  'tmp.pt')
             if self.verbose:
                 self.model.eval()
                 with torch.no_grad():
@@ -853,6 +851,4 @@ class TrainerClusterwise:
                     param_group['lr'] *= self.pretrain_mul
         for param_group in self.optimizer.param_groups:
             param_group['lr'] = self.lr
-        for i, param in enumerate(self.model.parameters()):
-            self.model.parameters[i] = self.pretrained_model[i].clone()
-        del self.pretrained_model
+        self.model.load_state_dict(torch.load('tmp.pt'))
