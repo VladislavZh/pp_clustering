@@ -554,7 +554,7 @@ class TrainerClusterwise:
 
         return log_likelihood
 
-    def train_pretraining_epoch(self, prelabels, big_batch = None):
+    def train_pretraining_epoch(self, prelabels, big_batch=None):
         """
             Conducts one epoch of Neural Net training
 
@@ -576,7 +576,7 @@ class TrainerClusterwise:
 
         # iterations over minibatches
         for iteration, start in enumerate(range(0, (self.N if self.max_computing_size is None
-        else self.max_computing_size) - self.batch_size, self.batch_size)):
+                                          else self.max_computing_size) - self.batch_size, self.batch_size)):
             # preparing batch
             batch_ids = indices[start:start + self.batch_size]
             if self.max_computing_size is None:
@@ -595,6 +595,7 @@ class TrainerClusterwise:
 
             # saving results
             log_likelihood.append(loss.item())
+        return np.mean(log_likelihood)
 
     def m_step(self, big_batch=None, ids=None):
         """
@@ -805,7 +806,7 @@ class TrainerClusterwise:
                 ids = None
                 big_batch = None
                 big_batch_prelabels = prelabels
-            self.train_pretraining_epoch(big_batch_prelabels, big_batch=big_batch)
+            loss = self.train_pretraining_epoch(big_batch_prelabels, big_batch=big_batch)
             if self.verbose:
                 self.model.eval()
                 with torch.no_grad():
@@ -831,4 +832,5 @@ class TrainerClusterwise:
                                      self.target[ids] if (ids is not None) and (not self.full_purity) else self.target)
                     else:
                         pur = None
-                    print('Purity: {}'.format(pur))
+                    print('On epoch {}/{} loss = {}, purity = {}'.format(epoch + 1, self.pretrain_number_of_epochs,
+                                                                         loss, pur))
