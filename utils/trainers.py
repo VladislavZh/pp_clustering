@@ -855,4 +855,4 @@ class TrainerClusterwise:
             param_group['lr'] = self.lr
         for i, param in enumerate(self.model.parameters()):
             param = self.pretrained_model[i].clone()
-            del param
+            del self.pretrained_model
