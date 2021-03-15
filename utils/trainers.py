@@ -137,7 +137,7 @@ class TrainerClusterwise:
 
     def __init__(self, model, optimizer, device, data, n_clusters, target=None,
                  alpha=1.0001, beta=0.001, epsilon=1e-8, sigma_0=5, sigma_inf=0.01, inf_epoch=50, max_epoch=50,
-                 max_m_step_epoch=50, max_m_step_epoch_add=0, lr_update_tol=25, lr_update_param=0.9,
+                 max_m_step_epoch=50, max_m_step_epoch_add=0, lr=1e-3, lr_update_tol=25, lr_update_param=0.9,
                  lr_update_param_changer=1.0, lr_update_param_second_changer=0.95, min_lr=None, updated_lr=None,
                  batch_size=150, verbose=False, best_model_path=None, max_computing_size=None, full_purity=True,
                  pretrain_number_of_epochs=100, pretraining=True):
@@ -224,6 +224,7 @@ class TrainerClusterwise:
                 self.target = None
         self.n_clusters = n_clusters
         self.max_epoch = max_epoch
+        self.lr = lr
         self.lr_update_tol = lr_update_tol
         self.lr_update_param_changer = lr_update_param_changer
         self.lr_update_param_second_changer = lr_update_param_second_changer
@@ -838,3 +839,5 @@ class TrainerClusterwise:
                         pur = None
                     print('On epoch {}/{} loss = {}, purity = {}'.format(epoch + 1, self.pretrain_number_of_epochs,
                                                                          loss, pur))
+        for param_group in self.optimizer.param_groups:
+            param_group['lr'] = self.lr

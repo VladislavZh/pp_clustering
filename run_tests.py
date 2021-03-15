@@ -34,7 +34,7 @@ def experiment_runner(args):
         model = LSTMMultiplePointProcesses(args['n_classes'] + 1, args['hidden_size'], args['num_layers'],
                                            args['n_classes'], args['n_clusters'], args['n_steps'],
                                            dropout=args['dropout']).to(args['device'])
-        optimizer = torch.optim.Adam(model.parameters(), lr=args['lr'], weight_decay=args['weight_decay'])
+        optimizer = torch.optim.Adam(model.parameters(), lr=args['pretraining_lr'], weight_decay=args['weight_decay'])
         best_model_path = path_to_results + '/exp_{}'.format(i) + '/best_model.pt'
         create_folder(path_to_results + '/exp_{}'.format(i))
         exp_folder = path_to_results + '/exp_{}'.format(i)
