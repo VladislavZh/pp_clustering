@@ -19,7 +19,7 @@
   "sigma_inf": 0.005,
   "inf_epoch": 200,
   "max_epoch": 200,
-  "max_m_step_epoch": 500,
+  "max_m_step_epoch": 100,
   "max_m_step_epoch_add": 0.0,
   "lr_update_tol": 5000,
   "lr_update_param": 0.1,
