@@ -31,7 +31,7 @@
   "verbose": true,
   "device": "cuda:0",
   "save_best_model": true,
-  "max_computing_size": 100,
+  "max_computing_size": 150,
   "full_purity": true,
   "pretrain_number_of_epochs": 50,
   "pretrain_step": 10,
