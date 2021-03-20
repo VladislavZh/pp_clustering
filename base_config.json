@@ -7,7 +7,7 @@
   "num_layers": 3,
   "dropout": 0.3,
   "pretraining_lr": 0.01,
-  "lr": 1e-5,
+  "lr": 1e-1,
   "weight_decay": 1e-5,
   "degenerate_eps": null,
   "n_runs": 2,
