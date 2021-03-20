@@ -33,8 +33,8 @@
   "save_best_model": true,
   "max_computing_size": 200,
   "full_purity": true,
-  "pretrain_number_of_epochs": 50,
-  "pretrain_step": 10,
+  "pretrain_number_of_epochs": 200,
+  "pretrain_step": 40,
   "pretrain_mul": 0.4,
   "pretraining": true
 }
