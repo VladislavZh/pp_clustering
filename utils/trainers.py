@@ -827,22 +827,24 @@ class TrainerClusterwise:
             if split:
                 if self.verbose:
                     print('Splitting')
-                cluster = int(torch.randint(self.n_clusters, size = (1,))[0])
-                self.model.to('cpu')
-                self.model.eval()
-                with torch.no_grad():
-                    self.model.split_cluster(cluster, 'cpu')
-                self.n_clusters += 1
-                self.model.to(self.device)
-                self.pi = torch.ones(self.n_clusters)/self.n_clusters
-                post_ll = float(self.compute_ll(big_batch, ids, 'After splitting {} cluster:'.format(cluster)))
-                remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
-                print('Remain probability: {}'.format(remain_prob))
-                if (torch.rand(1) > remain_prob)[0]:
-                    print('Loading model')
-                    self.model = torch.load('tmp.pt')
-                    self.n_clusters -= 1
+                for cluster in range(self.n_clusters):
+                    self.model.to('cpu')
+                    self.model.eval()
+                    with torch.no_grad():
+                        self.model.split_cluster(cluster, 'cpu')
+                    self.n_clusters += 1
+                    self.model.to(self.device)
                     self.pi = torch.ones(self.n_clusters)/self.n_clusters
+                    post_ll = float(self.compute_ll(big_batch, ids, 'After splitting {} cluster:'.format(cluster)))
+                    remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
+                    print('Remain probability: {}'.format(remain_prob))
+                    if (torch.rand(1) > remain_prob)[0]:
+                        print('Loading model')
+                        self.model = torch.load('tmp.pt')
+                        self.n_clusters -= 1
+                        self.pi = torch.ones(self.n_clusters)/self.n_clusters
+                    else:
+                        break
             else:
                 if (torch.rand(1) > 0.5)[0]:
                     merge = True
@@ -852,43 +854,47 @@ class TrainerClusterwise:
                     if self.verbose:
                         print('Merging')
                     cluster_0 = int(torch.randint(self.n_clusters, size = (1,))[0])
-                    cluster_1 = cluster_0
-                    while cluster_1 == cluster_0:
-                        cluster_1 = int(torch.randint(self.n_clusters, size=(1,))[0])
-                    self.model.to('cpu')
-                    self.model.eval()
-                    with torch.no_grad():
-                        self.model.merge_clusters(cluster_0, cluster_1, 'cpu')
-                    self.n_clusters -= 1
-                    self.pi = torch.ones(self.n_clusters)/self.n_clusters
-                    self.model.to(self.device)
-                    post_ll = float(self.compute_ll(big_batch, ids, 'After merging {} and {} clusters:'.format(cluster_0, cluster_1)))
-                    remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
-                    print('Remain probability: {}'.format(remain_prob))
-                    if (torch.rand(1) > remain_prob)[0]:
-                        print('Loading model')
-                        self.model = torch.load('tmp.pt')
-                        self.n_clusters += 1
+                    for cluster_1 in range(self.n_clusters):
+                        if cluster_1 == cluster_0:
+                            continue
+                        self.model.to('cpu')
+                        self.model.eval()
+                        with torch.no_grad():
+                            self.model.merge_clusters(cluster_0, cluster_1, 'cpu')
+                        self.n_clusters -= 1
                         self.pi = torch.ones(self.n_clusters)/self.n_clusters
+                        self.model.to(self.device)
+                        post_ll = float(self.compute_ll(big_batch, ids, 'After merging {} and {} clusters:'.format(cluster_0, cluster_1)))
+                        remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
+                        print('Remain probability: {}'.format(remain_prob))
+                        if (torch.rand(1) > remain_prob)[0]:
+                            print('Loading model')
+                            self.model = torch.load('tmp.pt')
+                            self.n_clusters += 1
+                            self.pi = torch.ones(self.n_clusters)/self.n_clusters
+                        else:
+                            break
                 else:
                     if self.verbose:
                         print('Deleting')
-                    cluster = int(torch.randint(self.n_clusters, size = (1,))[0])
-                    self.model.to('cpu')
-                    self.model.eval()
-                    with torch.no_grad():
-                        self.model.delete_cluster(cluster, 'cpu')
-                    self.n_clusters -= 1
-                    self.pi = torch.ones(self.n_clusters)/self.n_clusters
-                    self.model.to(self.device)
-                    post_ll = float(self.compute_ll(big_batch, ids, 'After deleting {} cluster:'.format(cluster)))
-                    remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
-                    print('Remain probability: {}'.format(remain_prob))
-                    if (torch.rand(1) > remain_prob)[0]:
-                        print('Loading model')
-                        self.model = torch.load('tmp.pt')
-                        self.n_clusters += 1
+                    for cluster in range(self.n_clusters):
+                        self.model.to('cpu')
+                        self.model.eval()
+                        with torch.no_grad():
+                            self.model.delete_cluster(cluster, 'cpu')
+                        self.n_clusters -= 1
                         self.pi = torch.ones(self.n_clusters)/self.n_clusters
+                        self.model.to(self.device)
+                        post_ll = float(self.compute_ll(big_batch, ids, 'After deleting {} cluster:'.format(cluster)))
+                        remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
+                        print('Remain probability: {}'.format(remain_prob))
+                        if (torch.rand(1) > remain_prob)[0]:
+                            print('Loading model')
+                            self.model = torch.load('tmp.pt')
+                            self.n_clusters += 1
+                            self.pi = torch.ones(self.n_clusters)/self.n_clusters
+                        else:
+                            break
             self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
 
         return losses, purities, cluster_part, all_stats
