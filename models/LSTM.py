@@ -245,7 +245,7 @@ class LSTMMultiplePointProcesses(nn.Module):
         tmp = self.hidden_size
         return torch.rand(*args) * 2 / tmp - 1 / tmp
 
-    def merge_clusters(self, cluster_0, cluster_1):
+    def merge_clusters(self, cluster_0, cluster_1, device):
         """
             Used for merging two clusters
 
@@ -257,27 +257,40 @@ class LSTMMultiplePointProcesses(nn.Module):
                    None
         """
         assert self.num_clusters > 1
-        hidden0 = torch.Tensor(self.hidden_0)
-        cell0 = torch.Tensor(self.cell0)
+        hidden0 = torch.Tensor(self.hidden0).to(device)
+        cell0 = torch.Tensor(self.cell0).to(device)
         hidden0[cluster_0, :, :] = (hidden0[cluster_0, :, :] + hidden0[cluster_1, :, :])/2
-        hidden0[cluster_1] = None
-        hidden0 = hidden0[hidden0 is not None]
+        hidden0 = torch.index_select(hidden0, 0, torch.Tensor([k for k in range(self.num_clusters) if k != cluster_1]).long())
         cell0[cluster_0, :, :] = (cell0[cluster_0, :, :] + cell0[cluster_1, :, :]) / 2
-        cell0[cluster_1] = None
-        cell0 = cell0[cell0 is not None]
+        cell0 = torch.index_select(cell0, 0, torch.Tensor([k for k in range(self.num_clusters) if k != cluster_1]).long())
         self.hidden0 = Parameter(hidden0)
         self.cell0 = Parameter(cell0)
         self.num_clusters -= 1
+        for k in range(cluster_1, self.num_clusters):
+            getattr(self, 'f_{}'.format(k)).s = Parameter(torch.Tensor(getattr(self, 'f_{}'.format(k+1)).s))
+        # del self.__dict__['f_{}'.format(self.num_clusters)]
 
-    def split_cluster(self, cluster):
-        hidden0 = torch.zeros(self.hidden0.shape[0] + 1, self.hidden0.shape[1], self.hidden0.shape[2])
-        cell0 = torch.Tensor(self.cell0.shape[0] + 1, self.cell0.shape[1], self.cell0.shape[2])
+    def delete_cluster(self, cluster, device):
+        assert self.num_clusters > 1
+        hidden0 = torch.Tensor(self.hidden0).to(device)
+        cell0 = torch.Tensor(self.cell0).to(device)
+        hidden0 = torch.index_select(hidden0, 0, torch.Tensor([k for k in range(self.num_clusters) if k != cluster]).long())
+        cell0 = torch.index_select(cell0, 0, torch.Tensor([k for k in range(self.num_clusters) if k != cluster]).long())
+        self.hidden0 = Parameter(hidden0)
+        self.cell0 = Parameter(cell0)
+        self.num_clusters -= 1
+        for k in range(cluster, self.num_clusters):
+            getattr(self, 'f_{}'.format(k)).s = Parameter(torch.Tensor(getattr(self, 'f_{}'.format(k+1)).s))
+
+    def split_cluster(self, cluster, device):
+        hidden0 = torch.zeros(self.hidden0.shape[0] + 1, self.hidden0.shape[1], self.hidden0.shape[2]).to(device)
+        cell0 = torch.Tensor(self.cell0.shape[0] + 1, self.cell0.shape[1], self.cell0.shape[2]).to(device)
         for k in range(self.num_clusters):
             if k != cluster:
-                hidden0 = self.hidden0[k, :, :]
-                cell0 = self.cell0[k, :, :]
+                hidden0[k, :, :] = self.hidden0[k, :, :]
+                cell0[k, :, :] = self.cell0[k, :, :]
 
-        delta_hidden = self.init_weigh(self.hidden0.shape[1], self.hidden0.shape[2])
+        delta_hidden = self.init_weigh(self.hidden0.shape[1], self.hidden0.shape[2]).to(device)
         hidden0[cluster, :, :] = self.hidden0[cluster, :, :] + delta_hidden
         hidden0[-1, :, :] = self.hidden0[cluster, :, :] - delta_hidden
 
@@ -289,6 +302,8 @@ class LSTMMultiplePointProcesses(nn.Module):
         self.cell0 = Parameter(cell0)
 
         self.num_clusters += 1
+        setattr(self, 'f_{}'.format(self.num_clusters - 1), ScaledSoftplus())
+        getattr(self, 'f_{}'.format(self.num_clusters - 1)).s = Parameter(torch.Tensor(getattr(self, 'f_{}'.format(cluster)).s))
 
     def forward(self, s):
         """
