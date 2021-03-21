@@ -676,6 +676,17 @@ class TrainerClusterwise:
 
         return log_likelihood_curve, [loss, pur], cluster_partition
 
+    def compute_ll(self, big_batch):
+        if (self.max_computing_size is None) or self.full_purity:
+            lambdas = self.model(self.X.to(self.device))
+            gamma = self.compute_gamma(lambdas, x=self.X, size=(self.n_clusters, self.N))
+            ll = self.loss(self.X.to(self.device), lambdas.to(self.device), gamma.to(self.device)).item()
+        else:
+            lambdas = self.model(big_batch)
+            gamma = self.compute_gamma(lambdas, x=big_batch, size=(self.n_clusters, self.max_computing_size))
+            ll = self.loss(big_batch.to(self.device), lambdas.to(self.device), gamma.to(self.device)).item()
+        return ll
+
     def train(self):
         """
             Conducts training
@@ -785,6 +796,44 @@ class TrainerClusterwise:
                 else:
                     lambdas = self.model(self.X)
                 all_stats[-1]['lambdas'] = self.get_lambda_stats(lambdas)
+
+            # updating number of clusters
+            if (torch.rand(1) > 0.5)[0] or self.n_clusters == 1:
+                split = True
+            else:
+                split = False
+            torch.save(self.model.state_dict(), 'tmp.pt')
+            pre_ll = float(self.compute_ll(big_batch))
+            if split:
+                if self.verbose:
+                    print('Splitting')
+                cluster = int(torch.random.randint(self.n_clusters, size = (1,))[0])
+                self.model.split_cluster(cluster)
+                self.n_clusters += 1
+                post_ll = float(self.compute_ll(big_batch))
+                remain_prob = min(1, math.exp(- post_ll + pre_ll))
+                print('Remain probability: {}'.format(remain_prob))
+                if (torch.rand(1) > remain_prob)[0]:
+                    print('Loading model')
+                    self.model.load_state_dict(torch.load('tmp.pt'))
+                    self.n_clusters -= 1
+            else:
+                if self.verbose:
+                    print('Merging')
+                cluster_0 = int(torch.random.randint(self.n_clusters, size = (1,))[0])
+                cluster_1 = cluster_0
+                while cluster_1 == cluster_0:
+                    cluster_1 = int(torch.random.randint(self.n_clusters, size=(1,))[0])
+                self.model.merge_clusters(cluster_0, cluster_1)
+                self.n_clusters -= 1
+                post_ll = float(self.compute_ll(big_batch))
+                remain_prob = min(1, math.exp(- post_ll + pre_ll))
+                print('Remain probability: {}'.format(remain_prob))
+                if (torch.rand(1) > remain_prob)[0]:
+                    print('Loading model')
+                    self.model.load_state_dict(torch.load('tmp.pt'))
+                    self.n_clusters += 1
+
         return losses, purities, cluster_part, all_stats
 
     def pretrain(self):

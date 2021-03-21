@@ -245,6 +245,51 @@ class LSTMMultiplePointProcesses(nn.Module):
         tmp = self.hidden_size
         return torch.rand(*args) * 2 / tmp - 1 / tmp
 
+    def merge_clusters(self, cluster_0, cluster_1):
+        """
+            Used for merging two clusters
+
+            input:
+                   cluster_0 - int, number of cluster to merge
+                   cluster_1 - int, number of cluster to merge
+
+            outpyt:
+                   None
+        """
+        assert self.num_clusters > 1
+        hidden0 = torch.Tensor(self.hidden_0)
+        cell0 = torch.Tensor(self.cell0)
+        hidden0[cluster_0, :, :] = (hidden0[cluster_0, :, :] + hidden0[cluster_1, :, :])/2
+        hidden0[cluster_1] = None
+        hidden0 = hidden0[hidden0 is not None]
+        cell0[cluster_0, :, :] = (cell0[cluster_0, :, :] + cell0[cluster_1, :, :]) / 2
+        cell0[cluster_1] = None
+        cell0 = cell0[cell0 is not None]
+        self.hidden0 = Parameter(hidden0)
+        self.cell0 = Parameter(cell0)
+        self.num_clusters -= 1
+
+    def split_cluster(self, cluster):
+        hidden0 = torch.zeros(self.hidden0.shape[0] + 1, self.hidden0.shape[1], self.hidden0.shape[2])
+        cell0 = torch.Tensor(self.cell0.shape[0] + 1, self.cell0.shape[1], self.cell0.shape[2])
+        for k in range(self.num_clusters):
+            if k != cluster:
+                hidden0 = self.hidden0[k, :, :]
+                cell0 = self.cell0[k, :, :]
+
+        delta_hidden = self.init_weigh(self.hidden0.shape[1], self.hidden0.shape[2])
+        hidden0[cluster, :, :] = self.hidden0[cluster, :, :] + delta_hidden
+        hidden0[-1, :, :] = self.hidden0[cluster, :, :] - delta_hidden
+
+        delta_cell = self.init_weigh(self.cell0.shape[1], self.cell0.shape[2])
+        cell0[cluster, :, :] = self.cell0[cluster, :, :] + delta_cell
+        cell0[-1, :, :] = self.cell0[cluster, :, :] - delta_cell
+
+        self.hidden0 = Parameter(hidden0)
+        self.cell0 = Parameter(cell0)
+
+        self.num_clusters += 1
+
     def forward(self, s):
         """
             forward pass of the model
