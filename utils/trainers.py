@@ -545,7 +545,7 @@ class TrainerClusterwise:
                             param_group['lr'] = self.updated_lr
                 if self.min_lr is not None:
                     if lr < self.min_lr:
-                        lr = 0.01
+                        lr = self.updated_lr
                         self.lr_update_param = self.default_lr_params[0]
                         self.lr_update_param_changer = self.default_lr_params[1]
                     else:
