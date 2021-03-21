@@ -1,5 +1,5 @@
 {
-  "path_to_files": "data/K5_C5",
+  "path_to_files": "data/sin_K2_C5",
   "n_steps": 128,
   "n_clusters": 10,
   "n_classes": 5,
@@ -11,7 +11,7 @@
   "weight_decay": 1e-5,
   "degenerate_eps": null,
   "n_runs": 2,
-  "save_dir": "K5_C5",
+  "save_dir": "sin_K2_C5",
   "alpha": 1.0003,
   "beta": 0.0005,
   "epsilon": 1e-8,
