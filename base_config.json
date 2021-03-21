@@ -15,7 +15,7 @@
   "alpha": 1.0003,
   "beta": 0.0005,
   "epsilon": 1e-8,
-  "sigma_0": 0.7,
+  "sigma_0": 0.3,
   "sigma_inf": 0.05,
   "inf_epoch": 200,
   "max_epoch": 200,
@@ -36,5 +36,5 @@
   "pretrain_number_of_epochs": 200,
   "pretrain_step": 40,
   "pretrain_mul": 0.4,
-  "pretraining": false
+  "pretraining": true
 }

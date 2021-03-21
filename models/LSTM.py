@@ -242,7 +242,7 @@ class LSTMMultiplePointProcesses(nn.Module):
            output:
                   weighs - torch.Tensor, size = args
         """
-        tmp = self.hidden_size ** 0.5
+        tmp = self.hidden_size
         return torch.rand(*args) * 2 / tmp - 1 / tmp
 
     def forward(self, s):
