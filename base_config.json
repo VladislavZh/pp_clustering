@@ -36,5 +36,5 @@
   "pretrain_number_of_epochs": 200,
   "pretrain_step": 40,
   "pretrain_mul": 0.4,
-  "pretraining": true
+  "pretraining": false
 }
