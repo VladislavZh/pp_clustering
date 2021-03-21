@@ -846,9 +846,10 @@ class TrainerClusterwise:
                         pur = None
                     print('On epoch {}/{} loss = {}, purity = {}'.format(epoch + 1, self.pretrain_number_of_epochs,
                                                                          loss, pur))
-            if (epoch + 1) % self.pretrain_step == 0 and self.pretrain_step is not None:
-                for param_group in self.optimizer.param_groups:
-                    param_group['lr'] *= self.pretrain_mul
+            if self.pretrain_step is not None:
+                if (epoch + 1) % self.pretrain_step == 0:
+                    for param_group in self.optimizer.param_groups:
+                        param_group['lr'] *= self.pretrain_mul
         for param_group in self.optimizer.param_groups:
             param_group['lr'] = self.lr
         self.model.load_state_dict(torch.load('tmp.pt'))
