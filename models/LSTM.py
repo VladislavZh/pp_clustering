@@ -290,7 +290,7 @@ class LSTMMultiplePointProcesses(nn.Module):
                 hidden0[k, :, :] = self.hidden0[k, :, :]
                 cell0[k, :, :] = self.cell0[k, :, :]
 
-        a = torch.rand(1)[0]
+        a = np.random.beta(1,1)
         hidden0[cluster, :, :] = 2 * a * self.hidden0[cluster, :, :]
         hidden0[-1, :, :] = 2 * (1 - a) * self.hidden0[cluster, :, :]
 
