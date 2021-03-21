@@ -1,6 +1,7 @@
 """
     This file contains trainers, that conduct training of the model according to considered methods
 """
+import time
 import numpy as np
 from utils.metrics import purity
 import torch
@@ -259,6 +260,7 @@ class TrainerClusterwise:
         self.pretrain_mul = pretrain_mul
         self.pretraining = pretraining
         self.pretrained_model = []
+        self.start_time = time.time()
 
     def convolve(self, gamma):
         """
@@ -720,6 +722,7 @@ class TrainerClusterwise:
                     cluster_part - the last cluster partition
                     all_stats - all_stats on every EM-algorithm epoch
         """
+        self.start_time = time.time()
         # pretraining
         if self.pretraining:
             self.pretrain()
@@ -793,16 +796,19 @@ class TrainerClusterwise:
 
             # saving results
             losses += ll
-            purities.append(ll_pur + [cluster_part])
+            t = time.time()
+            time_from_start = t- self.start_time
+            purities.append(ll_pur + [cluster_part, self.n_clusters, time_from_start])
             if self.verbose:
                 print('On epoch {}/{} loss = {}, purity = {}'.format(epoch + 1, self.max_epoch,
                                                                      ll_pur[0], ll_pur[1]))
+                print('Time from start = {}'.format(time_from_start))
 
             # saving model
             if self.best_model_path and (ll_pur[0] < self.prev_loss_model or epoch == 0):
                 if self.verbose:
                     print('Saving model')
-                torch.save(self.model.state_dict(), self.best_model_path)
+                torch.save(self.model, self.best_model_path)
                 self.prev_loss_model = ll_pur[0]
 
             # computing stats

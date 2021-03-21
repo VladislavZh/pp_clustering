@@ -75,7 +75,7 @@ def experiment_runner(args):
             pickle.dump(stats, f)
         with open(exp_folder + '/args.json', 'w') as f:
             json.dump(args, f)
-        torch.save(model.state_dict(), exp_folder + '/last_model.pt')
+        torch.save(trainer.model, exp_folder + '/last_model.pt')
         i += 1
         results_on_run_i = np.array(results)
         print('Run = {}: {}'.format(i, results_on_run_i[np.argmin(results_on_run_i, axis=0)[0]]))
