@@ -3,7 +3,7 @@
 """
 import time
 import numpy as np
-from utils.metrics import purity, info_score
+from utils.metrics import purity
 import torch
 import math
 from sklearn.cluster import KMeans
@@ -139,8 +139,7 @@ class TrainerClusterwise:
 
     def __init__(self, model, optimizer, device, data, n_clusters, target=None,
                  alpha=1.0001, beta=0.001, epsilon=1e-8, sigma_0=5, sigma_inf=0.01, inf_epoch=50, max_epoch=50,
-                 max_m_step_epoch=50, max_m_step_epoch_add=0, weight_decay=1e-5, lr=1e-3, lr_update_tol=25,
-                 lr_update_param=0.9,
+                 max_m_step_epoch=50, max_m_step_epoch_add=0, weight_decay=1e-5, lr=1e-3, lr_update_tol=25, lr_update_param=0.9,
                  lr_update_param_changer=1.0, lr_update_param_second_changer=0.95, min_lr=None, updated_lr=None,
                  batch_size=150, verbose=False, best_model_path=None, max_computing_size=None, full_purity=True,
                  pretrain_number_of_epochs=100, pretrain_step=None, pretrain_mul=0.1, pretraining=True):
@@ -590,7 +589,7 @@ class TrainerClusterwise:
 
         # iterations over minibatches
         for iteration, start in enumerate(range(0, (self.N if self.max_computing_size is None
-        else self.max_computing_size) - self.batch_size, self.batch_size)):
+                                          else self.max_computing_size) - self.batch_size, self.batch_size)):
             # preparing batch
             batch_ids = indices[start:start + self.batch_size]
             if self.max_computing_size is None:
@@ -798,7 +797,7 @@ class TrainerClusterwise:
             # saving results
             losses += ll
             t = time.time()
-            time_from_start = t - self.start_time
+            time_from_start = t- self.start_time
             purities.append(ll_pur + [cluster_part, self.n_clusters, time_from_start])
             if self.verbose:
                 print('On epoch {}/{} loss = {}, purity = {}'.format(epoch + 1, self.max_epoch,
@@ -841,7 +840,7 @@ class TrainerClusterwise:
                         self.model.split_cluster(cluster, 'cpu')
                     self.n_clusters += 1
                     self.model.to(self.device)
-                    self.pi = torch.ones(self.n_clusters) / self.n_clusters
+                    self.pi = torch.ones(self.n_clusters)/self.n_clusters
                     post_ll = float(self.compute_ll(big_batch, ids, 'After splitting {} cluster:'.format(cluster)))
                     remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
                     print('Remain probability: {}'.format(remain_prob))
@@ -849,7 +848,7 @@ class TrainerClusterwise:
                         print('Loading model')
                         self.model = torch.load('tmp.pt')
                         self.n_clusters -= 1
-                        self.pi = torch.ones(self.n_clusters) / self.n_clusters
+                        self.pi = torch.ones(self.n_clusters)/self.n_clusters
                     else:
                         break
             else:
@@ -860,7 +859,7 @@ class TrainerClusterwise:
                 if merge:
                     if self.verbose:
                         print('Merging')
-                    cluster_0 = int(torch.randint(self.n_clusters, size=(1,))[0])
+                    cluster_0 = int(torch.randint(self.n_clusters, size = (1,))[0])
                     for cluster_1 in range(self.n_clusters):
                         if cluster_1 == cluster_0:
                             continue
@@ -869,18 +868,16 @@ class TrainerClusterwise:
                         with torch.no_grad():
                             self.model.merge_clusters(cluster_0, cluster_1, 'cpu')
                         self.n_clusters -= 1
-                        self.pi = torch.ones(self.n_clusters) / self.n_clusters
+                        self.pi = torch.ones(self.n_clusters)/self.n_clusters
                         self.model.to(self.device)
-                        post_ll = float(self.compute_ll(big_batch, ids,
-                                                        'After merging {} and {} clusters:'.format(cluster_0,
-                                                                                                   cluster_1)))
+                        post_ll = float(self.compute_ll(big_batch, ids, 'After merging {} and {} clusters:'.format(cluster_0, cluster_1)))
                         remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
                         print('Remain probability: {}'.format(remain_prob))
                         if (torch.rand(1) > remain_prob)[0]:
                             print('Loading model')
                             self.model = torch.load('tmp.pt')
                             self.n_clusters += 1
-                            self.pi = torch.ones(self.n_clusters) / self.n_clusters
+                            self.pi = torch.ones(self.n_clusters)/self.n_clusters
                         else:
                             break
                 else:
@@ -892,7 +889,7 @@ class TrainerClusterwise:
                         with torch.no_grad():
                             self.model.delete_cluster(cluster, 'cpu')
                         self.n_clusters -= 1
-                        self.pi = torch.ones(self.n_clusters) / self.n_clusters
+                        self.pi = torch.ones(self.n_clusters)/self.n_clusters
                         self.model.to(self.device)
                         post_ll = float(self.compute_ll(big_batch, ids, 'After deleting {} cluster:'.format(cluster)))
                         remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
@@ -901,7 +898,7 @@ class TrainerClusterwise:
                             print('Loading model')
                             self.model = torch.load('tmp.pt')
                             self.n_clusters += 1
-                            self.pi = torch.ones(self.n_clusters) / self.n_clusters
+                            self.pi = torch.ones(self.n_clusters)/self.n_clusters
                         else:
                             break
             self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
@@ -939,7 +936,7 @@ class TrainerClusterwise:
             loss = self.train_pretraining_epoch(big_batch_prelabels, big_batch=big_batch)
             if best_loss == -1 or loss < best_loss:
                 best_loss = loss
-                torch.save(self.model.state_dict(), 'tmp.pt')
+                torch.save(self.model.state_dict(),  'tmp.pt')
             if self.verbose:
                 self.model.eval()
                 with torch.no_grad():
@@ -963,10 +960,6 @@ class TrainerClusterwise:
                     if type(self.target):
                         pur = purity(clusters,
                                      self.target[ids] if (ids is not None) and (not self.full_purity) else self.target)
-                        info = info_score(clusters,
-                                          self.self.target[ids] if (ids is not None) and (not self.full_purity) else \
-                                          self.target, self.n_clusters)
-
                     else:
                         pur = None
                     print('On epoch {}/{} loss = {}, purity = {}'.format(epoch + 1, self.pretrain_number_of_epochs,
