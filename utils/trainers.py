@@ -803,7 +803,7 @@ class TrainerClusterwise:
             losses += ll
             t = time.time()
             time_from_start = t - self.start_time
-            purities.append(ll_pur + [cluster_part, self.n_clusters, time_from_start])
+            purities.append(ll_pur[:2] + [cluster_part, self.n_clusters, time_from_start])
             if self.verbose:
                 print('On epoch {}/{} loss = {}, purity = {}, info = {}'.format(epoch + 1, self.max_epoch,
                                                                      ll_pur[0], ll_pur[1], ll_pur[2]))
