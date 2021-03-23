@@ -41,7 +41,7 @@ def info_score(learned_ids, gt_ids, K):
             learned_idsl = learned_ids.tolist()
             gt_idsl = gt_ids.tolist()
             info_score[k, j] += normalized_mutual_info_score([learned_idsl[i] for i in ind],
-                                                             [gt_idsl[i] for i in ind]) / args.nruns
+                                                             [gt_idsl[i] for i in ind]) 
     return info_score
 
 
