@@ -679,7 +679,7 @@ class TrainerClusterwise:
                              self.target[ids] if (ids is not None) and (not self.full_purity) else self.target)
                 info = info_score(clusters,
                                   self.self.target[ids] if (ids is not None) and (not self.full_purity) else \
-                                      self.target, self.n_clusters)
+                                      self.target, np.unique(self.target))
             else:
                 pur = None
                 info = None
