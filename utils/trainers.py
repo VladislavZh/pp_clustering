@@ -851,7 +851,8 @@ class TrainerClusterwise:
                     if self.verbose:
                         print('Remain probability: {}'.format(remain_prob))
                     if (torch.rand(1) > remain_prob)[0]:
-                        print('Loading model')
+                        if self.verbose:
+                            print('Loading model')
                         self.model = torch.load('tmp.pt')
                         self.n_clusters -= 1
                         self.pi = torch.ones(self.n_clusters) / self.n_clusters
@@ -883,7 +884,8 @@ class TrainerClusterwise:
                         if self.verbose:
                             print('Remain probability: {}'.format(remain_prob))
                         if (torch.rand(1) > remain_prob)[0]:
-                            print('Loading model')
+                            if self.verbose:
+                                print('Loading model')
                             self.model = torch.load('tmp.pt')
                             self.n_clusters += 1
                             self.pi = torch.ones(self.n_clusters) / self.n_clusters
@@ -905,7 +907,8 @@ class TrainerClusterwise:
                         if self.verbose:
                             print('Remain probability: {}'.format(remain_prob))
                         if (torch.rand(1) > remain_prob)[0]:
-                            print('Loading model')
+                            if self.verbose:
+                                print('Loading model')
                             self.model = torch.load('tmp.pt')
                             self.n_clusters += 1
                             self.pi = torch.ones(self.n_clusters) / self.n_clusters
