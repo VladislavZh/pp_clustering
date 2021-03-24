@@ -848,7 +848,8 @@ class TrainerClusterwise:
                     self.pi = torch.ones(self.n_clusters) / self.n_clusters
                     post_ll = float(self.compute_ll(big_batch, ids, 'After splitting {} cluster:'.format(cluster)))
                     remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
-                    print('Remain probability: {}'.format(remain_prob))
+                    if self.verbose:
+                        print('Remain probability: {}'.format(remain_prob))
                     if (torch.rand(1) > remain_prob)[0]:
                         print('Loading model')
                         self.model = torch.load('tmp.pt')
@@ -879,7 +880,8 @@ class TrainerClusterwise:
                                                         'After merging {} and {} clusters:'.format(cluster_0,
                                                                                                    cluster_1)))
                         remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
-                        print('Remain probability: {}'.format(remain_prob))
+                        if self.verbose:
+                            print('Remain probability: {}'.format(remain_prob))
                         if (torch.rand(1) > remain_prob)[0]:
                             print('Loading model')
                             self.model = torch.load('tmp.pt')
@@ -900,7 +902,8 @@ class TrainerClusterwise:
                         self.model.to(self.device)
                         post_ll = float(self.compute_ll(big_batch, ids, 'After deleting {} cluster:'.format(cluster)))
                         remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
-                        print('Remain probability: {}'.format(remain_prob))
+                        if self.verbose:
+                            print('Remain probability: {}'.format(remain_prob))
                         if (torch.rand(1) > remain_prob)[0]:
                             print('Loading model')
                             self.model = torch.load('tmp.pt')
