@@ -829,7 +829,7 @@ class TrainerClusterwise:
                 all_stats[-1]['lambdas'] = self.get_lambda_stats(lambdas)
 
             # updating number of clusters
-            if (torch.rand(1) > 0.5)[0] or self.n_clusters == 1:
+            if ((torch.rand(1) > 0.5)[0] or self.n_clusters == 1) and self.n_clusters < 5:
                 split = True
             else:
                 split = False
