@@ -1,6 +1,6 @@
 {"path_to_files": "data/K5_C5",
  "n_steps": 128,
- "n_clusters": 20,
+ "n_clusters": 1,
  "n_classes": 5,
  "hidden_size": 128,
  "num_layers": 3,
