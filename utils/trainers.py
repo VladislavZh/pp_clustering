@@ -831,7 +831,7 @@ class TrainerClusterwise:
 
             # updating number of clusters
             if self.allow_walking >= 5:
-                if ((torch.rand(1) > 0.5)[0] or self.n_clusters == 1) and self.n_clusters < 5:
+                if ((torch.rand(1) > 0.5)[0] or self.n_clusters == 1) and self.n_clusters < 4:
                     split = True
                 else:
                     split = False
