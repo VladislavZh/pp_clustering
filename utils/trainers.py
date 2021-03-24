@@ -290,7 +290,7 @@ class TrainerClusterwise:
 
         return convoluted
 
-    def loss(self, partitions, lambdas, gamma, convolution=True):
+    def loss(self, partitions, lambdas, gamma, convolution=False):
         """
             Computes loss
 
