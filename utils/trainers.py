@@ -829,9 +829,13 @@ class TrainerClusterwise:
                     lambdas = self.model(self.X)
                 all_stats[-1]['lambdas'] = self.get_lambda_stats(lambdas)
 
-            # updating number of clusters
-            if self.allow_walking >= 5:
-                if ((torch.rand(1) > 0.5)[0] or self.n_clusters == 1) and self.n_clusters < 4:
+            if epoch > 40 and self.n_clusters > 2:
+                enforce = True
+            else:
+                enforce = False
+                # updating number of clusters
+            if (self.allow_walking >= 0 and epoch <= 40) or enforce:
+                if ((torch.rand(1) > 0.5)[0] or self.n_clusters == 1) and self.n_clusters < 10 and not enforce:
                     split = True
                 else:
                     split = False
@@ -859,14 +863,17 @@ class TrainerClusterwise:
                             self.n_clusters -= 1
                             self.pi = torch.ones(self.n_clusters) / self.n_clusters
                         else:
+                            enforce = False
                             self.allow_walking = 0
                             break
                 else:
+                    if enforce:
+                        best_loss_enf = 1e+9
                     if (torch.rand(1) > 0.5)[0]:
                         merge = True
                     else:
                         merge = False
-                    if merge:
+                    if merge and not enforce:
                         if self.verbose:
                             print('Merging')
                         cluster_0 = int(torch.randint(self.n_clusters, size=(1,))[0])
@@ -906,11 +913,18 @@ class TrainerClusterwise:
                             self.n_clusters -= 1
                             self.pi = torch.ones(self.n_clusters) / self.n_clusters
                             self.model.to(self.device)
-                            post_ll = float(self.compute_ll(big_batch, ids, 'After deleting {} cluster:'.format(cluster)))
+                            post_ll = float(
+                                self.compute_ll(big_batch, ids, 'After deleting {} cluster:'.format(cluster)))
                             remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
                             if self.verbose:
                                 print('Remain probability: {}'.format(remain_prob))
                             if (torch.rand(1) > remain_prob)[0]:
+                                if enforce:
+                                    if post_ll < best_loss_enf:
+                                        if self.verbose:
+                                            print('Saving enforced model')
+                                        best_loss_enf = post_ll
+                                        torch.save(self.model, 'best_tmp.pt')
                                 if self.verbose:
                                     print('Loading model')
                                 self.model = torch.load('tmp.pt')
@@ -919,6 +933,10 @@ class TrainerClusterwise:
                             else:
                                 self.allow_walking = 0
                                 break
+                if enforce:
+                    self.model = torch.load('best_tmp.pt')
+                    self.n_clusters -= 1
+                    self.pi = torch.ones(self.n_clusters) / self.n_clusters
                 self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
             else:
                 self.allow_walking += 1
