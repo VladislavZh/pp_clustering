@@ -39,7 +39,7 @@ def experiment_runner(args):
         create_folder(path_to_results + '/exp_{}'.format(i))
         exp_folder = path_to_results + '/exp_{}'.format(i)
         trainer = TrainerClusterwise(model, optimizer, args['device'], data, args['n_clusters'], target=target,
-                                     upper_bound=args['upper_bound'],true_clusters=args['true_cluster'],
+                                     upper_bound=args['upper_bound'],true_clusters=args['true_clusters'],
                                      alpha=args['alpha'], beta=args['beta'], epsilon=args['epsilon'],
                                      sigma_0=args['sigma_0'], sigma_inf=args['sigma_inf'], inf_epoch=args['inf_epoch'],
                                      max_epoch=args['max_epoch'], max_m_step_epoch=args['max_m_step_epoch'],
