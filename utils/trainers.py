@@ -7,7 +7,6 @@ from utils.metrics import purity, info_score
 import torch
 import math
 from sklearn.cluster import KMeans
-from models.LSTM import LSTMMultiplePointProcesses
 
 
 class TrainerSingle:
@@ -137,10 +136,10 @@ class TrainerClusterwise:
         Trainer for multiple point processes clustering
     """
 
-    def __init__(self, model, optimizer, device, data, n_clusters, target=None,
+    def __init__(self, model, optimizer, device, data, n_clusters, upper_bound=10, true_clusters=2, target=None,
                  alpha=1.0001, beta=0.001, epsilon=1e-8, sigma_0=5, sigma_inf=0.01, inf_epoch=50, max_epoch=50,
-                 max_m_step_epoch=50, max_m_step_epoch_add=0, weight_decay=1e-5, lr=1e-3, lr_update_tol=25,
-                 lr_update_param=0.9,
+                 epoch_to_converge=40, max_m_step_epoch=50, max_m_step_epoch_add=0, weight_decay=1e-5, lr=1e-3,
+                 lr_update_tol=25, lr_update_param=0.9,
                  lr_update_param_changer=1.0, lr_update_param_second_changer=0.95, min_lr=None, updated_lr=None,
                  batch_size=150, verbose=False, best_model_path=None, max_computing_size=None, full_purity=True,
                  pretrain_number_of_epochs=100, pretrain_step=None, pretrain_mul=0.1, pretraining=True):
@@ -226,6 +225,8 @@ class TrainerClusterwise:
             else:
                 self.target = None
         self.n_clusters = n_clusters
+        self.upper_bound = upper_bound
+        self.true_clusters = true_clusters
         self.max_epoch = max_epoch
         self.weight_decay = weight_decay
         self.lr = lr
@@ -263,6 +264,7 @@ class TrainerClusterwise:
         self.pretrained_model = []
         self.start_time = time.time()
         self.allow_walking = 0
+        self.epoch_to_converge = epoch_to_converge
 
     def convolve(self, gamma):
         """
@@ -829,13 +831,14 @@ class TrainerClusterwise:
                     lambdas = self.model(self.X)
                 all_stats[-1]['lambdas'] = self.get_lambda_stats(lambdas)
 
-            if epoch > 40 and self.n_clusters > 4:
+            if epoch > self.epoch_to_converge and self.n_clusters > self.true_clusters:
                 enforce = True
             else:
                 enforce = False
                 # updating number of clusters
-            if (self.allow_walking >= 0 and epoch <= 40) or enforce:
-                if ((torch.rand(1) > 0.5)[0] or self.n_clusters == 1) and self.n_clusters < 10 and not enforce:
+            if (self.allow_walking >= 0 and epoch <= self.epoch_to_converge) or enforce:
+                if ((torch.rand(1) > 0.5)[0] or self.n_clusters == 1) and self.n_clusters < self.upper_bound\
+                        and not enforce:
                     split = True
                 else:
                     split = False

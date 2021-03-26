@@ -304,7 +304,7 @@ class LSTMMultiplePointProcesses(nn.Module):
         setattr(self, 'f_{}'.format(self.num_clusters - 1), ScaledSoftplus())
         getattr(self, 'f_{}'.format(self.num_clusters - 1)).s = Parameter(torch.Tensor(getattr(self, 'f_{}'.format(cluster)).s))
 
-    def forward(self, s):
+    def forward(self, s, return_states=False):
         """
             forward pass of the model
 
@@ -320,6 +320,8 @@ class LSTMMultiplePointProcesses(nn.Module):
         lambdas = torch.zeros(self.num_clusters, bs, seq_len, self.num_classes)
 
         # iterating over point processes
+        hiddens = []
+        cells = []
         for k in range(self.num_clusters):
             # hidden and cell state preprocessing
             hidden0 = self.hidden0[k, :, None, :].repeat(1, bs, 1)
@@ -327,6 +329,9 @@ class LSTMMultiplePointProcesses(nn.Module):
 
             # LSTM forward pass
             out, (hidden, cell) = self.lstm(s, (hidden0, cell0))
+            hiddens.append(hidden)
+            cells.append(cell)
+
             out = self.bn(out)
 
             # finding lambdas
@@ -338,4 +343,6 @@ class LSTMMultiplePointProcesses(nn.Module):
             # first lambda doesn't depend on history and depends only on the initial hidden state
             lambdas[k, :, 0, :] = getattr(self, 'f_{}'.format(k))(h0 @ self.W)[None, :].repeat(bs, 1)
             lambdas[k, :, 1:, :] = getattr(self, 'f_{}'.format(k))(out[:, :-1, :] @ self.W)
+        if return_states:
+            return lambdas, hiddens, cells
         return lambdas
