@@ -5,7 +5,7 @@
  "true_clusters": 2,
  "n_classes": 5,
  "hidden_size": 128,
- "num_layers": 3,
+ "num_layers": 5,
  "dropout": 0.3,
  "pretraining_lr": 0.1,
  "lr": 0.1,
