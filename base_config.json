@@ -29,7 +29,7 @@
  "min_lr": 0.001,
  "updated_lr": 0.001,
  "batch_size": 50,
- "verbose": false,
+ "verbose": true,
  "device": "cuda:0",
  "save_best_model": true,
  "max_computing_size": 800,
