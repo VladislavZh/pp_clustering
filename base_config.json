@@ -1,5 +1,5 @@
 {"path_to_files": "data/transformed/IPTV_Data",
- "n_steps": 512, "n_clusters": 1, "n_classes": 5,
+ "n_steps": 512, "n_clusters": 1, "n_classes": 16,
  "hidden_size": 128, "num_layers": 3, "dropout": 0.3,
  "pretraining_lr": 0.1, "lr": 0.1, "weight_decay": 1e-05,
  "degenerate_eps": null, "n_runs": 5, "save_dir": "IPTV",
