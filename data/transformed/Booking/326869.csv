@@ -1,4 +1,4 @@
-,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
-80233,80233,80233,326868,desktop,17013,3,0.0,2016-09-29,1,1,1,-1
-80234,80234,80234,326868,mobile,30082,3,1.0,2016-09-30,4,5,1,-1
-80235,80235,80235,326868,desktop,57620,3,5.0,2016-10-05,9999,9999,2,-1
+,checkin,city_id
+80233,0.0,17013
+80234,1.0,30082
+80235,5.0,57620

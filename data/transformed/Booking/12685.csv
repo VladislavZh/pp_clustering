@@ -1,5 +1,5 @@
-,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
-3166,3166,3166,12684,desktop,62269,4,0.0,2016-05-23,1,1,1,0
-3167,3167,3167,12684,desktop,36426,4,1.0,2016-05-24,1,1,1,0
-3168,3168,3168,12684,desktop,30768,4,2.0,2016-05-25,1,1,1,0
-3169,3169,3169,12684,desktop,0,4,3.0,2016-05-26,9999,9999,1,0
+,checkin,city_id
+3166,0.0,62269
+3167,1.0,36426
+3168,2.0,30768
+3169,3.0,0

@@ -1,5 +1,5 @@
-,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
-4937,4937,4937,19671,tablet,55128,4,0.0,2016-08-16,2,3,2,0
-4938,4938,4938,19671,desktop,64876,4,2.0,2016-08-19,3,4,3,0
-4939,4939,4939,19671,desktop,382,4,5.0,2016-08-23,4,2,4,0
-4940,4940,4940,19671,desktop,14827,4,9.0,2016-08-25,9999,9999,2,0
+,checkin,city_id
+4937,0.0,55128
+4938,2.0,64876
+4939,5.0,382
+4940,9.0,14827

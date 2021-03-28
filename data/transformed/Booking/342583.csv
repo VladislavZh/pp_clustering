@@ -1,4 +1,4 @@
-,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
-84151,84151,84151,342582,desktop,61733,3,0.0,2016-12-03,4,3,2,-1
-84152,84152,84152,342582,desktop,61733,3,4.0,2016-12-06,4,6,1,-1
-84153,84153,84153,342582,desktop,45025,3,8.0,2016-12-12,9999,9999,3,-1
+,checkin,city_id
+84151,0.0,61733
+84152,4.0,61733
+84153,8.0,45025

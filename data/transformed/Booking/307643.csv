@@ -1,2 +1,2 @@
-,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
-75690,75690,75690,307642,mobile,17510,1,0.0,2016-10-08,9999,9999,1,-1
+,checkin,city_id
+75690,0.0,17510

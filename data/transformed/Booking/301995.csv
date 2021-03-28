@@ -1,4 +1,4 @@
-,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
-74391,74391,74391,301994,tablet,16612,3,0.0,2016-08-12,5,6,2,-1
-74392,74392,74392,301994,desktop,33204,3,5.0,2016-08-18,3,3,3,-1
-74393,74393,74393,301994,tablet,16251,3,8.0,2016-08-21,9999,9999,3,-1
+,checkin,city_id
+74391,0.0,16612
+74392,5.0,33204
+74393,8.0,16251

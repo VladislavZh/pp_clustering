@@ -1,5 +1,5 @@
-,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
-9178,9178,9178,36690,desktop,37790,4,0.0,2016-02-02,1,1,1,0
-9179,9179,9179,36690,mobile,53265,4,1.0,2016-02-03,1,1,1,0
-9180,9180,9180,36690,mobile,8456,4,2.0,2016-02-04,1,1,1,0
-9181,9181,9181,36690,mobile,0,4,3.0,2016-02-05,9999,9999,1,0
+,checkin,city_id
+9178,0.0,37790
+9179,1.0,53265
+9180,2.0,8456
+9181,3.0,0

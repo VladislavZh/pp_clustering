@@ -1,4 +1,4 @@
-,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
-87004,87004,87004,354735,desktop,59444,3,0.0,2016-10-06,1,1,1,-1
-87005,87005,87005,354735,desktop,46266,3,1.0,2016-10-07,2,2,1,-1
-87006,87006,87006,354735,desktop,41654,3,3.0,2016-10-09,9999,9999,1,-1
+,checkin,city_id
+87004,0.0,59444
+87005,1.0,46266
+87006,3.0,41654

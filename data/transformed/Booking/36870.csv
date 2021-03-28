@@ -1,5 +1,5 @@
-,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
-9232,9232,9232,36869,mobile,36063,4,0.0,2016-12-02,1,2,1,0
-9233,9233,9233,36869,mobile,3763,4,1.0,2016-12-04,2,2,2,0
-9234,9234,9234,36869,desktop,17944,4,3.0,2016-12-06,2,2,2,0
-9235,9235,9235,36869,desktop,0,4,5.0,2016-12-08,9999,9999,2,0
+,checkin,city_id
+9232,0.0,36063
+9233,1.0,3763
+9234,3.0,17944
+9235,5.0,0
