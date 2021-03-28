@@ -72,7 +72,7 @@ def get_partition(df, num_of_steps, num_of_classes, end_time=None):
     df.loc[mask, 'time'] -= 1
 
     # counting points
-    df.reset_index()
+    df = df.reset_index()
     df = df.groupby(['time', 'event']).count()
     print(df)
     df = df.reset_index()
