@@ -113,6 +113,7 @@ def get_dataset(path_to_files, n_classes, n_steps):
     # searching for files
     files = os.listdir(path_to_files)
     target = None
+    last_event_target = False
 
     # reading target
     if 'clusters.csv' in files:
