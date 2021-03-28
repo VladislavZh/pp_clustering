@@ -829,7 +829,7 @@ class TrainerClusterwise:
                     lambdas = self.model(self.X)
                 all_stats[-1]['lambdas'] = self.get_lambda_stats(lambdas)
 
-            if epoch > 40 and self.n_clusters > 3:
+            if epoch > 40 and self.n_clusters > 4:
                 enforce = True
             else:
                 enforce = False
