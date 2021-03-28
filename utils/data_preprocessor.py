@@ -53,7 +53,7 @@ def get_partition(df, num_of_steps, num_of_classes, end_time=None):
         outputs:
                 partition - torch.Tensor, size = (num_of_steps, num_of_classes + 1)
     """
-    df = df['time', 'event']
+    df = df[['time', 'event']]
     # setting end time if None
     if end_time is None:
         end_time = df['time'][len(df['time']) - 1]
