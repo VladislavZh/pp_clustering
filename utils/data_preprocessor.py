@@ -73,7 +73,17 @@ def get_partition(df, num_of_steps, num_of_classes, end_time=None):
     df = df.groupby(['time', 'event']).count()
     df = df.reset_index()
     df.columns = ['time', 'event', 'num']
-    df['event'] = df['event'].astype(int)
+    try:
+        df['event'] = df['event'].astype(int)
+    except:
+        evnts = {}
+        cur = 0
+        for i in range(len(df['event'])):
+            if df['event'].iloc[i] not in evnts:
+                evnts[df['event'].iloc[i]] = cur
+                cur += 1
+            df['event'].iloc[i] = evnts[df['event'].iloc[i]]
+        df['event'] = df['event'].astype(int)
 
     # computing partition
     tmp = torch.Tensor(df.to_numpy()).long()
