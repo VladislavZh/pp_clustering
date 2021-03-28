@@ -44,8 +44,8 @@ if __name__ == "__main__":
                     with open(run_path, 'rb') as f:
                         print(format_subtitle('Run = {}'.format(run)))
                         res = np.array(pickle.load(f))
-                        print('Best results are {}'.format(res[np.argmin(res, axis=0)[0]]))
-                        purs.append(res[np.argmin(res, axis=0)[0]][1])
+                        print('Best results are {}'.format(res[-1]))
+                        purs.append(res[-1][1])
                         fig, axs = plt.subplots(1, 3, figsize=(15, 5 * 15 / 15))
                         axs[0].plot(res[:, 0])
                         axs[0].set_title('loss')

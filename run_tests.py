@@ -79,7 +79,7 @@ def experiment_runner(args):
         torch.save(trainer.model, exp_folder + '/last_model.pt')
         i += 1
         results_on_run_i = np.array(results)
-        print('Run = {}: {}'.format(i, results_on_run_i[np.argmin(results_on_run_i, axis=0)[0]]))
+        print('Run = {}: {}'.format(i, results_on_run_i[-1]))
         all_results.append(results_on_run_i[np.argmin(results_on_run_i, axis=0)[0]])
     return all_results
 
