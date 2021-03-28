@@ -682,8 +682,8 @@ class TrainerClusterwise:
                                   self.self.target[ids] if (ids is not None) and (not self.full_purity) else \
                                       self.target, len(np.unique(self.target)))
             else:
-                pur = None
-                info = None
+                pur = -1
+                info = -1
 
         return log_likelihood_curve, [loss, pur, info], cluster_partition
 
