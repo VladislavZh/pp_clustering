@@ -113,6 +113,8 @@ def get_dataset(path_to_files, n_classes, n_steps):
     if 'clusters.csv' in files:
         files.remove('clusters.csv')
         target = torch.Tensor(pd.read_csv(path_to_files + '/clusters.csv')['cluster_id'])
+    if 'info.json' in files:
+        files.remove('info.json')
 
     # reading data
     files = sorted(files, key=cmp_to_key(compare))
