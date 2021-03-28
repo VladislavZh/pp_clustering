@@ -74,6 +74,7 @@ def get_partition(df, num_of_steps, num_of_classes, end_time=None):
     # counting points
     df = df.groupby(['time', 'event']).count()
     df = df.reset_index()
+    print(df)
     df.columns = ['time', 'event', 'num']
     try:
         df['event'] = df['event'].astype(int)
