@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+53530,53530,53530,216446,mobile,66815,4,0.0,2016-02-04,2,1,2,0
+53531,53531,53531,216446,mobile,40482,4,2.0,2016-02-05,1,2,1,0
+53532,53532,53532,216446,mobile,47050,4,3.0,2016-02-07,2,1,2,0
+53533,53533,53533,216446,mobile,37530,4,5.0,2016-02-08,9999,9999,1,0

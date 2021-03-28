@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+74620,74620,74620,303015,desktop,17157,4,0.0,2016-04-23,10,3,10,0
+74621,74621,74621,303015,mobile,45025,4,10.0,2016-04-26,3,3,3,0
+74622,74622,74622,303015,mobile,11764,4,13.0,2016-04-29,3,3,3,0
+74623,74623,74623,303015,mobile,36020,4,16.0,2016-05-02,9999,9999,3,0

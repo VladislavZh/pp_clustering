@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+91452,91452,91452,371773,mobile,699,4,0.0,2016-04-25,1,1,1,0
+91453,91453,91453,371773,mobile,55128,4,1.0,2016-04-26,1,1,1,0
+91454,91454,91454,371773,mobile,64876,4,2.0,2016-04-27,1,1,1,0
+91455,91455,91455,371773,mobile,382,4,3.0,2016-04-28,9999,9999,1,0

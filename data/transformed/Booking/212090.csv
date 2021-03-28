@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+52427,52427,52427,212089,mobile,7823,4,0.0,2016-11-30,4,2,4,0
+52428,52428,52428,212089,mobile,18211,4,4.0,2016-12-02,2,6,2,0
+52429,52429,52429,212089,desktop,17157,4,6.0,2016-12-08,6,4,6,0
+52430,52430,52430,212089,desktop,10484,4,12.0,2016-12-12,9999,9999,4,0

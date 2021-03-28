@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+43207,43207,43207,172882,desktop,55763,4,0.0,2016-09-16,2,4,2,0
+43208,43208,43208,172882,mobile,59382,4,2.0,2016-09-20,4,3,4,0
+43209,43209,43209,172882,mobile,59382,4,6.0,2016-09-23,3,3,3,0
+43210,43210,43210,172882,mobile,0,4,9.0,2016-09-26,9999,9999,3,0

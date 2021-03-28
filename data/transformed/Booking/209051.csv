@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+51667,51667,51667,209050,mobile,51517,4,0.0,2016-02-19,2,1,2,0
+51668,51668,51668,209050,desktop,51517,4,2.0,2016-02-20,1,1,1,0
+51669,51669,51669,209050,mobile,51517,4,3.0,2016-02-21,2,2,1,0
+51670,51670,51670,209050,desktop,51517,4,5.0,2016-02-23,9999,9999,1,0

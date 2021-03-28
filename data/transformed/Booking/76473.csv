@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+19219,19219,19219,76472,mobile,16521,4,0.0,2016-09-08,3,3,3,0
+19220,19220,19220,76472,mobile,21929,4,3.0,2016-09-11,3,3,3,0
+19221,19221,19221,76472,mobile,48343,4,6.0,2016-09-14,3,2,3,0
+19222,19222,19222,76472,mobile,16521,4,9.0,2016-09-16,9999,9999,2,0

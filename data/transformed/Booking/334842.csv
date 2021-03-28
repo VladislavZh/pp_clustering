@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+82196,82196,82196,334841,mobile,58222,4,0.0,2016-12-25,1,1,1,0
+82197,82197,82197,334841,desktop,51578,4,1.0,2016-12-26,1,4,1,0
+82198,82198,82198,334841,desktop,52540,4,2.0,2016-12-30,4,1,4,0
+82199,82199,82199,334841,mobile,0,4,6.0,2016-12-31,9999,9999,1,0

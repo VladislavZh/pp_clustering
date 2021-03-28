@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+3207,3207,3207,12885,mobile,27063,4,0.0,2016-08-16,1,1,1,0
+3208,3208,3208,12885,mobile,27063,4,1.0,2016-08-17,1,1,1,0
+3209,3209,3209,12885,mobile,64372,4,2.0,2016-08-18,1,1,1,0
+3210,3210,3210,12885,desktop,63859,4,3.0,2016-08-19,9999,9999,1,0

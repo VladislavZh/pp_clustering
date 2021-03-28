@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+56371,56371,56371,228457,mobile,54868,4,0.0,2016-12-14,1,1,1,0
+56372,56372,56372,228457,mobile,54868,4,1.0,2016-12-15,1,1,1,0
+56373,56373,56373,228457,mobile,25408,4,2.0,2016-12-16,1,1,1,0
+56374,56374,56374,228457,tablet,0,4,3.0,2016-12-17,9999,9999,1,0

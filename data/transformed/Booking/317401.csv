@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+78043,78043,78043,317400,mobile,19444,4,0.0,2016-08-25,2,1,2,0
+78044,78044,78044,317400,mobile,61058,4,2.0,2016-08-26,1,1,1,0
+78045,78045,78045,317400,mobile,3100,4,3.0,2016-08-27,1,1,1,0
+78046,78046,78046,317400,mobile,36063,4,4.0,2016-08-28,9999,9999,1,0

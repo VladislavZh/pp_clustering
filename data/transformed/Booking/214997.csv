@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+53087,53087,53087,214996,mobile,28115,4,0.0,2016-09-27,4,4,4,0
+53088,53088,53088,214996,desktop,27114,4,4.0,2016-10-01,4,4,4,0
+53089,53089,53089,214996,mobile,50391,4,8.0,2016-10-05,4,2,4,0
+53090,53090,53090,214996,mobile,28115,4,12.0,2016-10-07,9999,9999,2,0

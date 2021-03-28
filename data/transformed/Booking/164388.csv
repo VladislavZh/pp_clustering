@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+41179,41179,41179,164387,mobile,58741,4,0.0,2016-07-24,1,1,1,0
+41180,41180,41180,164387,mobile,58741,4,1.0,2016-07-25,1,1,1,0
+41181,41181,41181,164387,mobile,58741,4,2.0,2016-07-26,1,1,1,0
+41182,41182,41182,164387,mobile,0,4,3.0,2016-07-27,9999,9999,1,0

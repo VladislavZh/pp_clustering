@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+58480,58480,58480,237578,mobile,34985,4,0.0,2017-02-02,4,4,4,0
+58481,58481,58481,237578,mobile,18548,4,4.0,2017-02-06,4,3,4,0
+58482,58482,58482,237578,mobile,52815,4,8.0,2017-02-09,3,2,3,0
+58483,58483,58483,237578,mobile,25398,4,11.0,2017-02-11,9999,9999,2,0

@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+12303,12303,12303,48686,mobile,426,4,0.0,2017-02-02,2,3,2,0
+12304,12304,12304,48686,mobile,47193,4,2.0,2017-02-05,3,4,3,0
+12305,12305,12305,48686,mobile,9227,4,5.0,2017-02-09,4,4,4,0
+12306,12306,12306,48686,mobile,2416,4,9.0,2017-02-13,9999,9999,4,0

@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+59808,59808,59808,243108,mobile,29770,4,0.0,2016-08-21,3,3,3,0
+59809,59809,59809,243108,mobile,4021,4,3.0,2016-08-24,3,5,3,0
+59810,59810,59810,243108,mobile,42308,4,6.0,2016-08-29,5,1,5,0
+59811,59811,59811,243108,mobile,0,4,11.0,2016-08-30,9999,9999,1,0

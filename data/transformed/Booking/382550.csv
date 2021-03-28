@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+94138,94138,94138,382549,desktop,4424,4,0.0,2017-02-04,3,3,3,0
+94139,94139,94139,382549,desktop,53793,4,3.0,2017-02-07,3,2,3,0
+94140,94140,94140,382549,desktop,1640,4,6.0,2017-02-09,2,4,2,0
+94141,94141,94141,382549,desktop,6582,4,8.0,2017-02-13,9999,9999,4,0

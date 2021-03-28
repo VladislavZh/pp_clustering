@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+91768,91768,91768,373026,mobile,52815,4,0.0,2016-08-28,7,1,7,0
+91769,91769,91769,373026,mobile,51259,4,7.0,2016-08-29,1,2,1,0
+91770,91770,91770,373026,mobile,15284,4,8.0,2016-08-31,2,2,2,0
+91771,91771,91771,373026,mobile,15284,4,10.0,2016-09-02,9999,9999,2,0

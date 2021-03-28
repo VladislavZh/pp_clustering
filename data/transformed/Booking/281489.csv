@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+69252,69252,69252,281488,mobile,33022,4,0.0,2016-11-26,6,4,4,0
+69253,69253,69253,281488,mobile,33022,4,6.0,2016-11-30,2,2,2,0
+69254,69254,69254,281488,mobile,52815,4,8.0,2016-12-02,2,5,2,0
+69255,69255,69255,281488,mobile,52815,4,10.0,2016-12-07,9999,9999,5,0

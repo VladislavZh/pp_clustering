@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+73042,73042,73042,296412,mobile,47527,4,0.0,2016-07-06,1,4,1,0
+73043,73043,73043,296412,mobile,34596,4,1.0,2016-07-10,4,4,4,0
+73044,73044,73044,296412,mobile,37874,4,5.0,2016-07-14,4,3,4,0
+73045,73045,73045,296412,mobile,0,4,9.0,2016-07-17,9999,9999,3,0

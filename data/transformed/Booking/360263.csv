@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+88251,88251,88251,360262,mobile,34707,4,0.0,2016-08-29,1,5,1,0
+88252,88252,88252,360262,tablet,35813,4,1.0,2016-09-03,5,4,5,0
+88253,88253,88253,360262,mobile,35813,4,6.0,2016-09-07,4,2,4,0
+88254,88254,88254,360262,mobile,28115,4,10.0,2016-09-09,9999,9999,2,0

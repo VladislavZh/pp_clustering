@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+89133,89133,89133,363270,mobile,55529,4,0.0,2016-02-05,1,1,1,0
+89134,89134,89134,363270,tablet,52662,4,1.0,2016-02-06,1,1,1,0
+89135,89135,89135,363270,tablet,52662,4,2.0,2016-02-07,1,1,1,0
+89136,89136,89136,363270,tablet,10410,4,3.0,2016-02-08,9999,9999,1,0

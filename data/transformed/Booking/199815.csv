@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+49385,49385,49385,199814,mobile,30765,4,0.0,2016-10-03,1,1,1,0
+49386,49386,49386,199814,mobile,30765,4,1.0,2016-10-04,1,2,1,0
+49387,49387,49387,199814,mobile,31529,4,2.0,2016-10-06,2,1,2,0
+49388,49388,49388,199814,mobile,4975,4,4.0,2016-10-07,9999,9999,1,0

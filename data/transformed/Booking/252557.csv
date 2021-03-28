@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+62112,62112,62112,252556,mobile,30768,4,0.0,2016-07-16,2,5,2,0
+62113,62113,62113,252556,mobile,35210,4,2.0,2016-07-21,5,5,5,0
+62114,62114,62114,252556,mobile,3763,4,7.0,2016-07-26,5,2,5,0
+62115,62115,62115,252556,mobile,52818,4,12.0,2016-07-28,9999,9999,2,0

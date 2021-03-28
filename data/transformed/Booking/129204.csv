@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+31905,31905,31905,129203,tablet,30768,4,0.0,2016-07-19,1,1,1,0
+31906,31906,31906,129203,tablet,17127,4,1.0,2016-07-20,1,5,1,0
+31907,31907,31907,129203,mobile,6306,4,2.0,2016-07-25,5,3,5,0
+31908,31908,31908,129203,tablet,55128,4,7.0,2016-07-28,9999,9999,3,0

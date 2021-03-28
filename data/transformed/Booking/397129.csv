@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+97564,97564,97564,397128,mobile,17127,4,0.0,2016-08-29,1,1,1,0
+97565,97565,97565,397128,mobile,47470,4,1.0,2016-08-30,1,1,1,0
+97566,97566,97566,397128,mobile,10940,4,2.0,2016-08-31,1,2,1,0
+97567,97567,97567,397128,mobile,45188,4,3.0,2016-09-02,9999,9999,2,0

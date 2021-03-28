@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+87709,87709,87709,357640,mobile,47499,4,0.0,2016-03-13,1,1,1,0
+87710,87710,87710,357640,tablet,45423,4,1.0,2016-03-14,1,1,1,0
+87711,87711,87711,357640,tablet,45423,4,2.0,2016-03-15,1,1,1,0
+87712,87712,87712,357640,mobile,45423,4,3.0,2016-03-16,9999,9999,1,0

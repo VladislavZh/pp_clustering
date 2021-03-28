@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+22564,22564,22564,90167,mobile,17013,4,0.0,2016-04-15,4,1,4,0
+22565,22565,22565,90167,desktop,26007,4,4.0,2016-04-16,1,2,1,0
+22566,22566,22566,90167,desktop,60222,4,5.0,2016-04-18,2,3,2,0
+22567,22567,22567,90167,desktop,0,4,7.0,2016-04-21,9999,9999,3,0

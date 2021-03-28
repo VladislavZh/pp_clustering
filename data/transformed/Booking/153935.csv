@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+38212,38212,38212,153934,mobile,51128,4,0.0,2016-09-24,1,2,1,0
+38213,38213,38213,153934,desktop,51128,4,1.0,2016-09-26,2,1,2,0
+38214,38214,38214,153934,desktop,63955,4,3.0,2016-09-27,1,1,1,0
+38215,38215,38215,153934,desktop,58741,4,4.0,2016-09-28,9999,9999,1,0

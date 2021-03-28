@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+11932,11932,11932,46944,mobile,34342,4,0.0,2016-07-29,2,4,2,0
+11933,11933,11933,46944,mobile,54085,4,2.0,2016-08-02,4,2,4,0
+11934,11934,11934,46944,mobile,17510,4,6.0,2016-08-04,2,1,2,0
+11935,11935,11935,46944,mobile,6582,4,8.0,2016-08-05,9999,9999,1,0

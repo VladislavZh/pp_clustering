@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+78134,78134,78134,317678,mobile,10485,4,0.0,2016-07-11,1,1,1,0
+78135,78135,78135,317678,mobile,10485,4,1.0,2016-07-12,1,1,1,0
+78136,78136,78136,317678,mobile,10485,4,2.0,2016-07-13,1,1,1,0
+78137,78137,78137,317678,mobile,10485,4,3.0,2016-07-14,9999,9999,1,0

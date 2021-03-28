@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+11986,11986,11986,47164,mobile,33022,4,0.0,2016-07-15,4,1,4,0
+11987,11987,11987,47164,mobile,33022,4,4.0,2016-07-16,1,2,1,0
+11988,11988,11988,47164,mobile,58688,4,5.0,2016-07-18,2,3,2,0
+11989,11989,11989,47164,mobile,33022,4,7.0,2016-07-21,9999,9999,3,0

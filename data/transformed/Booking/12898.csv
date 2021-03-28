@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+3221,3221,3221,12897,tablet,22125,4,0.0,2016-08-02,2,2,2,0
+3222,3222,3222,12897,mobile,31114,4,2.0,2016-08-04,2,2,2,0
+3223,3223,3223,12897,tablet,2454,4,4.0,2016-08-06,2,1,2,0
+3224,3224,3224,12897,mobile,0,4,6.0,2016-08-07,9999,9999,1,0

@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+91112,91112,91112,370678,desktop,12745,4,0.0,2016-07-10,2,5,2,0
+91113,91113,91113,370678,desktop,46383,4,2.0,2016-07-15,5,2,5,0
+91114,91114,91114,370678,mobile,27377,4,7.0,2016-07-17,2,4,2,0
+91115,91115,91115,370678,mobile,0,4,9.0,2016-07-21,9999,9999,4,0

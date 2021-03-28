@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+97220,97220,97220,395787,desktop,17980,4,0.0,2016-02-04,1,1,1,0
+97221,97221,97221,395787,desktop,14104,4,1.0,2016-02-05,1,1,1,0
+97222,97222,97222,395787,desktop,59231,4,2.0,2016-02-06,1,1,1,0
+97223,97223,97223,395787,mobile,3601,4,3.0,2016-02-07,9999,9999,1,0

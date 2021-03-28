@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+91386,91386,91386,371651,mobile,1909,4,0.0,2016-09-01,1,1,1,0
+91387,91387,91387,371651,mobile,7549,4,1.0,2016-09-02,1,1,1,0
+91388,91388,91388,371651,mobile,33049,4,2.0,2016-09-03,1,1,1,0
+91389,91389,91389,371651,mobile,0,4,3.0,2016-09-04,9999,9999,1,0

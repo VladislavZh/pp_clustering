@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+80968,80968,80968,330163,mobile,66648,4,0.0,2016-05-18,1,1,1,0
+80969,80969,80969,330163,mobile,61133,4,1.0,2016-05-19,1,2,1,0
+80970,80970,80970,330163,desktop,18417,4,2.0,2016-05-21,2,3,2,0
+80971,80971,80971,330163,desktop,30520,4,4.0,2016-05-24,9999,9999,3,0

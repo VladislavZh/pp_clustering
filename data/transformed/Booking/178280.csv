@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+44384,44384,44384,178279,mobile,19448,4,0.0,2017-01-05,2,2,2,0
+44385,44385,44385,178279,mobile,46026,4,2.0,2017-01-07,2,1,2,0
+44386,44386,44386,178279,mobile,19448,4,4.0,2017-01-08,1,1,1,0
+44387,44387,44387,178279,mobile,26436,4,5.0,2017-01-09,9999,9999,1,0

@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+74641,74641,74641,303111,mobile,4975,4,0.0,2016-07-03,1,1,1,0
+74642,74642,74642,303111,mobile,4975,4,1.0,2016-07-04,1,1,1,0
+74643,74643,74643,303111,mobile,4975,4,2.0,2016-07-05,1,1,1,0
+74644,74644,74644,303111,mobile,0,4,3.0,2016-07-06,9999,9999,1,0

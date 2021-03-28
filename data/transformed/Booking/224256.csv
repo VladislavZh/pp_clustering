@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+55306,55306,55306,224255,mobile,36063,4,0.0,2016-06-05,3,3,3,0
+55307,55307,55307,224255,mobile,36063,4,3.0,2016-06-08,3,3,3,0
+55308,55308,55308,224255,mobile,36063,4,6.0,2016-06-11,3,3,3,0
+55309,55309,55309,224255,mobile,0,4,9.0,2016-06-14,9999,9999,3,0

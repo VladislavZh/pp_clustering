@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+44444,44444,44444,178695,mobile,48222,4,0.0,2016-07-09,1,1,1,0
+44445,44445,44445,178695,mobile,55763,4,1.0,2016-07-10,1,2,1,0
+44446,44446,44446,178695,desktop,40464,4,2.0,2016-07-12,2,1,2,0
+44447,44447,44447,178695,mobile,55763,4,4.0,2016-07-13,9999,9999,1,0

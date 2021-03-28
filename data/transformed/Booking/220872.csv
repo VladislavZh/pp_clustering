@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+54512,54512,54512,220871,tablet,6582,4,0.0,2016-02-04,2,3,2,0
+54513,54513,54513,220871,mobile,54085,4,2.0,2016-02-07,3,3,3,0
+54514,54514,54514,220871,mobile,54085,4,5.0,2016-02-10,3,3,3,0
+54515,54515,54515,220871,mobile,0,4,8.0,2016-02-13,9999,9999,3,0

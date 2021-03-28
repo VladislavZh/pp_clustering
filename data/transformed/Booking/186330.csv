@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+46325,46325,46325,186329,mobile,4975,4,0.0,2016-06-19,1,2,1,0
+46326,46326,46326,186329,mobile,4975,4,1.0,2016-06-21,2,3,2,0
+46327,46327,46327,186329,mobile,32988,4,3.0,2016-06-24,3,1,3,0
+46328,46328,46328,186329,mobile,32988,4,6.0,2016-06-25,9999,9999,1,0

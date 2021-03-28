@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+66314,66314,66314,269812,mobile,47499,4,0.0,2016-12-28,2,2,2,0
+66315,66315,66315,269812,mobile,47499,4,2.0,2016-12-30,2,3,2,0
+66316,66316,66316,269812,mobile,51517,4,4.0,2017-01-02,3,2,3,0
+66317,66317,66317,269812,mobile,51517,4,7.0,2017-01-04,9999,9999,2,0

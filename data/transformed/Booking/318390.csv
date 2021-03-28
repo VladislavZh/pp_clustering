@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+78236,78236,78236,318389,mobile,24255,4,0.0,2016-08-11,1,1,1,0
+78237,78237,78237,318389,mobile,62868,4,1.0,2016-08-12,1,1,1,0
+78238,78238,78238,318389,mobile,57775,4,2.0,2016-08-13,1,2,1,0
+78239,78239,78239,318389,mobile,22696,4,3.0,2016-08-15,9999,9999,2,0

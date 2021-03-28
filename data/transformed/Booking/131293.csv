@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+32477,32477,32477,131292,mobile,66648,4,0.0,2016-02-28,2,2,2,0
+32478,32478,32478,131292,mobile,30520,4,2.0,2016-03-01,2,3,2,0
+32479,32479,32479,131292,mobile,18417,4,4.0,2016-03-04,3,1,3,0
+32480,32480,32480,131292,mobile,0,4,7.0,2016-03-05,9999,9999,1,0

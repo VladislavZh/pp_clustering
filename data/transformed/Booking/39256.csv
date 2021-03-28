@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+9945,9945,9945,39255,mobile,24783,4,0.0,2016-02-08,3,1,3,0
+9946,9946,9946,39255,mobile,21512,4,3.0,2016-02-09,1,1,1,0
+9947,9947,9947,39255,mobile,34072,4,4.0,2016-02-10,1,1,1,0
+9948,9948,9948,39255,mobile,32632,4,5.0,2016-02-11,9999,9999,1,0

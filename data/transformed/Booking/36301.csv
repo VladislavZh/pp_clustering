@@ -1,0 +1,6 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+9088,9088,9088,36300,desktop,19383,5,0.0,2016-07-21,1,2,1,1
+9089,9089,9089,36300,desktop,55128,5,1.0,2016-07-23,2,2,2,1
+9090,9090,9090,36300,desktop,31870,5,3.0,2016-07-25,2,1,2,1
+9091,9091,9091,36300,desktop,6785,5,5.0,2016-07-26,1,2,1,1
+9092,9092,9092,36300,desktop,0,5,6.0,2016-07-28,9999,9999,2,1

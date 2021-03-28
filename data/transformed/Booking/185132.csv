@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+45919,45919,45919,185131,desktop,56823,4,0.0,2016-07-20,3,2,3,0
+45920,45920,45920,185131,desktop,37175,4,3.0,2016-07-22,2,2,2,0
+45921,45921,45921,185131,desktop,16137,4,5.0,2016-07-24,2,2,2,0
+45922,45922,45922,185131,desktop,331,4,7.0,2016-07-26,9999,9999,2,0

@@ -1,0 +1,4 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+36405,36405,36405,146773,mobile,53831,3,0.0,2016-09-08,1,2,1,-1
+36406,36406,36406,146773,mobile,53831,3,1.0,2016-09-10,2,2,2,-1
+36407,36407,36407,146773,mobile,53831,3,3.0,2016-09-12,9999,9999,2,-1

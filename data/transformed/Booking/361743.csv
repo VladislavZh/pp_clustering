@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+88641,88641,88641,361742,mobile,39153,4,0.0,2017-01-24,1,1,1,0
+88642,88642,88642,361742,mobile,39153,4,1.0,2017-01-25,1,2,1,0
+88643,88643,88643,361742,mobile,2369,4,2.0,2017-01-27,2,5,2,0
+88644,88644,88644,361742,desktop,0,4,4.0,2017-02-01,9999,9999,5,0

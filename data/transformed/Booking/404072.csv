@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+99321,99321,99321,404071,desktop,47348,4,0.0,2016-08-31,2,2,2,0
+99322,99322,99322,404071,mobile,47348,4,2.0,2016-09-02,2,3,2,0
+99323,99323,99323,404071,mobile,47348,4,4.0,2016-09-05,3,5,3,0
+99324,99324,99324,404071,desktop,25025,4,7.0,2016-09-10,9999,9999,5,0

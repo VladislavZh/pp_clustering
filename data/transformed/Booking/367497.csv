@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+90237,90237,90237,367496,mobile,48968,4,0.0,2016-07-07,2,2,2,0
+90238,90238,90238,367496,mobile,32821,4,2.0,2016-07-09,2,1,2,0
+90239,90239,90239,367496,mobile,27404,4,4.0,2016-07-10,1,2,1,0
+90240,90240,90240,367496,mobile,27404,4,5.0,2016-07-12,9999,9999,2,0

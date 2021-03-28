@@ -1,0 +1,5 @@
+,Unnamed: 0,Unnamed: 0.1,user_id,device_class,city_id,nr_trips,checkin,checkout,diff_checkin,diff_checkout,diff_inout,label
+82445,82445,82445,336010,desktop,17127,4,0.0,2016-08-13,1,1,1,0
+82446,82446,82446,336010,desktop,29712,4,1.0,2016-08-14,1,7,1,0
+82447,82447,82447,336010,mobile,26971,4,2.0,2016-08-21,7,2,7,0
+82448,82448,82448,336010,desktop,0,4,9.0,2016-08-23,9999,9999,2,0
