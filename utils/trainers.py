@@ -676,11 +676,11 @@ class TrainerClusterwise:
                           ' with pi = ', self.pi[i])
                 cluster_partition = min(cluster_partition, np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters))
             if type(self.target):
-                pur = purity(clusters,
-                             self.target[ids] if (ids is not None) and (not self.full_purity) else self.target)
-                info = info_score(clusters,
+                pur = purity(clusters.to('cpu'),
+                             self.target[ids] if (ids is not None) and (not self.full_purity) else self.target.to('cpu'))
+                info = info_score(clusters.to('cpu'),
                                   self.target[ids] if (ids is not None) and (not self.full_purity) else \
-                                      self.target, len(np.unique(self.target)))
+                                      self.target.to('cpu'), len(np.unique(self.target.to('cpu'))))
             else:
                 pur = -1
                 info = -1
@@ -707,8 +707,8 @@ class TrainerClusterwise:
                       ' with pi = ', self.pi[i])
             cluster_partition = min(cluster_partition, np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters))
         if type(self.target):
-            pur = purity(clusters,
-                         self.target[ids] if (ids is not None) and (not self.full_purity) else self.target)
+            pur = purity(clusters.to('cpu'),
+                         self.target[ids] if (ids is not None) and (not self.full_purity) else self.target.to('cpu'))
         else:
             pur = None
         if self.verbose:
@@ -829,13 +829,13 @@ class TrainerClusterwise:
                     lambdas = self.model(self.X)
                 all_stats[-1]['lambdas'] = self.get_lambda_stats(lambdas)
 
-            if epoch > 40 and self.n_clusters > 4:
+            if epoch > 40 and self.n_clusters > 16:
                 enforce = True
             else:
                 enforce = False
                 # updating number of clusters
             if (self.allow_walking >= 0 and epoch <= 40) or enforce:
-                if ((torch.rand(1) > 0.5)[0] or self.n_clusters == 1) and self.n_clusters < 10 and not enforce:
+                if ((torch.rand(1) > 0.5)[0] or self.n_clusters == 1) and self.n_clusters < 21 and not enforce:
                     split = True
                 else:
                     split = False
@@ -938,6 +938,10 @@ class TrainerClusterwise:
                     self.n_clusters -= 1
                     self.pi = torch.ones(self.n_clusters) / self.n_clusters
                 self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+                if self.max_computing_size is None:
+                    self.gamma = torch.zeros(self.n_clusters, self.N).to(self.device)
+                else:
+                    self.gamma = torch.zeros(self.n_clusters, self.max_computing_size).to(self.device)
             else:
                 self.allow_walking += 1
 
@@ -996,8 +1000,8 @@ class TrainerClusterwise:
                         cluster_partition = min(cluster_partition,
                                                 np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters))
                     if type(self.target):
-                        pur = purity(clusters,
-                                     self.target[ids] if (ids is not None) and (not self.full_purity) else self.target)
+                        pur = purity(clusters.to('cpu'),
+                                     self.target[ids] if (ids is not None) and (not self.full_purity) else self.target.to('cpu'))
                         info = info_score(clusters,
                                           self.self.target[ids] if (ids is not None) and (not self.full_purity) else \
                                               self.target, self.n_clusters)
