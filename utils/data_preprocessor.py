@@ -126,6 +126,7 @@ def get_dataset(path_to_files, n_classes, n_steps):
     files = sorted(files, key=cmp_to_key(compare))
     data = torch.zeros(len(files), n_steps, n_classes + 1)
     for i, f in tqdm.tqdm(enumerate(files)):
+        print('File: {}'.format(f))
         df = pd.read_csv(path_to_files + '/' + f)
         data[i, :, :] = get_partition(df, n_steps, n_classes)
 
