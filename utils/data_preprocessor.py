@@ -40,6 +40,10 @@ def compare(a, b):
     return tmp1 - tmp2
 
 
+evnts = {}
+cur = 0
+
+
 def get_partition(df, num_of_steps, num_of_classes, end_time=None):
     """
         Transforms dataset into partition
@@ -54,7 +58,8 @@ def get_partition(df, num_of_steps, num_of_classes, end_time=None):
                 partition - torch.Tensor, size = (num_of_steps, num_of_classes + 1)
     """
     df = df.loc[:, ['time', 'event']].copy()
-    print(df)
+    df = df.sort_values(by=['time'])
+    df = df.reset_index().loc[:, ['time', 'event']].copy()
     # setting end time if None
     if end_time is None:
         end_time = df['time'][len(df['time']) - 1]
@@ -74,15 +79,13 @@ def get_partition(df, num_of_steps, num_of_classes, end_time=None):
     # counting points
     df = df.reset_index()
     df = df.groupby(['time', 'event']).count()
-    print(df)
     df = df.reset_index()
-    print(df)
     df.columns = ['time', 'event', 'num']
     try:
         df['event'] = df['event'].astype(int)
     except:
-        evnts = {}
-        cur = 0
+        global evnts
+        global cur
         for i in range(len(df['event'])):
             if df['event'].iloc[i] not in evnts:
                 evnts[df['event'].iloc[i]] = cur
