@@ -10,5 +10,5 @@
  "lr_update_param_changer": 1.0, "lr_update_param_second_changer": 1.0,
  "min_lr": 0.001, "updated_lr": 0.001, "batch_size": 50,
  "verbose": true, "device": "cuda:0", "save_best_model": true,
- "max_computing_size": 800, "full_purity": false,
+ "max_computing_size": null, "full_purity": false,
  "pretrain_number_of_epochs": 200, "pretrain_step": 40, "pretrain_mul": 0.4, "pretraining": false}
