@@ -40,6 +40,22 @@ def compare(a, b):
     return tmp1 - tmp2
 
 
+def label_dataset(path_to_files, files):
+    files = sorted(files, key=cmp_to_key(compare))
+    evnts = {}
+    cur = 0
+    for i, f in tqdm.tqdm(enumerate(files)):
+        print('File: {}'.format(i))
+        df = pd.read_csv(path_to_files + '/' + f)
+        for i in range(len(df['event'])):
+            if df['event'].iloc[i] not in evnts:
+                evnts[df['event'].iloc[i]] = cur
+                cur += 1
+            df['event'].iloc[i] = evnts[df['event'].iloc[i]]
+        df['event'] = df['event'].astype(int)
+        df.to_csv(path_to_files + '/' + f)
+
+
 evnts = {}
 cur = 0
 
