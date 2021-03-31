@@ -829,13 +829,13 @@ class TrainerClusterwise:
                     lambdas = self.model(self.X)
                 all_stats[-1]['lambdas'] = self.get_lambda_stats(lambdas)
 
-            if epoch > 40 and self.n_clusters > 4:
+            if epoch > 40 and self.n_clusters > 9:
                 enforce = True
             else:
                 enforce = False
                 # updating number of clusters
             if (self.allow_walking >= 0 and epoch <= 40) or enforce:
-                if ((torch.rand(1) > 0.5)[0] or self.n_clusters == 1) and self.n_clusters < 10 and not enforce:
+                if ((torch.rand(1) > 0.5)[0] or self.n_clusters == 1) and self.n_clusters < 15 and not enforce:
                     split = True
                 else:
                     split = False
