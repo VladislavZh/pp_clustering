@@ -1,0 +1,11 @@
+,id,time,event,option1,sector,label,nr_jobs
+17,14,28.0,Sun MicroSystem,Eng Manage,enterprise,hardware,10
+18,14,35.5863,Sun MicroSystem,Director Eng,enterprise,hardware,10
+19,14,37.5014,Sun MicroSystem,Director Market,enterprise,hardware,10
+20,14,39.589,Sun MicroSystem,Sr Director Market,enterprise,hardware,10
+21,14,41.4192,Sun MicroSystem,Sr Director Market,enterprise,hardware,10
+22,14,42.5041,Sun MicroSystem,Sr Director Market,enterprise,hardware,10
+23,14,45.011,Oracle,Director Product Manage,enterprise,hardware,10
+24,14,45.5918,Nokia,Architect Advanced Dev Tech Group CTO,hardware,hardware,10
+25,14,46.926,Nokia,Head Advanced Software Eng,hardware,hardware,10
+26,14,48.1753,Nokia,Vice President Advanced Eng,hardware,hardware,10

@@ -1,0 +1,5 @@
+,id,time,event,option1,sector,label,nr_jobs
+1800,1202,30.0,Intel,Research,hardware,hardware,4
+1801,1202,30.4192,Microsoft Research,Research,research,hardware,4
+1802,1202,31.4192,University Washington,Research Assistant,research,hardware,4
+1803,1202,35.1699,Nokia,Sr Research,hardware,hardware,4

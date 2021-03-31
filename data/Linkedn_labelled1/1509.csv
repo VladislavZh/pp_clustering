@@ -1,0 +1,5 @@
+,id,time,event,option1,sector,label,nr_jobs
+2246,1508,30.0,Apple,Software Eng,hardware,saas,4
+2247,1508,30.7479,SAP,Software Eng,enterprise,saas,4
+2248,1508,31.0795,IBM,Staff Software Eng,consulting,saas,4
+2249,1508,37.2493,Netflix,Sr Software Eng,saas,saas,4

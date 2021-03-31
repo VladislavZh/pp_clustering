@@ -1,0 +1,5 @@
+,id,time,event,option1,sector,label,nr_jobs
+7050,4548,24.0,Motorola,CDMA Eng,hardware,enterprise,4
+7051,4548,25.2438,Sun MicroSystem,QE Eng,enterprise,enterprise,4
+7052,4548,32.5863,Oracle,Principal Software Eng,enterprise,enterprise,4
+7053,4548,36.5041,Oracle,QE Manage,enterprise,enterprise,4

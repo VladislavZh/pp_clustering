@@ -1,0 +1,4 @@
+,id,time,event,option1,sector,label,nr_jobs
+3607,2345,25.0,Qualcomm,compute Vision Intern,hardware,hardware,3
+3608,2345,25.6712,NVIDIA,Mobile compute Vision Intern,hardware,hardware,3
+3609,2345,26.2521,NVIDIA,Mobile compute Vision Dev,hardware,hardware,3

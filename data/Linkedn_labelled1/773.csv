@@ -1,0 +1,6 @@
+,id,time,event,option1,sector,label,nr_jobs
+1124,772,22.0,Intel,Software Eng,hardware,hardware,5
+1125,772,23.0027,IBM,Release Eng,consulting,hardware,5
+1126,772,24.0027,IBM,Software Dev,consulting,hardware,5
+1127,772,24.674,Intel,QA Architect,hardware,hardware,5
+1128,772,29.7616,Intel,Seniro Software Eng,hardware,hardware,5

@@ -1,0 +1,4 @@
+,id,time,event,option1,sector,label,nr_jobs
+1241,851,30.0,Amazon,Software Dev Eng,ecommerce,search,3
+1242,851,31.0,Apple,Software Eng,hardware,search,3
+1243,851,33.0,Google,Software Eng,search,search,3

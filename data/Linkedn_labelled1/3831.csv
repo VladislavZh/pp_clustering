@@ -1,0 +1,5 @@
+,id,time,event,option1,sector,label,nr_jobs
+5897,3830,30.0,EMC,Consult,enterprise,enterprise,4
+5898,3830,34.0877,IBM,Architect,consulting,enterprise,4
+5899,3830,36.4247,EMC,Sr System Eng,enterprise,enterprise,4
+5900,3830,38.0904,EMC,Advisory System Eng,enterprise,enterprise,4

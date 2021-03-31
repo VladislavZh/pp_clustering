@@ -1,0 +1,7 @@
+,id,time,event,option1,sector,label,nr_jobs
+1737,1157,26.0,Intel,Software Eng,hardware,saas,6
+1738,1157,27.7507,IBM,Software Eng,consulting,saas,6
+1739,1157,29.4219,IBM,Staff Software Eng,consulting,saas,6
+1740,1157,32.9205,IBM,Advisory Software Eng,consulting,saas,6
+1741,1157,35.4274,Microsoft,Software Dev Eng,saas,saas,6
+1742,1157,37.0082,Microsoft,Sr Software Dev Eng,saas,saas,6

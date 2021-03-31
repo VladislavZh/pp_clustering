@@ -1,0 +1,4 @@
+,id,time,event,option1,sector,label,nr_jobs
+1340,901,30.0,Microsoft,Data Science,saas,hardware,3
+1341,901,30.2521,Intel,Data Science New Business Initiatives NBI,hardware,hardware,3
+1342,901,31.6712,Intel,Machine Learning Algorithm Eng New Business Initiatives NBI,hardware,hardware,3

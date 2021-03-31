@@ -1,0 +1,6 @@
+,id,time,event,option1,sector,label,nr_jobs
+1906,1277,22.0,Motorola,Software Eng,hardware,saas,5
+1907,1277,23.4164,Intel,Sr Software Eng,hardware,saas,5
+1908,1277,31.5041,PayPal,Principal Software Eng,internet,saas,5
+1909,1277,35.6767,PayPal,Software Dev Manage,internet,saas,5
+1910,1277,37.926,Microsoft,Principal Dev Manage,saas,saas,5

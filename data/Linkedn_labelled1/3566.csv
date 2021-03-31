@@ -1,0 +1,6 @@
+,id,time,event,option1,sector,label,nr_jobs
+5511,3565,28.0,Sun MicroSystem,Sr Staff Eng,enterprise,hardware,5
+5512,3565,37.6712,Microsoft Research,Prinicipal Software Architect,research,hardware,5
+5513,3565,44.1726,Microsoft,Principal Software Eng,saas,hardware,5
+5514,3565,46.8438,NVIDIA,Principal Eng,hardware,hardware,5
+5515,3565,51.7644,NVIDIA,Director,hardware,hardware,5
