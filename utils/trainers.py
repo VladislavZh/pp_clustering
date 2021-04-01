@@ -140,7 +140,7 @@ class TrainerClusterwise:
     def __init__(self, model, optimizer, device, data, n_clusters, target=None,
                  alpha=1.0001, beta=0.001, epsilon=1e-8, sigma_0=5, sigma_inf=0.01, inf_epoch=50, max_epoch=50,
                  max_m_step_epoch=50, max_m_step_epoch_add=0, weight_decay=1e-5, lr=1e-3, lr_update_tol=25,
-                 lr_update_param=0.9,
+                 lr_update_param=0.9, random_walking_max_epoch=40, true_clusters=5, upper_bound_clusters=10,
                  lr_update_param_changer=1.0, lr_update_param_second_changer=0.95, min_lr=None, updated_lr=None,
                  batch_size=150, verbose=False, best_model_path=None, max_computing_size=None, full_purity=True,
                  pretrain_number_of_epochs=100, pretrain_step=None, pretrain_mul=0.1, pretraining=True):
@@ -263,6 +263,9 @@ class TrainerClusterwise:
         self.pretrained_model = []
         self.start_time = time.time()
         self.allow_walking = 0
+        self.random_walking_max_epoch = random_walking_max_epoch
+        self.true_clusters = true_clusters
+        self.upper_bound_clusters = upper_bound_clusters
 
     def convolve(self, gamma):
         """
@@ -829,13 +832,13 @@ class TrainerClusterwise:
                     lambdas = self.model(self.X)
                 all_stats[-1]['lambdas'] = self.get_lambda_stats(lambdas)
 
-            if epoch > 40 and self.n_clusters > 5:
+            if epoch > self.random_walking_max_epoch and self.n_clusters > self.true_clusters:
                 enforce = True
             else:
                 enforce = False
                 # updating number of clusters
-            if (self.allow_walking >= 0 and epoch <= 40) or enforce:
-                if ((torch.rand(1) > 0.5)[0] or self.n_clusters == 1) and self.n_clusters < 10 and not enforce:
+            if (self.allow_walking >= 0 and epoch <= self.random_walking_max_epoch) or enforce:
+                if ((torch.rand(1) > 0.5)[0] or self.n_clusters == 1) and self.n_clusters < self.upper_bound_clusters and not enforce:
                     split = True
                 else:
                     split = False
