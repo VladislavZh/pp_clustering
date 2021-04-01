@@ -1,4 +1,4 @@
-{"path_to_files": "data/sin_K5_C5", "n_steps": 128, "n_clusters": 1, "n_classes": 16,
+{"path_to_files": "data/sin_K5_C5", "n_steps": 128, "n_clusters": 1, "n_classes": 5,
  "hidden_size": 128, "num_layers": 3, "dropout": 0.3, "pretraining_lr": 0.1,
  "lr": 0.1, "random_walking_max_epoch": 40, "true_clusters": 5,
  "upper_bound_clusters": 10,"weight_decay": 1e-05, "degenerate_eps": null, "n_runs": 5,
