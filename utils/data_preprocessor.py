@@ -116,7 +116,7 @@ def get_partition(df, num_of_steps, num_of_classes, end_time=None):
     return res
 
 
-def get_dataset(path_to_files, n_classes, n_steps):
+def get_dataset(path_to_files, n_classes, n_steps, n_files = None):
     """
         Reads dataset
 
@@ -138,11 +138,15 @@ def get_dataset(path_to_files, n_classes, n_steps):
     if 'clusters.csv' in files:
         files.remove('clusters.csv')
         target = torch.Tensor(pd.read_csv(path_to_files + '/clusters.csv')['cluster_id'])
+        if n_files is not None:
+            target = target[:n_files]
     if 'info.json' in files:
         files.remove('info.json')
 
     # reading data
     files = sorted(files, key=cmp_to_key(compare))
+    if n_files is not None:
+        files = files[:n_files]
     data = torch.zeros(len(files), n_steps, n_classes + 1)
     for i, f in tqdm.tqdm(enumerate(files)):
         print('File: {}'.format(f))
