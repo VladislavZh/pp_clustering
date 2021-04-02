@@ -1,7 +1,7 @@
 {"path_to_files": "data/sin_K5_C5", "n_steps": 128, "n_clusters": 1, "n_classes": 5,
  "hidden_size": 128, "num_layers": 3, "dropout": 0.3, "pretraining_lr": 0.1,
  "lr": 0.1, "random_walking_max_epoch": 40, "true_clusters": 5,
- "upper_bound_clusters": 10,"weight_decay": 1e-05, "degenerate_eps": null, "n_runs": 5,
+ "upper_bound_clusters": 10,"weight_decay": 1e-05, "degenerate_eps": null, "n_runs": 1,
  "save_dir": "sin_K5_C5", "alpha": 1.0, "beta": 0.0, "epsilon": 1e-08,
  "sigma_0": 0.3, "sigma_inf": 0.05, "inf_epoch": 50, "max_epoch": 50,
  "max_m_step_epoch": 10, "max_m_step_epoch_add": 0.0, "lr_update_tol": 25,
