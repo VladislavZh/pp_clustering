@@ -25,7 +25,7 @@ def parse_arguments():
     parser = ArgumentParser()
     parser.add_argument('--path_to_files', type=str, required=True, help='path to data, required')
     parser.add_argument('--n_steps', type=int, default=128, help='number of steps in partitions, default - 128')
-    parser.add_argument('--n_clusters', type=int, required=True, help='number of clusters, required')
+    parser.add_argument('--n_clusters', type=int, required=True, help='initial number of clusters, required')
     parser.add_argument('--n_classes', type=int, required=True, help='number of types of events, required')
     parser.add_argument('--hidden_size', type=int, default=128, help='LSTM hidden size, default - 128')
     parser.add_argument('--num_layers', type=int, default=3, help='number of LSTM layers, default - 3')
@@ -76,6 +76,12 @@ def parse_arguments():
     parser.add_argument('--max_computing_size', type=int, help='if provided, constraints the max number of processing '
                                                                'point in one step of EM algorithm')
     parser.add_argument('--full_purity', type=bool, default=False, help='if true, uses all dataset to compute purity')
+    parser.add_argument('--random_walking_max_epoch', type=int, default=40, help='the epoch before enforcing number of clusters')
+    parser.add_argument('--true_clusters', type=int, required=True, help='true number of clusters')
+    parser.add_argument('--upper_bound_clusters', type=int, default=10, help='upper bound of the number of clusters during random walking')
+    parser.add_argument('--min_lr', type=float, default=0.001)
+    parser.add_argument('--updated_lr', type=float, default=0.001)
+    
     args = parser.parse_args()
 
     return args
@@ -110,16 +116,22 @@ if __name__ == '__main__':
         create_folder(path_to_results + '/exp_{}'.format(i))
         exp_folder = path_to_results + '/exp_{}'.format(i)
         trainer = TrainerClusterwise(model, optimizer, args.device, data, args.n_clusters, target=target,
-                                     alpha=args.alpha, beta=args.beta, epsilon=args.epsilon, sigma_0=args.sigma_0,
-                                     sigma_inf=args.sigma_inf, inf_epoch=args.inf_epoch, max_epoch=args.max_epoch,
-                                     max_m_step_epoch=args.max_m_step_epoch, max_m_step_epoch_add=args.max_m_step_epoch_add,
+                                     alpha=args.alpha, beta=args.beta, epsilon=args.epsilon,
+                                     sigma_0=args.sigma_0, sigma_inf=args.sigma_inf, inf_epoch=args.inf_epoch,
+                                     max_epoch=args.max_epoch, max_m_step_epoch=args.max_m_step_epoch,
+                                     max_m_step_epoch_add=args.max_m_step_epoch_add,
+                                     lr=args.lr, random_walking_max_epoch=args.random_walking_max_epoch,
+                                     true_clusters=args.true_clusters, upper_bound_clusters=args.upper_bound_clusters,
                                      lr_update_tol=args.lr_update_tol, lr_update_param=args.lr_update_param,
                                      lr_update_param_changer=args.lr_update_param_changer,
                                      lr_update_param_second_changer=args.lr_update_param_second_changer,
-                                     min_lr=args.min_lr, updated_lr=args.updated_lr,
+                                     min_lr=args.min_lr updated_lr=args.updated_lr,
                                      batch_size=args.batch_size, verbose=args.verbose,
                                      best_model_path=best_model_path if args.save_best_model else None,
-                                     max_computing_size=args.max_computing_size, full_purity=args.full_purity)
+                                     max_computing_size=args.max_computing_size, full_purity=args.full_purity,
+                                     pretrain_number_of_epochs=None,
+                                     pretrain_step=None, pretrain_mul=None
+                                     pretraining=False)
         losses, results, cluster_part, stats = trainer.train()
 
         # results check
