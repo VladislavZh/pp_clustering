@@ -39,22 +39,15 @@ def experiment_runner(args):
         create_folder(path_to_results + '/exp_{}'.format(i))
         exp_folder = path_to_results + '/exp_{}'.format(i)
         trainer = TrainerClusterwise(model, optimizer, args['device'], data, args['n_clusters'], target=target,
-                                     alpha=args['alpha'], beta=args['beta'], epsilon=args['epsilon'],
-                                     sigma_0=args['sigma_0'], sigma_inf=args['sigma_inf'], inf_epoch=args['inf_epoch'],
-                                     max_epoch=args['max_epoch'], max_m_step_epoch=args['max_m_step_epoch'],
-                                     max_m_step_epoch_add=args['max_m_step_epoch_add'],
+                                     epsilon=args['epsilon'], max_epoch=args['max_epoch'],
+                                     max_m_step_epoch=args['max_m_step_epoch'],
                                      lr=args['lr'], random_walking_max_epoch=args['random_walking_max_epoch'],
                                      true_clusters=args['true_clusters'], upper_bound_clusters=args['upper_bound_clusters'],
                                      lr_update_tol=args['lr_update_tol'], lr_update_param=args['lr_update_param'],
-                                     lr_update_param_changer=args['lr_update_param_changer'],
-                                     lr_update_param_second_changer=args['lr_update_param_second_changer'],
                                      min_lr=args['min_lr'], updated_lr=args['updated_lr'],
                                      batch_size=args['batch_size'], verbose=args['verbose'],
                                      best_model_path=best_model_path if args['save_best_model'] else None,
-                                     max_computing_size=args['max_computing_size'], full_purity=args['full_purity'],
-                                     pretrain_number_of_epochs=args["pretrain_number_of_epochs"],
-                                     pretrain_step=args['pretrain_step'], pretrain_mul=args['pretrain_mul'],
-                                     pretraining=args["pretraining"])
+                                     max_computing_size=args['max_computing_size'], full_purity=args['full_purity'])
         losses, results, cluster_part, stats = trainer.train()
 
         # results check
@@ -62,11 +55,6 @@ def experiment_runner(args):
             if args['verbose']:
                 print('Solution failed')
             continue
-        if args['degenerate_eps']:
-            if cluster_part < args['degenerate_eps'] / args['n_clusters']:
-                if args['verbose']:
-                    print("Degenerate solution")
-                continue
 
         # saving results
         with open(exp_folder + '/losses.pkl', 'wb') as f:
