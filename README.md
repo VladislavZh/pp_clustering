@@ -25,3 +25,5 @@ python run.py --path_to_files data/K5_C5 --n_steps 128 --n_clusters 1
 --save_dir K5_C5 --max_epoch 50 --max_m_step_epoch 10 --min_lr 0.001
 --updated_lr 0.001 --max_computing_size 800 --device cuda:0
 ```
+
+All the results and the parameters are stored in 'experiments/[save_dir]' folder.
