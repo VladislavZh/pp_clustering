@@ -41,6 +41,16 @@ def compare(a, b):
 
 
 def label_dataset(path_to_files, files):
+    """
+    Does label enconding and replaces dataset
+
+    inputs:
+            path_to_files - str, path to dataset
+            files - list of str, datapoints file names
+
+    outputs:
+            None
+    """
     files = sorted(files, key=cmp_to_key(compare))
     evnts = {}
     cur = 0
