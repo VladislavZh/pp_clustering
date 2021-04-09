@@ -1,14 +1,15 @@
 # COHORTNEY: Deep Clustering for Heterogeneous Event Sequences
-Here we provide the code of the Cohortney method.
-The preprint for COHORTNEY is available in ArXiv[https://arxiv.org/abs/2104.01440]
+Here we provide the implementation of COHORTNEY.
+The publication is currently under review.
 
 ## Data
-We provide 15 datasets: 12 synthetic and 3 real world. All the datasets are
-in 'data' folder.
+We provide 15 datasets: 12 synthetic and 3 real-world. All datasets are
+in the 'data' folder:
 - data/[sin_,trunc_]Kx_C5 - synthetic datasets
 - data/[Age,Linkedin,IPTV] - real world datasets
+- 
 ##  Method
-We use LSTM based model to estimate the intensity as
+We use an LSTM-based model to estimate the intensity as
 a piecewise constant function. The model is in 'models/LSTM.py'.
 
 ```get_partition``` function in 'utils/data_preprocessor.py' preprocesses
@@ -33,13 +34,3 @@ All the results and the parameters are stored in 'experiments/[save_dir]' folder
 'experiments/[save_dir]/args.json' has the parameters.
 
 'experiments/[save_dir]/last_model.pt' has the model.
-
-## Citation
-@misc{zhuzhel2021cohortney,
-      title={COHORTNEY: Deep Clustering for Heterogeneous Event Sequences}, 
-      author={Vladislav Zhuzhel and Rodrigo Rivera-Castro and Nina Kaploukhaya and Liliya Mironova and Alexey Zaytsev and Evgeny Burnaev},
-      year={2021},
-      eprint={2104.01440},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG}
-}
