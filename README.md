@@ -12,13 +12,15 @@ in the 'data' folder:
 We use an LSTM-based model to estimate the intensity as
 a piecewise constant function. The model is in 'models/LSTM.py'.
 
-```get_partition``` function in 'utils/data_preprocessor.py' preprocesses
-point processes to the format that is suitable for LSTM
+### Highlights
 
-'data\trainers.py' consists the Trainer class, that conducts model training
+The ```get_partition``` function in 'utils/data_preprocessor.py' preprocesses
+point processes to a format that is suitable for the LSTM
+
+The file 'data\trainers.py' consists of the Trainer class. It conducts the model training
 
 ## Starting the experiments
-To start the experiments one needs to run the following command (e.g. for K5_C5
+To start the experiments, one needs to run the following command (e.g. for K5_C5
 dataset):
 
 ```
@@ -29,6 +31,6 @@ python run.py --path_to_files data/K5_C5 --n_steps 128 --n_clusters 1
 --updated_lr 0.001 --max_computing_size 800 --device cuda:0
 ```
 
-All the results and the parameters are stored in 'experiments/[save_dir]' folder.
+All the results and the parameters are stored in 'experiments/[save_dir]' folder:
 - 'experiments/[save_dir]/args.json' has the parameters.
 - 'experiments/[save_dir]/last_model.pt' has the model.
