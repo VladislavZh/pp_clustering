@@ -7,7 +7,7 @@ We provide 15 datasets: 12 synthetic and 3 real-world. All datasets are
 in the 'data' folder:
 - data/[sin_,trunc_]Kx_C5 - synthetic datasets
 - data/[Age,Linkedin,IPTV] - real world datasets
-- 
+
 ##  Method
 We use an LSTM-based model to estimate the intensity as
 a piecewise constant function. The model is in 'models/LSTM.py'.
