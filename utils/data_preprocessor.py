@@ -126,7 +126,7 @@ def get_partition(df, num_of_steps, num_of_classes, end_time=None):
     return res
 
 
-def get_dataset(path_to_files, n_classes, n_steps, n_files = None):
+def get_dataset(path_to_files, n_classes, n_steps, n_files=None):
     """
         Reads dataset
 
@@ -142,7 +142,6 @@ def get_dataset(path_to_files, n_classes, n_steps, n_files = None):
     # searching for files
     files = os.listdir(path_to_files)
     target = None
-    last_event_target = False
 
     # reading target
     if 'clusters.csv' in files:
@@ -162,5 +161,52 @@ def get_dataset(path_to_files, n_classes, n_steps, n_files = None):
         print('File: {}'.format(f))
         df = pd.read_csv(path_to_files + '/' + f)
         data[i, :, :] = get_partition(df, n_steps, n_classes)
+
+    return data, target
+
+
+def process_sequence_for_nh(df):
+    times = np.array(df['time'])
+    events = np.array(df['event'])
+    seq = []
+    prev_time = 0
+    for i in range(len(times)):
+        seq.append({"type_event": events[i],
+                    "time_since_last_event": times[i] - prev_time})
+        prev_time = times[i]
+    return seq
+
+
+def get_dataset_for_nh(path_to_files, n_classes, n_files=None):
+    """
+        Reads dataset in Neural Hawkes format
+
+        inputs:
+                path_to_files - str, path to csv files with dataset
+                n_classes - int, number of event types
+                n_files - int, number of files to read
+    """
+    # searching for files
+    files = os.listdir(path_to_files)
+    target = None
+
+    # reading target
+    if 'clusters.csv' in files:
+        files.remove('clusters.csv')
+        target = torch.Tensor(pd.read_csv(path_to_files + '/clusters.csv')['cluster_id'])
+        if n_files is not None:
+            target = target[:n_files]
+    if 'info.json' in files:
+        files.remove('info.json')
+
+    # reading data
+    files = sorted(files, key=cmp_to_key(compare))
+    if n_files is not None:
+        files = files[:n_files]
+    data = []
+    for i, f in tqdm.tqdm(enumerate(files)):
+        print('File: {}'.format(f))
+        df = pd.read_csv(path_to_files + '/' + f)
+        data.append(process_sequence_for_nh(df))
 
     return data, target
