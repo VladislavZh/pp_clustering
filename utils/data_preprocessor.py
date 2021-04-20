@@ -4,6 +4,7 @@ import torch
 import tqdm
 import numpy as np
 
+
 def cmp_to_key(mycmp):
     """
         Convert a cmp= function into a key= function
@@ -126,7 +127,7 @@ def get_partition(df, num_of_steps, num_of_classes, end_time=None):
     return res
 
 
-def get_dataset(path_to_files, n_classes, n_steps, n_files=None):
+def get_dataset(path_to_files, n_classes, n_steps, n_files = None):
     """
         Reads dataset
 
@@ -142,6 +143,7 @@ def get_dataset(path_to_files, n_classes, n_steps, n_files=None):
     # searching for files
     files = os.listdir(path_to_files)
     target = None
+    last_event_target = False
 
     # reading target
     if 'clusters.csv' in files:

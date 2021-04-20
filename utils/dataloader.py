@@ -7,7 +7,6 @@ class CTLSTMDataset(Dataset):
     '''
 
     def __init__(self, seqs):
-        self.file_path = file_path
         self.event_seqs = []
         self.time_seqs = []
 
@@ -21,7 +20,8 @@ class CTLSTMDataset(Dataset):
     def __getitem__(self, index):
         sample = {
             'event_seq': self.event_seqs[index],
-            'time_seq': self.time_seqs[index]
+            'time_seq': self.time_seqs[index],
+            'ids': index
         }
 
         return sample
@@ -31,6 +31,7 @@ def pad_batch_fn(batch_data):
     sorted_batch = sorted(batch_data, key=lambda x: x['event_seq'].size(), reverse=True)
     event_seqs = [seq['event_seq'].long() for seq in sorted_batch]
     time_seqs = [seq['time_seq'].float() for seq in sorted_batch]
+    ids = [seq['ids'] for seq in sorted_batch]
     seqs_length = torch.LongTensor(list(map(len, event_seqs)))
     last_time_seqs = torch.stack([torch.sum(time_seq) for time_seq in time_seqs])
 
@@ -41,4 +42,4 @@ def pad_batch_fn(batch_data):
         event_seqs_tensor[idx, :seqlen] = torch.LongTensor(event_seq)
         time_seqs_tensor[idx, :seqlen] = torch.FloatTensor(time_seq)
 
-    return event_seqs_tensor, time_seqs_tensor, last_time_seqs, seqs_length
+    return event_seqs_tensor, time_seqs_tensor, last_time_seqs, seqs_length, ids
