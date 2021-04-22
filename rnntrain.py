@@ -11,20 +11,41 @@ from models.aemodel import RNNModel
 from torch.utils.data import TensorDataset, DataLoader
 
 
-def split_booking_seq(data, history_dim):
-    len_sequence = data.shape[0]
-    maxsize = len_sequence // history_dim * history_dim
-    data = data[:maxsize]
-    data = torch.reshape(data,(maxsize // history_dim,history_dim,data.shape[1]))
-    
-    return data.double()
+def split_booking_seq(data, input_dim: int, len_individual: int = 9):
+    """
+    Split csv dataset by user_id and transforms it into TorchTensor
+        data: pandas dataframe,
+        input_dim: dimension of input, incl. user_id,
+        len_individual: max len of individual history 
+    """
+    unique_users = data['user_id'].unique()
+    out_tensor = torch.zeros(len_individual, input_dim-1, 1)
+    for user in unique_users:
+        tmp_df = data[data['user_id']==user]
+        tmp_df = data[data['diff_checkin'] < 9999]
+        tmp_df = tmp_df[['city_id', 'diff_checkin', 'diff_inout']]
+        tmp_tensor = torch.from_numpy(tmp_df.values)
+        tmp_tensor = tmp_tensor.unsqueeze_(-1)
+
+        if tmp_tensor.shape[0] > len_individual:
+            tmp_tensor = tmp_tensor[:len_individual]
+        elif tmp_tensor.shape[0] < len_individual:
+            # pad with zeros
+            target = torch.zeros(len_individual, input_dim-1,1)
+            target[:tmp_tensor.shape[0],:,:] = tmp_tensor
+            tmp_tensor = target
+
+        out_tensor = torch.cat((out_tensor, tmp_tensor),2)
+        print(out_tensor.shape)
+    torch.save(out_tensor, "booking_tensor.pt")    
+    return out_tensor
 
 
 def read_file(filename, scaler, history_dim, input_dim, shuffle=True, fit=False):
     csv = pd.read_csv(filename, parse_dates=["checkin", "checkout"])
     csv = csv.sort_values(by=['user_id', 'checkin'])
     csv = csv[["user_id", "city_id", "diff_checkin", "diff_inout"]]
-    assert csv.shape[1] == input_dim
+    assert csv.shape[1] == input_dim, "not correct input dimension"
 
     # if fit:
     #    csv.loc[:, "value"] = scaler.fit_transform(
@@ -35,9 +56,8 @@ def read_file(filename, scaler, history_dim, input_dim, shuffle=True, fit=False)
     #        csv.loc[:, "value"].values.reshape(-1, 1)
     #    )
 
-    x = torch.from_numpy(csv.values)
-    x = split_booking_seq(x, history_dim)
-    data = TensorDataset(x, x)
+    seq = split_booking_seq(csv, input_dim)
+    data = TensorDataset(seq, seq)
     
     return DataLoader(data, shuffle=shuffle, batch_size=batch_size)
 
