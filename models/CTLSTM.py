@@ -165,6 +165,116 @@ class CTLSTMClusterwise(nn.Module):
         tmp = self.hidden_size
         return torch.rand(*args) * 2 / tmp - 1 / tmp
 
+    def merge_clusters(self, cluster_0, cluster_1, device):
+        """
+            Used for merging two clusters
+
+            input:
+                   cluster_0 - int, number of cluster to merge
+                   cluster_1 - int, number of cluster to merge
+
+            output:
+                   None
+        """
+        # checking if merging is allowed
+        assert self.n_clusters > 1
+
+        # preparing templates for new hidden and cell states
+        h_d_init = torch.Tensor(self.h_d_init).to(device)
+        c_d_init = torch.Tensor(self.c_d_init).to(device)
+        c_bar_init = torch.Tensor(self.c_bar_init).to(device)
+        c_init = torch.Tensor(self.c_init).to(device)
+
+        # merging
+        h_d_init[cluster_0, :] = (h_d_init[cluster_0, :] + h_d_init[cluster_1, :]) / 2
+        h_d_init = torch.index_select(h_d_init, 0,
+                                      torch.Tensor([k for k in range(self.n_clusters) if k != cluster_1]).long())
+        c_d_init[cluster_0, :] = (c_d_init[cluster_0, :] + c_d_init[cluster_1, :]) / 2
+        c_d_init = torch.index_select(c_d_init, 0,
+                                      torch.Tensor([k for k in range(self.n_clusters) if k != cluster_1]).long())
+        c_bar_init[cluster_0, :] = (c_bar_init[cluster_0, :] + c_bar_init[cluster_1, :]) / 2
+        c_bar_init = torch.index_select(c_bar_init, 0,
+                                        torch.Tensor([k for k in range(self.n_clusters) if k != cluster_1]).long())
+        c_init[cluster_0, :] = (c_init[cluster_0, :] + c_init[cluster_1, :]) / 2
+        c_init = torch.index_select(c_init, 0,
+                                    torch.Tensor([k for k in range(self.n_clusters) if k != cluster_1]).long())
+
+        # updating states
+        self.h_d_init = Parameter(h_d_init)
+        self.c_d_init = Parameter(c_d_init)
+        self.c_bar_init = Parameter(c_bar_init)
+        self.c_init = Parameter(c_init)
+
+        # updating number of clusters
+        self.n_clusters -= 1
+
+    def delete_cluster(self, cluster, device):
+        # checking that deleting is important
+        assert self.n_clusters > 1
+
+        # preparing templates
+        h_d_init = torch.Tensor(self.h_d_init).to(device)
+        c_d_init = torch.Tensor(self.c_d_init).to(device)
+        c_bar_init = torch.Tensor(self.c_bar_init).to(device)
+        c_init = torch.Tensor(self.c_init).to(device)
+
+        # deleting
+        h_d_init = torch.index_select(h_d_init, 0,
+                                      torch.Tensor([k for k in range(self.n_clusters) if k != cluster]).long())
+        c_d_init = torch.index_select(c_d_init, 0,
+                                      torch.Tensor([k for k in range(self.n_clusters) if k != cluster]).long())
+        c_bar_init = torch.index_select(c_bar_init, 0,
+                                        torch.Tensor([k for k in range(self.n_clusters) if k != cluster]).long())
+        c_init = torch.index_select(c_init, 0,
+                                    torch.Tensor([k for k in range(self.n_clusters) if k != cluster]).long())
+
+        # updating states
+        self.h_d_init = Parameter(h_d_init)
+        self.c_d_init = Parameter(c_d_init)
+        self.c_bar_init = Parameter(c_bar_init)
+        self.c_init = Parameter(c_init)
+
+        # updating number of clusters
+        self.n_clusters -= 1
+
+    def split_cluster(self, cluster, device):
+        # preparing templates
+        h_d_init = torch.zeros(self.h_d_init.shape[0] + 1, self.h_d_init.shape[1]).to(device)
+        c_d_init = torch.zeros(self.h_d_init.shape[0] + 1, self.h_d_init.shape[1]).to(device)
+        c_bar_init = torch.zeros(self.h_d_init.shape[0] + 1, self.h_d_init.shape[1]).to(device)
+        c_init = torch.zeros(self.h_d_init.shape[0] + 1, self.h_d_init.shape[1]).to(device)
+
+        # filling in non-splitting clusters
+        for k in range(self.n_clusters):
+            if k != cluster:
+                h_d_init[k, :] = self.h_d_init[k, :]
+                c_d_init[k, :] = self.c_d_init[k, :]
+                c_bar_init[k, :] = self.c_bar_init[k, :]
+                c_init[k, :] = self.c_init[k, :]
+
+        # splitting
+        a = np.random.beta(1, 1)
+        h_d_init[cluster, :] = 2 * a * self.h_d_init[cluster, :]
+        h_d_init[-1, :] = 2 * (1 - a) * self.h_d_init[cluster, :]
+
+        c_d_init[cluster, :] = 2 * a * self.c_d_init[cluster, :]
+        c_d_init[-1, :] = 2 * (1 - a) * self.c_d_init[cluster, :]
+
+        c_bar_init[cluster, :] = 2 * a * self.c_bar_init[cluster, :]
+        c_bar_init[-1, :] = 2 * (1 - a) * self.c_bar_init[cluster, :]
+
+        c_init[cluster, :] = 2 * a * self.c_init[cluster, :]
+        c_init[-1, :] = 2 * (1 - a) * self.c_init[cluster, :]
+
+        # updating states
+        self.h_d_init = Parameter(h_d_init)
+        self.c_d_init = Parameter(c_d_init)
+        self.c_bar_init = Parameter(c_bar_init)
+        self.c_init = Parameter(c_init)
+
+        # updating number of clusters
+        self.n_clusters += 1
+        
     def init_states_k(self, batch_size, k):
         self.h_d = self.h_d_init[None,k,:].repeat(batch_size,1)
         self.c_d = self.c_d_init[None,k,:].repeat(batch_size,1)
