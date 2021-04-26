@@ -11,9 +11,9 @@ from models.aemodel import RNNModel
 from torch.utils.data import TensorDataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
-writer = SummaryWriter(log_dir='runs/first_ae')
+writer = SummaryWriter(log_dir='runs/second_ae')
 
-def split_booking_seq(data, input_dim: int, len_individual: int = 9):
+def split_seq_by_user(data, input_dim: int, len_individual: int = 9):
     """
     Split csv dataset by user_id and transforms it into TorchTensor
         data: pandas dataframe,
@@ -21,8 +21,11 @@ def split_booking_seq(data, input_dim: int, len_individual: int = 9):
         len_individual: max len of individual history 
     """
     unique_users = data['user_id'].unique()
-    out_tensor = torch.zeros(len_individual, input_dim-1, 1)
+    out_tensor = torch.zeros(len_individual, input_dim, 1)
+    i = 0
     for user in unique_users:
+        print(i)
+        i += 1
         tmp_df = data[data['user_id']==user]
         tmp_df = data[data['diff_checkin'] < 9999]
         tmp_df = tmp_df[['city_id', 'diff_checkin', 'diff_inout']]
@@ -33,17 +36,19 @@ def split_booking_seq(data, input_dim: int, len_individual: int = 9):
             tmp_tensor = tmp_tensor[:len_individual]
         elif tmp_tensor.shape[0] < len_individual:
             # pad with zeros
-            target = torch.zeros(len_individual, input_dim-1,1)
+            target = torch.zeros(len_individual, input_dim,1)
             target[:tmp_tensor.shape[0],:,:] = tmp_tensor
             tmp_tensor = target
 
         out_tensor = torch.cat((out_tensor, tmp_tensor),2)
-        print(out_tensor.shape)
-    torch.save(out_tensor, "booking_tensor.pt")    
+    
+    # tensor -> (N, len_sequence, input_dim)
+    out_tensor = out_tensor.permute(2,0,1)
+    torch.save(out_tensor, "booking_tensor_scaled.pt")    
     return out_tensor
 
 
-def read_file(filename: str,  history_dim: int, input_dim: int):
+def read_data(filename: str,  history_dim: int, input_dim: int, split: bool = False):
     """
     Takes a csv datafile, transforms to pandas dataframe,
     selects necessary features and converts to torch tensor
@@ -51,13 +56,15 @@ def read_file(filename: str,  history_dim: int, input_dim: int):
     csv = pd.read_csv(filename, parse_dates=["checkin", "checkout"])
     csv = csv.sort_values(by=['user_id', 'checkin'])
     csv = csv[["user_id", "city_id", "diff_checkin", "diff_inout"]]
-    assert csv.shape[1] == input_dim, "not correct input dimension"
+    assert csv.shape[1] - 1 == input_dim, "not correct input dimension"
     
-    #csv = MinMaxScaler.fit_transform(csv)
-    #seq = split_booking_seq(csv, input_dim)
-    seq = torch.load('data/booking_tensor.pt')
-    
-    data = TensorDataset(seq, seq)
+    if split:
+        csv[['diff_checkin', 'diff_inout']] = MinMaxScaler().fit_transform(csv[['diff_checkin','diff_inout']])
+        seq = split_seq_by_user(csv, input_dim)
+    else:
+        seq = torch.load('data/booking_tensor_scaled.pt')
+
+    data = TensorDataset(seq.float(), seq.float())
     
     return data
 
@@ -68,8 +75,10 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--history_dim", type=int, default=50)
-    parser.add_argument("--input_dim", type=int, default=4)
-    parser.add_argument("--hidden_dim", type=int, default=30)
+    parser.add_argument("--input_dim", type=int, default=3)
+    parser.add_argument("--num_emb", type=int, default=1)
+    parser.add_argument("--emb_dim", type=int, default=128)
+    parser.add_argument("--hidden_dim", type=int, default=50)
     parser.add_argument("--encoder_dim", type=int, default=10)
     parser.add_argument("--layers", type=int, default=1)
     parser.add_argument("--clip", type=int, default=5)  # gradient clipping
@@ -88,7 +97,7 @@ if __name__ == "__main__":
     os.makedirs(args.checkpoint_dir, exist_ok=True)
 
     scaler = MinMaxScaler()
-    full_dataset = read_file(
+    full_dataset = read_data(
         args.train_file, args.history_dim, args.input_dim
     )
     
@@ -98,13 +107,13 @@ if __name__ == "__main__":
     train_loader = DataLoader(train_dataset, shuffle=True, batch_size=batch_size)
     valid_loader = DataLoader(valid_dataset, shuffle=True, batch_size=batch_size)
 
-    model = RNNModel(args.input_dim, args.hidden_dim, args.encoder_dim, args.layers)
+    model = RNNModel(args.num_emb, args.input_dim, args.emb_dim, args.hidden_dim, args.encoder_dim, args.layers)
     print(model)
 
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     train_on_gpu = torch.cuda.is_available()
-    print(train_on_gpu)
+    
     if train_on_gpu:
         model = model.cuda()
 
@@ -115,17 +124,18 @@ if __name__ == "__main__":
         hidden1, hidden2 = model.init_hidden(batch_size, train_on_gpu)
 
         model.train()
-        for inputs, _ in train_loader:
+        for _, inputs in enumerate(train_loader):
+            
+            inputs = inputs[0]
             if train_on_gpu:
                 inputs = inputs.cuda()
             if len(inputs) != batch_size:
                 break
-
             hidden1 = tuple([each.data for each in hidden1])
             hidden2 = tuple([each.data for each in hidden2])
             optimizer.zero_grad()
-            outputs, hidden1, hidden2 = model(inputs, hidden1, hidden2)
-            loss = criterion(outputs, inputs)
+            outputs, lstm_inp, hidden1, hidden2 = model(inputs, hidden1, hidden2)
+            loss = criterion(outputs, lstm_inp)
 
             loss.backward()
             nn.utils.clip_grad_norm_(model.parameters(), args.clip)
@@ -142,8 +152,8 @@ if __name__ == "__main__":
 
             hidden1 = tuple([each.data for each in hidden1])
             hidden2 = tuple([each.data for each in hidden2])
-            outputs, hidden1, hidden2 = model(inputs, hidden1, hidden2)
-            loss = criterion(outputs, inputs)
+            outputs, lstm_inp, hidden1, hidden2 = model(inputs, hidden1, hidden2)
+            loss = criterion(outputs, lstm_inp)
             valid_loss += loss.item() * inputs.size(0)
 
         train_loss = train_loss / len(train_loader)
