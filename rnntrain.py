@@ -11,24 +11,23 @@ from models.aemodel import RNNModel
 from torch.utils.data import TensorDataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
-writer = SummaryWriter(log_dir='runs/second_ae')
+writer = SummaryWriter(log_dir='runs/atm_dataset_2ndrun')
 
-def split_seq_by_user(data, input_dim: int, len_individual: int = 9):
+def split_seq_by_user(data, input_dim: int, len_individual: int = 300):
     """
     Split csv dataset by user_id and transforms it into TorchTensor
         data: pandas dataframe,
         input_dim: dimension of input, incl. user_id,
         len_individual: max len of individual history 
     """
-    unique_users = data['user_id'].unique()
+    unique_users = data['id'].unique()
+    #unique_users = data['user_id'].unique()
     out_tensor = torch.zeros(len_individual, input_dim, 1)
-    i = 0
     for user in unique_users:
-        print(i)
-        i += 1
-        tmp_df = data[data['user_id']==user]
-        tmp_df = data[data['diff_checkin'] < 9999]
-        tmp_df = tmp_df[['city_id', 'diff_checkin', 'diff_inout']]
+        tmp_df = data[data['id']==user]
+        #tmp_df = tmp_df[tmp_df['diff_checkin'] < 9999]
+        tmp_df = tmp_df[['event', 'time']]
+        #tmp_df = tmp_df[['city_id', 'diff_checkin', 'diff_inout']]
         tmp_tensor = torch.from_numpy(tmp_df.values)
         tmp_tensor = tmp_tensor.unsqueeze_(-1)
 
@@ -44,7 +43,7 @@ def split_seq_by_user(data, input_dim: int, len_individual: int = 9):
     
     # tensor -> (N, len_sequence, input_dim)
     out_tensor = out_tensor.permute(2,0,1)
-    torch.save(out_tensor, "booking_tensor_scaled.pt")    
+    #torch.save(out_tensor, "booking_tensor_scaled.pt")    
     return out_tensor
 
 
@@ -53,13 +52,16 @@ def read_data(filename: str,  history_dim: int, input_dim: int, split: bool = Fa
     Takes a csv datafile, transforms to pandas dataframe,
     selects necessary features and converts to torch tensor
     """
-    csv = pd.read_csv(filename, parse_dates=["checkin", "checkout"])
-    csv = csv.sort_values(by=['user_id', 'checkin'])
-    csv = csv[["user_id", "city_id", "diff_checkin", "diff_inout"]]
+    csv = pd.read_csv(filename)
+    csv = csv.sort_values(by=['id', 'time'])
+    #csv = csv.sort_values(by=['user_id', 'checkin'])
+    csv = csv[['id','time','event']]
+    #csv = csv[["user_id", "city_id", "diff_checkin", "diff_inout"]]
     assert csv.shape[1] - 1 == input_dim, "not correct input dimension"
     
     if split:
-        csv[['diff_checkin', 'diff_inout']] = MinMaxScaler().fit_transform(csv[['diff_checkin','diff_inout']])
+        csv[['time']] = MinMaxScaler().fit_transform(csv[['time']])
+        #csv[['diff_checkin', 'diff_inout']] = MinMaxScaler().fit_transform(csv[['diff_checkin','diff_inout']])
         seq = split_seq_by_user(csv, input_dim)
     else:
         seq = torch.load('data/booking_tensor_scaled.pt')
@@ -72,10 +74,10 @@ def read_data(filename: str,  history_dim: int, input_dim: int, split: bool = Fa
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--batch_size", type=int, default=32)
+    parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--history_dim", type=int, default=50)
-    parser.add_argument("--input_dim", type=int, default=3)
+    parser.add_argument("--input_dim", type=int, default=2)
     parser.add_argument("--num_emb", type=int, default=1)
     parser.add_argument("--emb_dim", type=int, default=128)
     parser.add_argument("--hidden_dim", type=int, default=50)
@@ -88,29 +90,37 @@ if __name__ == "__main__":
     parser.add_argument(
         "--train_file",
         type=str,
-        default="data/booking_challenge_tpp_labeled.csv",
+        default ="data/atm_train_day.csv",
+        #default="data/booking_challenge_tpp_labeled.csv",
     )
-
+    parser.add_argument(
+        "--test_file",
+        type=str,
+        default ="data/atm_test_day.csv",
+        #default="data/booking_challenge_tpp_labeled.csv",
+    )
     args = parser.parse_args()
 
     batch_size = args.batch_size
     os.makedirs(args.checkpoint_dir, exist_ok=True)
 
     scaler = MinMaxScaler()
-    full_dataset = read_data(
-        args.train_file, args.history_dim, args.input_dim
-    )
-    
-    train_size = int(0.8 * len(full_dataset))
-    valid_size = len(full_dataset) - train_size
-    train_dataset, valid_dataset = torch.utils.data.random_split(full_dataset, [train_size, valid_size])
+    train_dataset = read_data(args.train_file, args.history_dim, args.input_dim, split=True)
+    valid_dataset = read_data(args.test_file, args.history_dim, args.input_dim, split=True)
     train_loader = DataLoader(train_dataset, shuffle=True, batch_size=batch_size)
     valid_loader = DataLoader(valid_dataset, shuffle=True, batch_size=batch_size)
+    #full_dataset = read_data(
+    #    args.train_file, args.history_dim, args.input_dim, split=False
+    #)
+    #train_size = int(0.8 * len(full_dataset))
+    #valid_size = len(full_dataset) - train_size
+    #train_dataset, valid_dataset = torch.utils.data.random_split(full_dataset, [train_size, valid_size])
+    #train_loader = DataLoader(train_dataset, shuffle=True, batch_size=batch_size)
+    #valid_loader = DataLoader(valid_dataset, shuffle=True, batch_size=batch_size)
 
     model = RNNModel(args.num_emb, args.input_dim, args.emb_dim, args.hidden_dim, args.encoder_dim, args.layers)
     print(model)
 
-    criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     train_on_gpu = torch.cuda.is_available()
     
@@ -124,9 +134,8 @@ if __name__ == "__main__":
         hidden1, hidden2 = model.init_hidden(batch_size, train_on_gpu)
 
         model.train()
-        for _, inputs in enumerate(train_loader):
-            
-            inputs = inputs[0]
+        for inputs, _ in train_loader:
+           
             if train_on_gpu:
                 inputs = inputs.cuda()
             if len(inputs) != batch_size:
@@ -134,8 +143,8 @@ if __name__ == "__main__":
             hidden1 = tuple([each.data for each in hidden1])
             hidden2 = tuple([each.data for each in hidden2])
             optimizer.zero_grad()
-            outputs, lstm_inp, hidden1, hidden2 = model(inputs, hidden1, hidden2)
-            loss = criterion(outputs, lstm_inp)
+            cat_pred, noncat_pred, cat_logits, hidden1, hidden2 = model(inputs, hidden1, hidden2)
+            loss = model.total_loss(cat_logits, noncat_pred, inputs)
 
             loss.backward()
             nn.utils.clip_grad_norm_(model.parameters(), args.clip)
@@ -152,9 +161,15 @@ if __name__ == "__main__":
 
             hidden1 = tuple([each.data for each in hidden1])
             hidden2 = tuple([each.data for each in hidden2])
-            outputs, lstm_inp, hidden1, hidden2 = model(inputs, hidden1, hidden2)
-            loss = criterion(outputs, lstm_inp)
+            cat_pred, noncat_pred, cat_logits, hidden1, hidden2 = model(inputs, hidden1, hidden2)
+            loss = model.total_loss(cat_logits, noncat_pred, inputs)
             valid_loss += loss.item() * inputs.size(0)
+        
+        # test output
+        inputs, _ = next(iter(valid_loader))
+        cat_pred, noncat_pred, _, _, _ = model(inputs.cuda(),hidden1,hidden2)
+        print(inputs[-1])
+        print(torch.cat((cat_pred,noncat_pred), dim=-1)[-1])
 
         train_loss = train_loss / len(train_loader)
         valid_loss = valid_loss / len(valid_loader)
