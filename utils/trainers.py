@@ -1099,7 +1099,7 @@ class TrainerClusterwiseForNH:
                 gamma = self.compute_gamma(likelihood)
                 break
             clusters = torch.argmax(gamma, dim=0)
-        ll = -torch.sum(likelihood)
+        ll = -torch.sum(torch.vstack(likelihood))
         if self.verbose:
             print('Cluster partition')
         cluster_partition = 2
