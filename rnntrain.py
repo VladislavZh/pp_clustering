@@ -7,27 +7,26 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
+from typing import Dict
 from models.aemodel import RNNModel
 from torch.utils.data import TensorDataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
-writer = SummaryWriter(log_dir='runs/atm_dataset_2ndrun')
 
-def split_seq_by_user(data, input_dim: int, len_individual: int = 300):
+def split_seq_by_user(data, input_dim: int, len_individual: int, coldict: Dict):
     """
-    Split csv dataset by user_id and transforms it into TorchTensor
+    Split csv dataset by id_column and transforms it into TorchTensor
         data: pandas dataframe,
         input_dim: dimension of input, incl. user_id,
         len_individual: max len of individual history 
     """
-    unique_users = data['id'].unique()
-    #unique_users = data['user_id'].unique()
+    unique_ids = data[coldict['id_cols']].unique()
     out_tensor = torch.zeros(len_individual, input_dim, 1)
-    for user in unique_users:
-        tmp_df = data[data['id']==user]
+    for idd in unique_ids:
+        tmp_df = data[data[coldict['id_cols']]==idd]
+        #filter for booking data
         #tmp_df = tmp_df[tmp_df['diff_checkin'] < 9999]
-        tmp_df = tmp_df[['event', 'time']]
-        #tmp_df = tmp_df[['city_id', 'diff_checkin', 'diff_inout']]
+        tmp_df = tmp_df.drop(coldict['id_cols'], inplace=False, axis=1)
         tmp_tensor = torch.from_numpy(tmp_df.values)
         tmp_tensor = tmp_tensor.unsqueeze_(-1)
 
@@ -43,29 +42,28 @@ def split_seq_by_user(data, input_dim: int, len_individual: int = 300):
     
     # tensor -> (N, len_sequence, input_dim)
     out_tensor = out_tensor.permute(2,0,1)
-    #torch.save(out_tensor, "booking_tensor_scaled.pt")    
     return out_tensor
 
 
-def read_data(filename: str,  history_dim: int, input_dim: int, split: bool = False):
+def read_data(filename: str,  history_dim: int, input_dim: int, coldict: Dict, load: bool = False):
     """
     Takes a csv datafile, transforms to pandas dataframe,
     selects necessary features and converts to torch tensor
     """
+    if load:
+        seq = torch.load(filename)
+        data = TensorDataset(seq.float(), seq.float())
+        return data
+
     csv = pd.read_csv(filename)
-    csv = csv.sort_values(by=['id', 'time'])
-    #csv = csv.sort_values(by=['user_id', 'checkin'])
-    csv = csv[['id','time','event']]
-    #csv = csv[["user_id", "city_id", "diff_checkin", "diff_inout"]]
+    csv = csv.sort_values(by=coldict['sort_cols'])
+    csv = csv[coldict['necess_cols']]
     assert csv.shape[1] - 1 == input_dim, "not correct input dimension"
     
-    if split:
-        csv[['time']] = MinMaxScaler().fit_transform(csv[['time']])
-        #csv[['diff_checkin', 'diff_inout']] = MinMaxScaler().fit_transform(csv[['diff_checkin','diff_inout']])
-        seq = split_seq_by_user(csv, input_dim)
-    else:
-        seq = torch.load('data/booking_tensor_scaled.pt')
-
+    #for col in coldict['scale_cols']:
+    #    csv[col] = MinMaxScaler().fit_transform(csv[col])
+    csv[coldict['scale_cols']] = MinMaxScaler().fit_transform(csv[coldict['scale_cols']])
+    seq = split_seq_by_user(csv, input_dim, history_dim, coldict)
     data = TensorDataset(seq.float(), seq.float())
     
     return data
@@ -76,7 +74,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--epochs", type=int, default=20)
-    parser.add_argument("--history_dim", type=int, default=50)
+    parser.add_argument("--history_dim", type=int, default=300)
     parser.add_argument("--input_dim", type=int, default=2)
     parser.add_argument("--num_emb", type=int, default=1)
     parser.add_argument("--emb_dim", type=int, default=128)
@@ -103,14 +101,17 @@ if __name__ == "__main__":
 
     batch_size = args.batch_size
     os.makedirs(args.checkpoint_dir, exist_ok=True)
+    writer = SummaryWriter(log_dir='runs/atm_dataset_acc')
 
-    scaler = MinMaxScaler()
-    train_dataset = read_data(args.train_file, args.history_dim, args.input_dim, split=True)
-    valid_dataset = read_data(args.test_file, args.history_dim, args.input_dim, split=True)
+    coldict = {'sort_cols': ['id', 'time'], 'event_cols': ['event'], 'id_cols': 'id', 'scale_cols': ['time'], 'necess_cols': ['id', 'event', 'time'] }
+    train_dataset = read_data(args.train_file, args.history_dim, args.input_dim, coldict, load=False)
+    valid_dataset = read_data(args.test_file, args.history_dim, args.input_dim, coldict, load=False)
     train_loader = DataLoader(train_dataset, shuffle=True, batch_size=batch_size)
     valid_loader = DataLoader(valid_dataset, shuffle=True, batch_size=batch_size)
+    
+    #booking
     #full_dataset = read_data(
-    #    args.train_file, args.history_dim, args.input_dim, split=False
+    #    args.train_file, args.history_dim, args.input_dim, coldict, load=True
     #)
     #train_size = int(0.8 * len(full_dataset))
     #valid_size = len(full_dataset) - train_size
@@ -131,6 +132,7 @@ if __name__ == "__main__":
         print("training: epoch ", epoch)
         train_loss = 0.0
         valid_loss = 0.0
+        accuracy = 0.0
         hidden1, hidden2 = model.init_hidden(batch_size, train_on_gpu)
 
         model.train()
@@ -164,21 +166,26 @@ if __name__ == "__main__":
             cat_pred, noncat_pred, cat_logits, hidden1, hidden2 = model(inputs, hidden1, hidden2)
             loss = model.total_loss(cat_logits, noncat_pred, inputs)
             valid_loss += loss.item() * inputs.size(0)
+            accuracy += (cat_pred == inputs[:,:,0].unsqueeze_(-1)).float().sum().item()
         
         # test output
         inputs, _ = next(iter(valid_loader))
         cat_pred, noncat_pred, _, _, _ = model(inputs.cuda(),hidden1,hidden2)
-        print(inputs[-1])
-        print(torch.cat((cat_pred,noncat_pred), dim=-1)[-1])
+        #print(inputs[-1])
+        #print(torch.cat((cat_pred,noncat_pred), dim=-1)[-1])
 
         train_loss = train_loss / len(train_loader)
         valid_loss = valid_loss / len(valid_loader)
+        accuracy = accuracy/(inputs.size(0)*inputs.size(1)*len(valid_loader))
         print(
             "Epoch: {} \tTraining Loss:{:.6f} \tValidation Loss:{:.6f}".format(
                 epoch, train_loss, valid_loss
             )
         )
+        print('accuracy:{:.4f}'.format(accuracy))
+
         writer.add_scalars('Autoencoder loss', {'train': train_loss, 'validation': valid_loss}, epoch)
+        writer.add_scalars('Autoencoder accuracy', {'validation': accuracy}, epoch)
         torch.save(
             model.state_dict(),
             os.path.join(args.checkpoint_dir, "checkpoint-%d.pth" % epoch),
