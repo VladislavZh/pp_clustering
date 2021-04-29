@@ -208,6 +208,7 @@ class CTLSTMClusterwise(nn.Module):
 
         # updating number of clusters
         self.n_clusters -= 1
+        self.output = [0] * self.n_clusters
 
     def delete_cluster(self, cluster, device):
         # checking that deleting is important
@@ -237,6 +238,7 @@ class CTLSTMClusterwise(nn.Module):
 
         # updating number of clusters
         self.n_clusters -= 1
+        self.output = [0] * self.n_clusters
 
     def split_cluster(self, cluster, device):
         # preparing templates
@@ -275,6 +277,7 @@ class CTLSTMClusterwise(nn.Module):
 
         # updating number of clusters
         self.n_clusters += 1
+        self.output = [0] * self.n_clusters
         
     def init_states_k(self, batch_size, k):
         self.h_d = self.h_d_init[None, k, :].repeat(batch_size, 1)
