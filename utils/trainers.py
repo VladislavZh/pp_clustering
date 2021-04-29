@@ -943,7 +943,7 @@ class TrainerClusterwiseForNH:
         tmp = torch.vstack(likelihood)
         tmp1 = torch.zeros_like(tmp)
         for i in range(self.n_clusters):
-            tmp1[i] = 1/torch.sum(torch.exp(tmp - tmp[i]))
+            tmp1[i,:] = 1/torch.sum(torch.exp(tmp - tmp[i,:][None,:]), dim = 0)
         return tmp1
 
     def e_step(self, ids=None):
