@@ -276,10 +276,10 @@ class CTLSTMClusterwise(nn.Module):
         self.n_clusters += 1
         
     def init_states_k(self, batch_size, k):
-        self.h_d = self.h_d_init[None,k,:].repeat(batch_size,1)
-        self.c_d = self.c_d_init[None,k,:].repeat(batch_size,1)
-        self.c_bar = self.c_bar_init[None,k,:].repeat(batch_size,1)
-        self.c = self.c_init[None,k,:].repeat(batch_size,1)
+        self.h_d = self.h_d_init[None, k, :].repeat(batch_size, 1)
+        self.c_d = self.c_d_init[None, k, :].repeat(batch_size, 1)
+        self.c_bar = self.c_bar_init[None, k, :].repeat(batch_size, 1)
+        self.c = self.c_init[None, k, :].repeat(batch_size, 1)
 
     def recurrence(self, emb_event_t, h_d_tm1, c_tm1, c_bar_tm1):
         feed = torch.cat((emb_event_t, h_d_tm1), dim=1)

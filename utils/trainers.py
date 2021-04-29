@@ -942,8 +942,8 @@ class TrainerClusterwiseForNH:
         """
         tmp = torch.vstack(likelihood)
         tmp1 = torch.zeros_like(tmp)
-        tmp1[0] = 1/(torch.exp(tmp[1]-tmp[0])+1)
-        tmp1[1] = 1/(torch.exp(tmp[0]-tmp[1])+1)
+        for i in range(self.n_clusters):
+            tmp1[i] = 1/torch.sum(torch.exp(tmp - tmp[i]))
         return tmp1
 
     def e_step(self, ids=None):
@@ -1207,112 +1207,112 @@ class TrainerClusterwiseForNH:
                 enforce = True
             else:
                 enforce = False
-                # updating number of clusters
-            # if epoch <= self.random_walking_max_epoch or enforce:
-            #     if ((torch.rand(1) > 0.5)[
-            #             0] or self.n_clusters == 1) and self.n_clusters < self.upper_bound_clusters and not enforce:
-            #         split = True
-            #     else:
-            #         split = False
-            #     torch.save(self.model, 'tmp.pt')
-            #     pre_ll = float(self.compute_ll(big_batch, ids, 'Before:'))
-            #     if split:
-            #         if self.verbose:
-            #             print('Splitting')
-            #         for cluster in range(self.n_clusters):
-            #             self.model.to('cpu')
-            #             self.model.eval()
-            #             with torch.no_grad():
-            #                 self.model.split_cluster(cluster, 'cpu')
-            #             self.n_clusters += 1
-            #             self.model.to(self.device)
-            #             self.pi = torch.ones(self.n_clusters) / self.n_clusters
-            #             post_ll = float(self.compute_ll(big_batch, ids, 'After splitting {} cluster:'.format(cluster)))
-            #             remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
-            #             if self.verbose:
-            #                 print('Remain probability: {}'.format(remain_prob))
-            #             if (torch.rand(1) > remain_prob)[0]:
-            #                 if self.verbose:
-            #                     print('Loading model')
-            #                 self.model = torch.load('tmp.pt')
-            #                 self.n_clusters -= 1
-            #                 self.pi = torch.ones(self.n_clusters) / self.n_clusters
-            #             else:
-            #                 enforce = False
-            #                 break
-            #     else:
-            #         if enforce:
-            #             best_loss_enf = 1e+9
-            #         if (torch.rand(1) > 0.5)[0]:
-            #             merge = True
-            #         else:
-            #             merge = False
-            #         if merge and not enforce:
-            #             if self.verbose:
-            #                 print('Merging')
-            #             cluster_0 = int(torch.randint(self.n_clusters, size=(1,))[0])
-            #             for cluster_1 in range(self.n_clusters):
-            #                 if cluster_1 == cluster_0:
-            #                     continue
-            #                 self.model.to('cpu')
-            #                 self.model.eval()
-            #                 with torch.no_grad():
-            #                     self.model.merge_clusters(cluster_0, cluster_1, 'cpu')
-            #                 self.n_clusters -= 1
-            #                 self.pi = torch.ones(self.n_clusters) / self.n_clusters
-            #                 self.model.to(self.device)
-            #                 post_ll = float(self.compute_ll(big_batch, ids,
-            #                                                 'After merging {} and {} clusters:'.format(cluster_0,
-            #                                                                                            cluster_1)))
-            #                 remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
-            #                 if self.verbose:
-            #                     print('Remain probability: {}'.format(remain_prob))
-            #                 if (torch.rand(1) > remain_prob)[0]:
-            #                     if self.verbose:
-            #                         print('Loading model')
-            #                     self.model = torch.load('tmp.pt')
-            #                     self.n_clusters += 1
-            #                     self.pi = torch.ones(self.n_clusters) / self.n_clusters
-            #                 else:
-            #                     break
-            #         else:
-            #             if self.verbose:
-            #                 print('Deleting')
-            #             for cluster in range(self.n_clusters):
-            #                 self.model.to('cpu')
-            #                 self.model.eval()
-            #                 with torch.no_grad():
-            #                     self.model.delete_cluster(cluster, 'cpu')
-            #                 self.n_clusters -= 1
-            #                 self.pi = torch.ones(self.n_clusters) / self.n_clusters
-            #                 self.model.to(self.device)
-            #                 post_ll = float(
-            #                     self.compute_ll(big_batch, ids, 'After deleting {} cluster:'.format(cluster)))
-            #                 remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
-            #                 if self.verbose:
-            #                     print('Remain probability: {}'.format(remain_prob))
-            #                 if (torch.rand(1) > remain_prob)[0]:
-            #                     if enforce:
-            #                         if post_ll < best_loss_enf:
-            #                             if self.verbose:
-            #                                 print('Saving enforced model')
-            #                             best_loss_enf = post_ll
-            #                             torch.save(self.model, 'best_tmp.pt')
-            #                     if self.verbose:
-            #                         print('Loading model')
-            #                     self.model = torch.load('tmp.pt')
-            #                     self.n_clusters += 1
-            #                     self.pi = torch.ones(self.n_clusters) / self.n_clusters
-            #                 else:
-            #                     break
-            #     if enforce:
-            #         self.model = torch.load('best_tmp.pt')
-            #         self.n_clusters -= 1
-            #         self.pi = torch.ones(self.n_clusters) / self.n_clusters
-            #     self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
-            #     if self.max_computing_size is None:
-            #         self.gamma = torch.zeros(self.n_clusters, self.N).to(self.device)
-            #     else:
-            #         self.gamma = torch.zeros(self.n_clusters, self.max_computing_size).to(self.device)
+            # updating number of clusters
+            if epoch <= self.random_walking_max_epoch or enforce:
+                if ((torch.rand(1) > 0.5)[
+                        0] or self.n_clusters == 1) and self.n_clusters < self.upper_bound_clusters and not enforce:
+                    split = True
+                else:
+                    split = False
+                torch.save(self.model, 'tmp.pt')
+                pre_ll = float(self.compute_ll(big_batch, ids, 'Before:'))
+                if split:
+                    if self.verbose:
+                        print('Splitting')
+                    for cluster in range(self.n_clusters):
+                        self.model.to('cpu')
+                        self.model.eval()
+                        with torch.no_grad():
+                            self.model.split_cluster(cluster, 'cpu')
+                        self.n_clusters += 1
+                        self.model.to(self.device)
+                        self.pi = torch.ones(self.n_clusters) / self.n_clusters
+                        post_ll = float(self.compute_ll(big_batch, ids, 'After splitting {} cluster:'.format(cluster)))
+                        remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
+                        if self.verbose:
+                            print('Remain probability: {}'.format(remain_prob))
+                        if (torch.rand(1) > remain_prob)[0]:
+                            if self.verbose:
+                                print('Loading model')
+                            self.model = torch.load('tmp.pt')
+                            self.n_clusters -= 1
+                            self.pi = torch.ones(self.n_clusters) / self.n_clusters
+                        else:
+                            enforce = False
+                            break
+                else:
+                    if enforce:
+                        best_loss_enf = 1e+9
+                    if (torch.rand(1) > 0.5)[0]:
+                        merge = True
+                    else:
+                        merge = False
+                    if merge and not enforce:
+                        if self.verbose:
+                            print('Merging')
+                        cluster_0 = int(torch.randint(self.n_clusters, size=(1,))[0])
+                        for cluster_1 in range(self.n_clusters):
+                            if cluster_1 == cluster_0:
+                                continue
+                            self.model.to('cpu')
+                            self.model.eval()
+                            with torch.no_grad():
+                                self.model.merge_clusters(cluster_0, cluster_1, 'cpu')
+                            self.n_clusters -= 1
+                            self.pi = torch.ones(self.n_clusters) / self.n_clusters
+                            self.model.to(self.device)
+                            post_ll = float(self.compute_ll(big_batch, ids,
+                                                            'After merging {} and {} clusters:'.format(cluster_0,
+                                                                                                       cluster_1)))
+                            remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
+                            if self.verbose:
+                                print('Remain probability: {}'.format(remain_prob))
+                            if (torch.rand(1) > remain_prob)[0]:
+                                if self.verbose:
+                                    print('Loading model')
+                                self.model = torch.load('tmp.pt')
+                                self.n_clusters += 1
+                                self.pi = torch.ones(self.n_clusters) / self.n_clusters
+                            else:
+                                break
+                    else:
+                        if self.verbose:
+                            print('Deleting')
+                        for cluster in range(self.n_clusters):
+                            self.model.to('cpu')
+                            self.model.eval()
+                            with torch.no_grad():
+                                self.model.delete_cluster(cluster, 'cpu')
+                            self.n_clusters -= 1
+                            self.pi = torch.ones(self.n_clusters) / self.n_clusters
+                            self.model.to(self.device)
+                            post_ll = float(
+                                self.compute_ll(big_batch, ids, 'After deleting {} cluster:'.format(cluster)))
+                            remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
+                            if self.verbose:
+                                print('Remain probability: {}'.format(remain_prob))
+                            if (torch.rand(1) > remain_prob)[0]:
+                                if enforce:
+                                    if post_ll < best_loss_enf:
+                                        if self.verbose:
+                                            print('Saving enforced model')
+                                        best_loss_enf = post_ll
+                                        torch.save(self.model, 'best_tmp.pt')
+                                if self.verbose:
+                                    print('Loading model')
+                                self.model = torch.load('tmp.pt')
+                                self.n_clusters += 1
+                                self.pi = torch.ones(self.n_clusters) / self.n_clusters
+                            else:
+                                break
+                if enforce:
+                    self.model = torch.load('best_tmp.pt')
+                    self.n_clusters -= 1
+                    self.pi = torch.ones(self.n_clusters) / self.n_clusters
+                self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+                if self.max_computing_size is None:
+                    self.gamma = torch.zeros(self.n_clusters, self.N).to(self.device)
+                else:
+                    self.gamma = torch.zeros(self.n_clusters, self.max_computing_size).to(self.device)
 
         return losses, purities, cluster_part, all_stats
