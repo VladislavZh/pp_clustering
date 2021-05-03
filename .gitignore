@@ -1,3 +1,7 @@
 venv
 .idea
 .gitignore
+*.csv
+checkpoints/
+*.pyc
+*.pt

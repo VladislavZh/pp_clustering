@@ -50,7 +50,8 @@ def read_data(
 ):
     """
     Takes a csv datafile, transforms to pandas dataframe,
-    selects necessary features and converts to torch tensor
+    selects necessary features and converts to torch tensor;
+    or loads directly from pickled tensor (if load)
     """
     if load:
         seq = torch.load(filename)
@@ -148,6 +149,8 @@ if __name__ == "__main__":
         args.layers,
     )
     print(model)
+    dataname = args.train_file.split('/')[-1]
+    dataname = dataname.split('.')[0]
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     train_on_gpu = torch.cuda.is_available()
@@ -245,7 +248,7 @@ if __name__ == "__main__":
         )
         torch.save(
             model.state_dict(),
-            os.path.join(args.checkpoint_dir, "checkpoint-%d.pth" % epoch),
+            os.path.join(args.checkpoint_dir, str(dataname)+"-checkpoint-%d.pth" % epoch),
         )
 
     writer.close()
