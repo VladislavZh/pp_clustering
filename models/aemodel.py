@@ -72,6 +72,20 @@ class RNNModel(nn.Module):
 
         return cat_pred, noncat_pred, cat_logits, hidden1, hidden2
 
+    def encode(self, x, hidden1, hidden2):
+        batch_size = x.size(0)
+        # encode
+        x_toembed = x[:, :, : self.num_emb]
+        x_rest = x[:, :, self.num_emb :]
+        event_embedding = self.embedding(x_toembed.int())
+        event_embedding = event_embedding.mean(2)
+        lstm_input = torch.cat((event_embedding, x_rest), dim=-1)
+        lstm_enc, hidden1 = self.lstm1(lstm_input, hidden1)
+        lstm_enc = lstm_enc.contiguous().view(-1, self.hidden_dim)
+        enc = self.dropout(lstm_enc)
+        enc = F.relu(self.fc1(enc))
+        return enc
+
     def init_hidden(self, batch_size, gpu=False):
         weight = next(self.parameters()).data
 
