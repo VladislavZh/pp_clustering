@@ -46,7 +46,7 @@ if __name__ == "__main__":
     dataname = datatensor.split("/")[-1]
     dataname = datatensor.split(".")[0]
     pickleddata = TensorDataset(datatensor, datatensor)
-    testloader = DataLoader(pickleddata, shuffle=True, batch_size=batch_size)
+    testloader = DataLoader(pickleddata, shuffle=False, batch_size=1)
     # load model
     ckpt_dict = torch.load("checkpoints/default.ckpt")
     model.load_state_dict(ckpt_dict)
@@ -54,11 +54,14 @@ if __name__ == "__main__":
     model.eval()
     # obtain embeddings
     event_count = {}
+    gt_ids = []
     for i, (inputs, _) in enumerate(testloader):
         if train_on_gpu:
             inputs = inputs.cuda()
         if len(inputs) != batch_size:
             break
+
+        print(inputs.shape)
 
         hidden1 = tuple([each.data for each in hidden1])
         hidden2 = tuple([each.data for each in hidden2])
@@ -93,3 +96,7 @@ if __name__ == "__main__":
     )
     print(cluster_ids_x)
     print(cluster_centers)
+
+    # calculate metrics
+    purity = purity(learned_ids, gt_ids)
+    print("purity:", purity)
