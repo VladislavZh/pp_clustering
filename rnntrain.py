@@ -73,6 +73,8 @@ def read_data(
     )
     seq = split_seq_by_user(csv, input_dim, history_dim, coldict)
     data = TensorDataset(seq.float(), seq.float())
+    tensorname = filename.split('.')[0]
+    torch.save(seq.float(), tensorname + '.pt')
 
     return data
 
