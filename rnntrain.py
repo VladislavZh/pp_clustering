@@ -74,7 +74,7 @@ def read_data(
     seq = split_seq_by_user(csv, input_dim, history_dim, coldict)
     data = TensorDataset(seq.float(), seq.float())
     tensorname = filename.split('.')[0]
-    torch.save(seq.float(), tensorname + '.pt')
+    torch.save(seq.float(), tensorname + '_seqlen' + str(history_dim) + '.pt')
 
     return data
 
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--batch_size", type=int, default=16)
-    parser.add_argument("--epochs", type=int, default=30)
+    parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--history_dim", type=int, default=300)
     parser.add_argument("--input_dim", type=int, default=2)
     parser.add_argument("--num_emb", type=int, default=1)
@@ -99,20 +99,19 @@ if __name__ == "__main__":
     parser.add_argument(
         "--train_file",
         type=str,
-        default="data/atm_train_day.csv",
+        default="data/atm_train_day_seqlen300.pt",
         # default="data/booking_challenge_tpp_labeled.csv",
     )
     parser.add_argument(
         "--test_file",
         type=str,
-        default="data/atm_test_day.csv",
+        default="data/atm_test_day_seqlen300.pt",
         # default="data/booking_challenge_tpp_labeled.csv",
     )
     args = parser.parse_args()
 
     batch_size = args.batch_size
     os.makedirs(args.checkpoint_dir, exist_ok=True)
-    writer = SummaryWriter(log_dir="runs/atm_dataset_acc_baseline")
 
     coldict = {
         "sort_cols": ["id", "time"],
@@ -122,10 +121,10 @@ if __name__ == "__main__":
         "necess_cols": ["id", "event", "time"],
     }
     train_dataset = read_data(
-        args.train_file, args.history_dim, args.input_dim, coldict, load=False
+        args.train_file, args.history_dim, args.input_dim, coldict, load=True
     )
     valid_dataset = read_data(
-        args.test_file, args.history_dim, args.input_dim, coldict, load=False
+        args.test_file, args.history_dim, args.input_dim, coldict, load=True
     )
     train_loader = DataLoader(train_dataset, shuffle=True, batch_size=batch_size)
     valid_loader = DataLoader(valid_dataset, shuffle=True, batch_size=batch_size)
@@ -153,6 +152,7 @@ if __name__ == "__main__":
     print(model)
     dataname = args.train_file.split('/')[-1]
     dataname = dataname.split('.')[0]
+    writer = SummaryWriter(log_dir="runs/" + dataname)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     train_on_gpu = torch.cuda.is_available()
@@ -248,9 +248,10 @@ if __name__ == "__main__":
             {"validation": accuracy, "baseline": baseline},
             epoch,
         )
-        torch.save(
-            model.state_dict(),
-            os.path.join(args.checkpoint_dir, str(dataname)+"-checkpoint-%d.pth" % epoch),
-        )
+        if epoch % 5 == 0:
+            torch.save(
+                model.state_dict(),
+                os.path.join(args.checkpoint_dir, str(dataname)+"-checkpoint-%d.pth" % epoch),
+            )
 
     writer.close()

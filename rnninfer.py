@@ -32,7 +32,7 @@ if __name__ == "__main__":
     print(model)
 
     # load data
-    datapath = "data/atm_test_day.pt"
+    datapath = "data/atm_test_day_seqlen300.pt"
     datatensor = torch.load(datapath)
     dataname = datapath.split("/")[-1]
     dataname = dataname.split(".")[0]
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     batch_size = 1
     testloader = DataLoader(pickleddata, shuffle=False, batch_size=batch_size)
     # load model
-    ckpt_dict = torch.load("checkpoints/atm_train_day-checkpoint-20.pth")
+    ckpt_dict = torch.load("checkpoints/atm_train_day_seqlen300-checkpoint-20.pth")
     model.load_state_dict(ckpt_dict)
     hidden1, hidden2 = model.init_hidden(batch_size, train_on_gpu)
     model.eval()
@@ -64,6 +64,7 @@ if __name__ == "__main__":
     embedtensor = embedtensor.permute(2,0,1)
     Path("embeddings").mkdir(parents=True, exist_ok=True)
     torch.save(embedtensor, os.path.join("embeddings", embedname))
+    embedtensor = embedtensor.mean(1)
     print(embedtensor.shape)
     # get kmeans clusters
     cluster_ids_x, cluster_centers = kmeans(
@@ -72,10 +73,6 @@ if __name__ == "__main__":
         distance="euclidean",
         device=torch.device("cuda:0"),
     )
-    print(cluster_ids_x)
-    print(cluster_centers)
-    print("len")
-    print(len(cluster_ids_x))
     # obtain gt ids and learned ids
     gt_ids = []
     learned_ids = []
@@ -83,9 +80,16 @@ if __name__ == "__main__":
         if train_on_gpu:
             inputs = inputs.cuda()
             # column of events history for user id
-            cat_targets = inputs[0, :, 0]
-            gt_ids.append(torch.mode(cat_targets).item())
+            cat_targets = inputs.squeeze(0)[:, 0]
+            gt_ids.append(torch.mode(cat_targets).values.item())
 
     # calculate metrics
+    gt_ids = torch.FloatTensor(gt_ids)
+    learned_ids = gt_ids
+    learned_ids = torch.zeros(gt_ids.shape)
     purity = purity(learned_ids, gt_ids)
+    info_score = info_score(learned_ids, gt_ids, 10)
+    print("data:", dataname)
+    print("embed:", embedname) 
     print("purity:", purity)
+    print("info_score:", info_score)
