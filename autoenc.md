@@ -14,3 +14,7 @@ Default value are in parentheses.
 <li>Fully Connected Layer (embed.dim=128, vocab.size = max(id))
 <li>Concat output of torch.argmax(logits) and non-embedded output of LSTM
 </ol>
+
+
+#### Embeddings - Dropbox link:
+[Dropbox folder](https://www.dropbox.com/sh/0bpab0zqs69g07l/AADkEwXnAMZbd3VZfLLahl20a?dl=0)

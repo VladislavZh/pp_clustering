@@ -16,10 +16,11 @@ from utils.metrics import info_score, purity
 
 
 if __name__ == "__main__":
-
+    
+    vocab_size = 10
     model = RNNModel(
         num_emb=1,
-        vocab_size=10,
+        vocab_size=vocab_size,
         input_dim=2,
         emb_dim=128,
         hidden_dim=50,
@@ -32,7 +33,7 @@ if __name__ == "__main__":
     print(model)
 
     # load data
-    datapath = "data/atm_test_day_seqlen300.pt"
+    datapath = "data/atm_train_day_seqlen300.pt"
     datatensor = torch.load(datapath)
     dataname = datapath.split("/")[-1]
     dataname = dataname.split(".")[0]
@@ -61,7 +62,7 @@ if __name__ == "__main__":
 
     # save embeddings
     embedname = dataname + "_embed.pt"
-    embedtensor = embedtensor.permute(2,0,1)
+    embedtensor = embedtensor.permute(2, 0, 1)
     Path("embeddings").mkdir(parents=True, exist_ok=True)
     torch.save(embedtensor, os.path.join("embeddings", embedname))
     embedtensor = embedtensor.mean(1)
@@ -69,11 +70,12 @@ if __name__ == "__main__":
     # get kmeans clusters
     cluster_ids_x, cluster_centers = kmeans(
         X=embedtensor,
-        num_clusters=10,
+        num_clusters=vocab_size,
         distance="euclidean",
         device=torch.device("cuda:0"),
     )
     # obtain gt ids and learned ids
+    assert batch_size == 1, "as we iterate over each user id consequently"
     gt_ids = []
     learned_ids = []
     for i, (inputs, _) in enumerate(testloader):
@@ -82,14 +84,21 @@ if __name__ == "__main__":
             # column of events history for user id
             cat_targets = inputs.squeeze(0)[:, 0]
             gt_ids.append(torch.mode(cat_targets).values.item())
+    # smpl heuristics - learned id is most frequent among cluster users
+    for i in range(len(cluster_ids_x)):
+        sameclusterusers = [j for j,x in enumerate(cluster_ids_x) if x == cluster_ids_x[i]]
+        cat_targets = datatensor[sameclusterusers]
+        cat_targets = cat_targets[:,:, 0].flatten()
+        learned_ids.append(torch.mode(cat_targets).values.item())
+    
 
     # calculate metrics
     gt_ids = torch.FloatTensor(gt_ids)
-    learned_ids = gt_ids
-    learned_ids = torch.zeros(gt_ids.shape)
+    learned_ids = torch.FloatTensor(learned_ids)
+    #learned_ids = torch.zeros(gt_ids.shape)
     purity = purity(learned_ids, gt_ids)
     info_score = info_score(learned_ids, gt_ids, 10)
-    print("data:", dataname)
-    print("embed:", embedname) 
+    print("\n data:", dataname)
+    print("embed:", embedname)
     print("purity:", purity)
-    print("info_score:", info_score)
+    #print("info_score:", info_score)

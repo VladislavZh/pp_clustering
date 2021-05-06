@@ -73,8 +73,8 @@ def read_data(
     )
     seq = split_seq_by_user(csv, input_dim, history_dim, coldict)
     data = TensorDataset(seq.float(), seq.float())
-    tensorname = filename.split('.')[0]
-    torch.save(seq.float(), tensorname + '_seqlen' + str(history_dim) + '.pt')
+    tensorname = filename.split(".")[0]
+    torch.save(seq.float(), tensorname + "_seqlen" + str(history_dim) + ".pt")
 
     return data
 
@@ -150,8 +150,8 @@ if __name__ == "__main__":
         args.layers,
     )
     print(model)
-    dataname = args.train_file.split('/')[-1]
-    dataname = dataname.split('.')[0]
+    dataname = args.train_file.split("/")[-1]
+    dataname = dataname.split(".")[0]
     writer = SummaryWriter(log_dir="runs/" + dataname)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
@@ -251,7 +251,9 @@ if __name__ == "__main__":
         if epoch % 5 == 0:
             torch.save(
                 model.state_dict(),
-                os.path.join(args.checkpoint_dir, str(dataname)+"-checkpoint-%d.pth" % epoch),
+                os.path.join(
+                    args.checkpoint_dir, str(dataname) + "-checkpoint-%d.pth" % epoch
+                ),
             )
 
     writer.close()
