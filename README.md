@@ -1,7 +1,7 @@
 # COHORTNEY: Deep Clustering for Heterogeneous Event Sequences
 Here we provide the implementation of COHORTNEY.
 The publication is currently under review.
-
+## Embeddings https://drive.google.com/drive/folders/1RoK8kbGkyB53W-ma8BQ3dlOkjWXiyog8?usp=sharing
 ## Data
 We provide 15 datasets: 12 synthetic and 3 real-world. All datasets are
 in the 'data' folder:
