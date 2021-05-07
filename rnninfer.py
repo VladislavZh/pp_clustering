@@ -6,13 +6,16 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
-from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from torch.utils.data import DataLoader, TensorDataset
 
 from kmeans_pytorch import kmeans, kmeans_predict
 from models.aemodel import RNNModel
 from utils.metrics import info_score, purity
+
+from sklearn.manifold import TSNE
+import seaborn as sns
+sns.set(rc={'figure.figsize':(11.7,8.27)})
 
 
 if __name__ == "__main__":
@@ -63,11 +66,11 @@ if __name__ == "__main__":
     # save embeddings
     embedname = dataname + "_embed.pt"
     embedtensor = embedtensor.permute(2, 0, 1)
+    embedtensor = embedtensor.mean(1)
     Path("embeddings").mkdir(parents=True, exist_ok=True)
     torch.save(embedtensor, os.path.join("embeddings", embedname))
-    embedtensor = embedtensor.mean(1)
-    print(embedtensor.shape)
     # get kmeans clusters
+    np.random.seed(173)
     cluster_ids_x, cluster_centers = kmeans(
         X=embedtensor,
         num_clusters=vocab_size,
@@ -90,15 +93,36 @@ if __name__ == "__main__":
         cat_targets = datatensor[sameclusterusers]
         cat_targets = cat_targets[:,:, 0].flatten()
         learned_ids.append(torch.mode(cat_targets).values.item())
-    
-
+    # viz clusters
+    tsne = TSNE(n_components=2)
+    embedtensor_tsne = tsne.fit_transform(embedtensor.detach().cpu().numpy())
+    #clustercenters_tsne = tsne.fit_transform(cluster_centers)
+    unique_gt_ids = np.unique(np.array(gt_ids))
+    unique_learned_ids = np.unique(np.array(learned_ids))
+    palette = sns.color_palette("bright", len(unique_gt_ids))
+    sns_plot = sns.scatterplot(embedtensor_tsne[:,0], embedtensor_tsne[:,1], hue=gt_ids, legend='full', palette=palette).set_title('Ground truth ids')
+    figure = sns_plot.get_figure()
+    figure.savefig(dataname+'_gt.png', dpi=400)
+    figure.clf()
+    # mapping old palette to new number of classes
+    # assume that len(learned_ids) <= len(gt_ids)
+    newpalette = []
+    for id0 in unique_learned_ids:
+        print(id0)
+        ind = np.argwhere(unique_gt_ids == id0)[0][0]
+        print(ind)
+        newpalette.append(palette[ind])
+    sns_plot = sns.scatterplot(embedtensor_tsne[:,0], embedtensor_tsne[:,1], hue=learned_ids, legend='full', palette=newpalette).set_title('Learned ids')
+    figure = sns_plot.get_figure()
+    figure.savefig(dataname+'_learned.png', dpi=400)
+    figure.clf()
     # calculate metrics
     gt_ids = torch.FloatTensor(gt_ids)
     learned_ids = torch.FloatTensor(learned_ids)
     #learned_ids = torch.zeros(gt_ids.shape)
     purity = purity(learned_ids, gt_ids)
     info_score = info_score(learned_ids, gt_ids, 10)
-    print("\n data:", dataname)
+    print("\ndata:", dataname)
     print("embed:", embedname)
     print("purity:", purity)
     #print("info_score:", info_score)
