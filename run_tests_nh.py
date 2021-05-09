@@ -52,7 +52,7 @@ def experiment_runner(args):
                                           weight_decay=args['weight_decay'], lr=args['lr'],
                                           lr_update_tol=args['lr_update_tol'],
                                           lr_update_param=args['lr_update_param'],
-                                          random_walking_max_epoch=args['random_walking_max_epoch'],
+                                          random_walking_max_epoch=args['upper_bound_clusters'],
                                           true_clusters=args['true_clusters'],
                                           upper_bound_clusters=args['upper_bound_cluster'],
                                           min_lr=args['min_lr'], updated_lr=args['updated_lr'],
