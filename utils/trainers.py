@@ -3,12 +3,12 @@
 """
 import time
 import numpy as np
-from pp_clustering.utils.metrics import purity, info_score
+from utils.metrics import purity, info_score
 import torch
 import math
 from sklearn.cluster import KMeans
-from pp_clustering.models.LSTM import LSTMMultiplePointProcesses
-from pp_clustering.utils.likelihood_utils import generate_sim_time_seqs
+from models.LSTM import LSTMMultiplePointProcesses
+from utils.likelihood_utils import generate_sim_time_seqs
 
 class TrainerSingle:
     """
