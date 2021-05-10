@@ -65,7 +65,6 @@ def experiment_runner(args):
         if cluster_part is None:
             if args['verbose']:
                 print('Solution failed')
-            continue
 
         # saving results
         with open(exp_folder + '/losses.pkl', 'wb') as f:
