@@ -36,7 +36,7 @@ if __name__ == "__main__":
     print(model)
 
     # load data
-    datapath = "data/atm_train_day_seqlen300.pt"
+    datapath = "data/atm_test_day_seqlen300.pt"
     datatensor = torch.load(datapath)
     dataname = datapath.split("/")[-1]
     dataname = dataname.split(".")[0]
