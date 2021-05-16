@@ -9,6 +9,7 @@ import math
 from sklearn.cluster import KMeans
 from models.LSTM import LSTMMultiplePointProcesses
 from utils.likelihood_utils import generate_sim_time_seqs
+import matplotlib.pyplot as plt
 
 class TrainerSingle:
     """
@@ -829,7 +830,7 @@ class TrainerClusterwiseForNH:
                  epsilon=1e-8, max_epoch=50, max_m_step_epoch=50, weight_decay=1e-5, lr=1e-3, lr_update_tol=25,
                  lr_update_param=0.5, random_walking_max_epoch=40, true_clusters=5, upper_bound_clusters=10,
                  min_lr=None, updated_lr=None, batch_size=150, verbose=False, best_model_path=None,
-                 max_computing_size=None, full_purity=True):
+                 max_computing_size=None, full_purity=True, zero_lambdas_test_plot=True):
         """
             inputs:
                     model - torch.nn.Module, model to train
@@ -925,6 +926,7 @@ class TrainerClusterwiseForNH:
         self.random_walking_max_epoch = random_walking_max_epoch
         self.true_clusters = true_clusters
         self.upper_bound_clusters = upper_bound_clusters
+        self.zero_lambdas_test_plot = zero_lambdas_test_plot
 
     def compute_gamma(self, likelihood):
         """
@@ -1083,6 +1085,14 @@ class TrainerClusterwiseForNH:
             else:
                 pur = -1
                 info = -1
+            if self.zero_lambdas_test_plot:
+                event_seqs_tensor = event_seqs_tensor[0]
+                time_seqs_tensor = time_seqs_tensor[0]
+                times = np.linspace(0, time_seqs_tensor[-1], 100)
+                lambdas = self.model.get_lambdas(event_seqs_tensor, time_seqs_tensor, times)
+                for k in range(self.n_clusters):
+                    plt.plot(lambdas[k])
+                    plt.show()
 
         return log_likelihood_curve, [loss, pur, info], cluster_partition
 

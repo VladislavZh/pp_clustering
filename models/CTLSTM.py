@@ -351,6 +351,21 @@ class CTLSTMClusterwise(nn.Module):
             self.forward_k(event_seq, duration_seqs, k, batch_first)
         return self.output
 
+    def get_lambdas_k(self, event_seqs, k):
+        batch_size, batch_length = event_seqs.shape
+        h, c, c_bar, o, delta = torch.chunk(self.output[k], 5, 0)
+        # L * B * H
+        h = torch.squeeze(h, 0)
+        c = torch.squeeze(c, 0)
+        c_bar = torch.squeeze(c_bar, 0)
+        o = torch.squeeze(o, 0)
+        delta = torch.squeeze(delta, 0)
+
+        # Calculate the sum of log intensities of each event in the sequence
+        original_loglikelihood = torch.zeros(batch_size)
+        lambda_k = F.softplus(self.wa(h))
+        return lambda_k
+
 
     def log_likelihood_k(self, event_seqs, sim_time_seqs, sim_index_seqs, total_time_seqs, seqs_length, k, batch_first=True):
         """Calculate log likelihood per sequence."""
@@ -395,3 +410,19 @@ class CTLSTMClusterwise(nn.Module):
         for k in range(self.n_clusters):
             log_likelihood.append(self.log_likelihood_k(event_seqs, sim_time_seqs, sim_index_seqs, total_time_seqs, seqs_length, k, batch_first))
         return log_likelihood
+
+    def get_lambdas(self, event_seq, duration_seq, times_to_compute):
+        lambdas = torch.zeros(self.n_clusters, len(times_to_compute))
+        for i, t in enumerate(times_to_compute):
+            event_mod = event_seq[duration_seq<t]
+            duration_mod = duration_seq[duration_seq<t]
+            event_mod = torch.cat((event_mod, torch.Tensor([0])))
+            duration_mod = torch.cat((duration_mod, torch.Tensor([t])))
+            event_mod = event_mod[None, :]
+            duration_mod = duration_mod[None, :]
+            self.forward(event_mod,duration_mod,True)
+            for k in range(self.n_clusters):
+                ls = self.get_lambdas_k(event_mod, k)
+                assert ls.shape[0] == 0
+                lambdas[k, i] = ls[0, -1]
+        return lambdas
