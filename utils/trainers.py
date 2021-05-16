@@ -1088,8 +1088,10 @@ class TrainerClusterwiseForNH:
             if self.zero_lambdas_test_plot:
                 event_seqs_tensor = event_seqs_tensor[0]
                 time_seqs_tensor = time_seqs_tensor[0]
-                times = np.linspace(0, time_seqs_tensor[-1], 100)
-                lambdas = self.model.get_lambdas(event_seqs_tensor, time_seqs_tensor, times)
+                time_cum_seqs_tensor = torch.cumsum(time_seqs_tensor, dim=0)
+                times = np.linspace(0, float(time_seqs_tensor[-1].cpu()), 100)
+                lambdas = self.model.get_lambdas(event_seqs_tensor, time_seqs_tensor, time_cum_seqs_tensor, times,
+                                                 self.device).detach().cpu().numpy()
                 for k in range(self.n_clusters):
                     plt.plot(lambdas[k])
                     plt.show()

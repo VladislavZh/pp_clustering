@@ -411,18 +411,18 @@ class CTLSTMClusterwise(nn.Module):
             log_likelihood.append(self.log_likelihood_k(event_seqs, sim_time_seqs, sim_index_seqs, total_time_seqs, seqs_length, k, batch_first))
         return log_likelihood
 
-    def get_lambdas(self, event_seq, duration_seq, times_to_compute):
+    def get_lambdas(self, event_seq, duration_seq, time_cum_seqs_tensor, times_to_compute, device):
         lambdas = torch.zeros(self.n_clusters, len(times_to_compute))
         for i, t in enumerate(times_to_compute):
-            event_mod = event_seq[duration_seq<t]
-            duration_mod = duration_seq[duration_seq<t]
-            event_mod = torch.cat((event_mod, torch.Tensor([0])))
+            event_mod = event_seq[time_cum_seqs_tensor<t].cpu()
+            duration_mod = duration_seq[time_cum_seqs_tensor<t].cpu()
+            event_mod = torch.cat((event_mod, torch.Tensor([0]))).long()
             duration_mod = torch.cat((duration_mod, torch.Tensor([t])))
-            event_mod = event_mod[None, :]
-            duration_mod = duration_mod[None, :]
+            event_mod = event_mod[None, :].to(device)
+            duration_mod = duration_mod[None, :].to(device)
             self.forward(event_mod,duration_mod,True)
             for k in range(self.n_clusters):
-                ls = self.get_lambdas_k(event_mod, k)
-                assert ls.shape[0] == 0
-                lambdas[k, i] = ls[0, -1]
+                ls = self.get_lambdas_k(event_mod, k).cpu()
+                assert ls.shape[0] == 1
+                lambdas[k, i] = ls[0, -1, 0]
         return lambdas
