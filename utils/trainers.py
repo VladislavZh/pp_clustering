@@ -828,9 +828,9 @@ class TrainerClusterwiseForNH:
 
     def __init__(self, model, optimizer, device, N, dataloader, full_dataloader, n_clusters, target=None,
                  epsilon=1e-8, max_epoch=50, max_m_step_epoch=50, weight_decay=1e-5, lr=1e-3, lr_update_tol=25,
-                 lr_update_param=0.5, random_walking_max_epoch=40, true_clusters=5, upper_bound_clusters=10,
+                 lr_update_param=0.5, random_walking_max_epoch=40, sigma_0 =1, sigma_inf = 0.005, inf_epoch = 50, true_clusters=5, upper_bound_clusters=10,
                  min_lr=None, updated_lr=None, batch_size=150, verbose=False, best_model_path=None,
-                 max_computing_size=None, full_purity=True, zero_lambdas_test_plot=True):
+                 max_computing_size=None, full_purity=True, zero_lambdas_test_plot=True, to_convolve = True):
         """
             inputs:
                     model - torch.nn.Module, model to train
@@ -927,6 +927,9 @@ class TrainerClusterwiseForNH:
         self.true_clusters = true_clusters
         self.upper_bound_clusters = upper_bound_clusters
         self.zero_lambdas_test_plot = zero_lambdas_test_plot
+        self.to_convolve = to_convolve
+        self.sigma = sigma_0
+        self.tau = -1 / inf_epoch * math.log(sigma_inf / sigma_0)
 
     def compute_gamma(self, likelihood):
         """
@@ -947,6 +950,33 @@ class TrainerClusterwiseForNH:
         for i in range(self.n_clusters):
             tmp1[i,:] = 1/torch.sum(torch.exp(tmp - tmp[i,:][None,:]), dim = 0)
         return tmp1
+
+    def convolve(self, gamma):
+        """
+            Convolves gamma along axis 0 with gaussian(0,sigma)
+
+            inputs:
+                    gamma - torch.Tensor, size = (n_clusters, batch_size), probabilities p(k|x_n)
+            outputs:
+                    convoluted - torch.Tensor, size = (n_clusters, batch_size), convoluted gamma and gauss
+        """
+        # initializing gauss
+        gauss = torch.arange(- self.n_clusters + 1, self.n_clusters).float().to(self.device)
+        gauss = torch.exp(-gauss ** 2 / (2 * self.sigma ** 2))
+        gauss = gauss[:, None]
+
+        # preparing output template
+        convoluted = torch.zeros_like(gamma).to(self.device)
+
+        # iterations over clusters
+        for k in range(self.n_clusters):
+            convoluted[k, :] = torch.sum(
+                gauss[self.n_clusters - k - 1:2 * self.n_clusters - k - 1, :] * gamma.to(self.device), dim=0)
+
+        # normalization
+        convoluted /= convoluted.sum(dim=0)
+
+        return convoluted
 
     def e_step(self, ids=None):
         """
@@ -995,7 +1025,10 @@ class TrainerClusterwiseForNH:
             sim_time_seqs = sim_time_seqs.to(self.device)
             self.model(event_seqs_tensor, time_seqs_tensor)
             nll = -torch.vstack(self.model.log_likelihood(event_seqs_tensor, sim_time_seqs, sim_index_seqs, last_time_seqs, seqs_length))
-            loss = torch.sum(self.gamma[:, ids] * nll)
+            if self.to_convolve:
+                loss = torch.sum(self.convolve(self.gamma[:, ids]).cpu() * nll)
+            else:
+                loss = torch.sum(self.gamma[:, ids] * nll)
             loss.backward()
             self.optimizer.step()
             log_likelihood.append(loss.item())
@@ -1088,12 +1121,12 @@ class TrainerClusterwiseForNH:
             if self.zero_lambdas_test_plot:
                 event_seqs_tensor = event_seqs_tensor[0]
                 time_seqs_tensor = time_seqs_tensor[0]
-                time_cum_seqs_tensor = torch.cumsum(time_seqs_tensor, dim=0)
-                times = np.linspace(0, float(time_seqs_tensor[-1].cpu()), 100)
-                lambdas = self.model.get_lambdas(event_seqs_tensor, time_seqs_tensor, time_cum_seqs_tensor, times,
-                                                 self.device).detach().cpu().numpy()
+                time_cum_seqs_tensor = torch.cumsum(time_seqs_tensor, dim = 0)
+                times = np.linspace(0, float(time_cum_seqs_tensor[-1].cpu()), 100)
+                lambdas = self.model.get_lambdas(event_seqs_tensor, time_seqs_tensor, time_cum_seqs_tensor, times, self.device).detach().cpu().numpy()
                 for k in range(self.n_clusters):
-                    plt.plot(lambdas[k])
+                    plt.plot(times, lambdas[k])
+                    plt.scatter(time_cum_seqs_tensor.detach().cpu(), torch.ones(len(time_cum_seqs_tensor.detach().cpu())))
                     plt.show()
 
         return log_likelihood_curve, [loss, pur, info], cluster_partition
@@ -1192,8 +1225,9 @@ class TrainerClusterwiseForNH:
                     break
                 print('lr =', lr)
                 print('lr_update_param =', self.lr_update_param)
+                print('sigma =', self.sigma)
             ll, ll_pur, cluster_part = self.m_step(big_batch=big_batch, ids=ids)
-
+            self.sigma *= np.exp(-self.tau)
             # failure check
             if ll is None:
                 return None, None, None, None

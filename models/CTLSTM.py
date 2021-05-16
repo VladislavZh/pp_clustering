@@ -152,7 +152,7 @@ class CTLSTMClusterwise(nn.Module):
         self.c_d_init = Parameter(self.init_weigh(n_clusters, hidden_size))
         self.c_bar_init = Parameter(self.init_weigh(n_clusters, hidden_size))
         self.c_init = Parameter(self.init_weigh(n_clusters, hidden_size))
-        self.output = [0]*self.n_clusters
+        self.output = [0] * self.n_clusters
 
     def init_weigh(self, *args):
         """
@@ -278,7 +278,7 @@ class CTLSTMClusterwise(nn.Module):
         # updating number of clusters
         self.n_clusters += 1
         self.output = [0] * self.n_clusters
-        
+
     def init_states_k(self, batch_size, k):
         self.h_d = self.h_d_init[None, k, :].repeat(batch_size, 1)
         self.c_d = self.c_d_init[None, k, :].repeat(batch_size, 1)
@@ -345,7 +345,6 @@ class CTLSTMClusterwise(nn.Module):
         self.output[k] = torch.stack((h_seq, c_seq, c_bar_seq, o_seq, delta_seq))
         return self.output[k]
 
-
     def forward(self, event_seq, duration_seqs, batch_first=True):
         for k in range(self.n_clusters):
             self.forward_k(event_seq, duration_seqs, k, batch_first)
@@ -363,11 +362,11 @@ class CTLSTMClusterwise(nn.Module):
 
         # Calculate the sum of log intensities of each event in the sequence
         original_loglikelihood = torch.zeros(batch_size)
-        lambda_k = F.softplus(self.wa(h))
+        lambda_k = F.softplus(self.wa(h)).transpose(0, 1)
         return lambda_k
 
-
-    def log_likelihood_k(self, event_seqs, sim_time_seqs, sim_index_seqs, total_time_seqs, seqs_length, k, batch_first=True):
+    def log_likelihood_k(self, event_seqs, sim_time_seqs, sim_index_seqs, total_time_seqs, seqs_length, k,
+                         batch_first=True):
         """Calculate log likelihood per sequence."""
         batch_size, batch_length = event_seqs.shape
         h, c, c_bar, o, delta = torch.chunk(self.output[k], 5, 0)
@@ -400,29 +399,36 @@ class CTLSTMClusterwise(nn.Module):
         for idx, (total_time, seq_len) in enumerate(zip(total_time_seqs, seqs_length)):
             mc_coefficient = total_time / (seq_len)
             simulated_likelihood[idx] = mc_coefficient * torch.sum(
-                torch.sum(sim_lambda_k[idx, torch.arange(seq_len-1).long(), :]))
+                torch.sum(sim_lambda_k[idx, torch.arange(seq_len - 1).long(), :]))
 
         loglikelihood = original_loglikelihood - simulated_likelihood
         return loglikelihood
-    
-    def log_likelihood(self,  event_seqs, sim_time_seqs, sim_index_seqs, total_time_seqs, seqs_length, batch_first=True):
+
+    def log_likelihood(self, event_seqs, sim_time_seqs, sim_index_seqs, total_time_seqs, seqs_length, batch_first=True):
         log_likelihood = []
         for k in range(self.n_clusters):
-            log_likelihood.append(self.log_likelihood_k(event_seqs, sim_time_seqs, sim_index_seqs, total_time_seqs, seqs_length, k, batch_first))
+            log_likelihood.append(
+                self.log_likelihood_k(event_seqs, sim_time_seqs, sim_index_seqs, total_time_seqs, seqs_length, k,
+                                      batch_first))
         return log_likelihood
 
     def get_lambdas(self, event_seq, duration_seq, time_cum_seqs_tensor, times_to_compute, device):
         lambdas = torch.zeros(self.n_clusters, len(times_to_compute))
         for i, t in enumerate(times_to_compute):
-            event_mod = event_seq[time_cum_seqs_tensor<t].cpu()
-            duration_mod = duration_seq[time_cum_seqs_tensor<t].cpu()
+            event_mod = event_seq[time_cum_seqs_tensor < t].cpu()
+            duration_mod = duration_seq[time_cum_seqs_tensor < t].cpu()
             event_mod = torch.cat((event_mod, torch.Tensor([0]))).long()
-            duration_mod = torch.cat((duration_mod, torch.Tensor([t])))
+            try:
+                duration_mod = torch.cat(
+                    (duration_mod, torch.Tensor([t - time_cum_seqs_tensor[time_cum_seqs_tensor < t].cpu()[-1]])))
+            except:
+                duration_mod = torch.cat((duration_mod, torch.Tensor([t])))
             event_mod = event_mod[None, :].to(device)
             duration_mod = duration_mod[None, :].to(device)
-            self.forward(event_mod,duration_mod,True)
+            self.forward(event_mod, duration_mod, True)
             for k in range(self.n_clusters):
                 ls = self.get_lambdas_k(event_mod, k).cpu()
                 assert ls.shape[0] == 1
                 lambdas[k, i] = ls[0, -1, 0]
         return lambdas
+
