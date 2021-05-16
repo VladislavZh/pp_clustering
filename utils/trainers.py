@@ -1113,7 +1113,7 @@ class TrainerClusterwiseForNH:
                           ' with pi = ', self.pi[i])
                 cluster_partition = min(cluster_partition, np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters))
             if type(self.target):
-                pur = purity(clusters.to('cpu'), self.target.to('cpu'))
+                pur = purity(clusters.to('cpu'), self.target.to('cpu')[ids])
                 info = info_score(clusters.to('cpu'), self.target.to('cpu'), len(np.unique(self.target.to('cpu'))))
             else:
                 pur = -1
@@ -1131,7 +1131,7 @@ class TrainerClusterwiseForNH:
 
         return log_likelihood_curve, [loss, pur, info], cluster_partition
 
-    def compute_ll(self,big_batch, ids, to_print):
+    def compute_ll(self,big_batch, idx, to_print):
         with torch.no_grad():
             for i, sampled_batch in enumerate(self.full_dataloader):
                 event_seqs_tensor, time_seqs_tensor, last_time_seqs, seqs_length, ids= sampled_batch
@@ -1154,7 +1154,7 @@ class TrainerClusterwiseForNH:
                       ' with pi = ', self.pi[i])
             cluster_partition = min(cluster_partition, np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters))
         if type(self.target):
-            pur = purity(clusters.to('cpu'), self.target.to('cpu'))
+            pur = purity(clusters.to('cpu'), self.target.to('cpu')[ids])
         else:
             pur = None
         if self.verbose:
