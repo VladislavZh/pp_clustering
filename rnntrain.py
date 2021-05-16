@@ -84,10 +84,10 @@ if __name__ == "__main__":
 
     parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--epochs", type=int, default=20)
-    parser.add_argument("--history_dim", type=int, default=300)
-    parser.add_argument("--input_dim", type=int, default=2)
+    parser.add_argument("--history_dim", type=int, default=10)
+    parser.add_argument("--input_dim", type=int, default=3)
     parser.add_argument("--num_emb", type=int, default=1)
-    parser.add_argument("--vocab_size", type=int, default=10)
+    parser.add_argument("--vocab_size", type=int, default=100000)
     parser.add_argument("--emb_dim", type=int, default=128)
     parser.add_argument("--hidden_dim", type=int, default=50)
     parser.add_argument("--encoder_dim", type=int, default=10)
@@ -120,25 +120,25 @@ if __name__ == "__main__":
         "scale_cols": ["time"],
         "necess_cols": ["id", "event", "time"],
     }
-    train_dataset = read_data(
-        args.train_file, args.history_dim, args.input_dim, coldict, load=True
-    )
-    valid_dataset = read_data(
-        args.test_file, args.history_dim, args.input_dim, coldict, load=True
-    )
-    train_loader = DataLoader(train_dataset, shuffle=True, batch_size=batch_size)
-    valid_loader = DataLoader(valid_dataset, shuffle=True, batch_size=batch_size)
+    #train_dataset = read_data(
+    #    args.train_file, args.history_dim, args.input_dim, coldict, load=True
+    #)
+    #valid_dataset = read_data(
+    #    args.test_file, args.history_dim, args.input_dim, coldict, load=True
+    #)
+    #train_loader = DataLoader(train_dataset, shuffle=True, batch_size=batch_size)
+    #valid_loader = DataLoader(valid_dataset, shuffle=True, batch_size=batch_size)
 
     # booking
-    # args.train_file = 'data/booking_tensor_scaled.pt'
-    # full_dataset = read_data(
-    #    args.train_file, args.history_dim, args.input_dim, coldict, load=True
-    # )
-    # train_size = int(0.8 * len(full_dataset))
-    # valid_size = len(full_dataset) - train_size
-    # train_dataset, valid_dataset = torch.utils.data.random_split(full_dataset, [train_size, valid_size])
-    # train_loader = DataLoader(train_dataset, shuffle=True, batch_size=batch_size)
-    # valid_loader = DataLoader(valid_dataset, shuffle=True, batch_size=batch_size)
+    args.train_file = 'data/booking_tensor_scaled.pt'
+    full_dataset = read_data(
+        args.train_file, args.history_dim, args.input_dim, coldict, load=True
+    )
+    train_size = int(0.8 * len(full_dataset))
+    valid_size = len(full_dataset) - train_size
+    train_dataset, valid_dataset = torch.utils.data.random_split(full_dataset, [train_size, valid_size])
+    train_loader = DataLoader(train_dataset, shuffle=True, batch_size=batch_size)
+    valid_loader = DataLoader(valid_dataset, shuffle=True, batch_size=batch_size)
 
     model = RNNModel(
         args.num_emb,
@@ -152,7 +152,7 @@ if __name__ == "__main__":
     print(model)
     dataname = args.train_file.split("/")[-1]
     dataname = dataname.split(".")[0]
-    writer = SummaryWriter(log_dir="runs/" + dataname)
+    writer = SummaryWriter(log_dir="runs/" + dataname + '_lstmfixed')
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     train_on_gpu = torch.cuda.is_available()
