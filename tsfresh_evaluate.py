@@ -7,6 +7,7 @@ Original file is located at
     https://colab.research.google.com/drive/18eWcA2mo_UgFe6qVOPtTV1VSCmsYaW5v
 """
 
+import argparse
 import os
 import json
 import torch
@@ -22,7 +23,7 @@ from sklearn import mixture
 import time
 
 
-def check_dataset(path_to_data, n_classes, n_steps, n_clusters, n_runs):
+def check_dataset(path_to_data, n_classes, n_steps, n_clusters):
     t1 = time.time()
     data, target = get_dataset(path_to_data, n_classes, n_steps)
     n_classes += 1
@@ -46,116 +47,85 @@ def check_dataset(path_to_data, n_classes, n_steps, n_clusters, n_runs):
     data_feat.fillna(0, inplace=True)
     data_feat.replace([np.inf, -np.inf], 0, inplace=True)
     t2 = time.time()
-    kmeans_purs = []
-    aff_purs = []
-    gmm_purs = []
-    dbscan_purs = []
 
     model = KMeans(n_clusters=n_clusters)
     model.fit(data_feat)
-    clusters = model.predict(data_feat)
-    kmeans_purs.append(purity(torch.Tensor(clusters), target))
+    kmeans_clusters = model.predict(data_feat)
     t3 = time.time()
 
     clustering = AffinityPropagation().fit(data_feat)
-    clusters = clustering.labels_
-    aff_purs.append(purity(torch.Tensor(clusters), target))
+    ap_clusters = clustering.labels_
     t4 = time.time()
 
     g = mixture.GaussianMixture(n_components=2)
     g.fit(data_feat)
-    clusters = g.predict(data_feat)
-    gmm_purs.append(purity(torch.Tensor(clusters), target))
+    gmm_clusters = g.predict(data_feat)
     t5 = time.time()
 
     dbscan = DBSCAN()
     dbscan.fit(data_feat)
-    clusters = dbscan.labels_
-    dbscan_purs.append(purity(torch.Tensor(clusters), target))
+    dbscan_clusters = dbscan.labels_
 
     t6 = time.time()
 
-    for i in range(n_runs - 1):
-        model = KMeans(n_clusters=n_clusters)
-        model.fit(data_feat)
-        clusters = model.predict(data_feat)
-        kmeans_purs.append(purity(torch.Tensor(clusters), target))
-
-        clustering = AffinityPropagation().fit(data_feat)
-        clusters = clustering.labels_
-        aff_purs.append(purity(torch.Tensor(clusters), target))
-
-        g = mixture.GaussianMixture(n_components=2)
-        g.fit(data_feat)
-        clusters = g.predict(data_feat)
-        gmm_purs.append(purity(torch.Tensor(clusters), target))
-
-        dbscan = DBSCAN()
-        dbscan.fit(data_feat)
-        clusters = dbscan.labels_
-        dbscan_purs.append(purity(torch.Tensor(clusters), target))
-
-    print(
-        "Running time: FE = {}, KMeans = {}, Aff = {}, GMM = {}, DBSCAN = {}".format(
-            t2 - t1,
-            t3 - t2 + t2 - t1,
-            t4 - t3 + t2 - t1,
-            t5 - t4 + t2 - t1,
-            t6 - t5 + t2 - t1,
-        )
-    )
-    print("KMeans purity:", np.mean(kmeans_purs), "+-", np.std(kmeans_purs))
-    print("AffinityPropagation purity:", np.mean(aff_purs), "+-", np.std(aff_purs))
-    print("GMM purity:", np.mean(gmm_purs), "+-", np.std(gmm_purs))
-    print("DBSCAN purity:", np.mean(dbscan_purs), "+-", np.std(dbscan_purs))
     res_dict = {}
     res_dict["data"] = path_to_data
     res_dict["n_classes"] = n_classes
     res_dict["n_steps"] = n_steps
     res_dict["n_clusters"] = n_clusters
-    res_dict["n_runs"] = n_runs
     res_dict["kmeans"] = {
-        "mean": np.mean(kmeans_purs),
-        "std": np.std(kmeans_purs),
-        "time": t3 - t2 + t2 - t1,
+        "clusters": kmeans_clusters,
+        "time": round(t3 - t2 + t2 - t1, 5),
     }
-    res_dict["affinprop"] = {
-        "mean": np.mean(aff_purs),
-        "std": np.std(aff_purs),
-        "time": t4 - t3 + t2 - t1,
+    res_dict["ap"] = {
+        "clusters": ap_clusters,
+        "time": round(t4 - t3 + t2 - t1, 5),
     }
     res_dict["gmm"] = {
-        "mean": np.mean(gmm_purs),
-        "std": np.std(gmm_purs),
-        "time": t5 - t4 + t2 - t1,
+        "clusters": gmm_clusters,
+        "time": round(t5 - t4 + t2 - t1, 5),
     }
     res_dict["dbscan"] = {
-        "mean": np.mean(dbscan_purs),
-        "std": np.std(dbscan_purs),
-        "time": t6 - t5 + t2 - t1,
+        "clusters": dbscan_clusters,
+        "time": round(t6 - t5 + t2 - t1, 5),
     }
 
     return res_dict
 
 
 if __name__ == "__main__":
-    
-    res_maindir = "/pp_clustering/experiments/new_ablation_study"
-    data_path = "data/trunc_K3_C5"
-    n_classes = int(data_path[-1])
-    n_steps = 128
-    n_clusters = int(data_path[-4])
-    n_runs = 5
-    start_time = time.time()
-    res_dict = check_dataset("data/K4_C5", n_classes, n_steps, n_clusters, n_runs)
-    print("processed data", data_path, "finished")
-    # saving results
-    res_path = os.path.join(res_maindir, data_path.split("/")[-1])
-    if not os.path.exists(res_path):
-        os.makedirs(res_path)
-    json_path = res_path + "/results_" + str(n_steps) + ".json"
-    with open(json_path, "w") as fp:
-        json.dump(res_dict, fp)
-    print("results were saved to", res_path)
-    print("total time", time.time() - start_time)
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset", type=str, default="K3_C5")
+    parser.add_argument("--experiment_n", type=str, default="0")
+    args = parser.parse_args()
+    # path to dataset
+    datapath = os.path.join("data", args.dataset)
+    # path to experiments settings
+    experpath = os.path.join("experiments", args.dataset)
+    experpath = os.path.join(experpath, "exp_" + args.experiment_n)
+    with open(os.path.join(experpath, "args.json")) as json_file:
+        config = json.load(json_file)
+    n_steps = config["n_steps"]
+    n_classes = config["n_classes"]
+    n_clusters = config["true_clusters"]
+
+    res_dict = check_dataset(datapath, n_classes, n_steps, n_clusters)
+    # saving results
+    res_df = pd.read_csv(os.path.join(experpath, "inferredclusters.csv"))
+    res_df["kmeans_clusters"] = res_dict["kmeans"]["clusters"].tolist()
+    res_df["kmeans_time"] = res_dict["kmeans"]["time"]
+    res_df["ap_clusters"] = res_dict["ap"]["clusters"].tolist()
+    res_df["ap_time"] = res_dict["ap"]["time"]
+    res_df["gmm_clusters"] = res_dict["gmm"]["clusters"].tolist()
+    res_df["gmm_time"] = res_dict["gmm"]["time"]
+    res_df["dbscan_clusters"] = res_dict["dbscan"]["clusters"].tolist()
+    res_df["dbscan_time"] = res_dict["dbscan"]["time"]
+
+    savepath = os.path.join(experpath, "compareclusters.csv")
+    res_df.drop(
+        res_df.columns[res_df.columns.str.contains("unnamed", case=False)],
+        axis=1,
+        inplace=True,
+    )
+    res_df.to_csv(savepath)
