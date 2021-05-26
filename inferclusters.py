@@ -10,22 +10,26 @@ import pickle
 import json
 import os
 import pandas as pd
+import argparse
 
 
 if __name__ == "__main__":
-
-    dataset = "sin_K5_C5"
-    dataset = "Age"
-    datapath = os.path.join("data", dataset)
-    experpath = os.path.join("experiments", dataset)
-    experpath = os.path.join(experpath, "exp_0")
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset', type=str,default="K3_C5")
+    parser.add_argument('--experiment_n', type=str, default="0")
+    args = parser.parse_args()
+    # path to dataset
+    datapath = os.path.join("data", args.dataset)
+    # path to experiment settings and weights
+    experpath = os.path.join("experiments", args.dataset)
+    experpath = os.path.join(experpath, "exp_" + args.experiment_n)
     modelweights = os.path.join(experpath, "last_model.pt")
     with open(os.path.join(experpath, "args.json")) as json_file:
         config = json.load(json_file)
     n_steps = config["n_steps"]
     n_classes = config["n_classes"]
-    data, target = get_dataset(datapath, n_classes, n_steps)
-
+    # init model
     model = LSTMMultiplePointProcesses(
         n_classes + 1,
         config["hidden_size"],
@@ -38,15 +42,18 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam(
         model.parameters(), config["lr"], weight_decay=config["weight_decay"]
     )
-    model = torch.load(modelweights)
+    model = torch.load(modelweights, map_location=torch.device(config["device"]))
     model.eval()
+    # start
+    start_time = time.time()
+    data, target = get_dataset(datapath, model.num_classes, n_steps)
 
     trainer = TrainerClusterwise(
         model,
         optimizer,
         config["device"],
         data,
-        config["n_clusters"],
+        model.num_clusters,
         target=target,
         epsilon=config["epsilon"],
         max_epoch=config["max_epoch"],
@@ -65,17 +72,19 @@ if __name__ == "__main__":
         max_computing_size=config["max_computing_size"],
         full_purity=config["full_purity"],
     )
-
-    start_time = time.time()
-    lambdas = trainer.model(trainer.X)
-    trainer.gamma = trainer.compute_gamma(lambdas)
-    print(trainer.X.shape)
-    print(trainer.n_clusters)
-    print(trainer.gamma.shape)
-    clusters = torch.argmax(trainer.gamma, dim=0)
-    print(clusters)
-    print(clusters.shape)
-    print(clusters.max())
+    
+    # infer clusters
+    if trainer.max_computing_size is None:
+        lambdas = trainer.model(trainer.X.to(config["device"]))
+        trainer.gamma = trainer.compute_gamma(lambdas)
+        print(trainer.X.shape)
+        print(trainer.n_clusters)
+        print(trainer.gamma.shape)
+        clusters = torch.argmax(trainer.gamma, dim=0)
+        print(clusters)
+        print(clusters.shape)
+        print(clusters.max())
+    
     end_time = time.time()
     # save results
     res_df = pd.read_csv(os.path.join(datapath, "clusters.csv"))
@@ -85,8 +94,6 @@ if __name__ == "__main__":
         seq_df = pd.read_csv(os.path.join(datapath, str(index + 1) + ".csv"))
         res_df.at[index, "seqlength"] = len(seq_df)
     
-    #infclusters = {'inferred': clusters.cpu().numpy()}
-    #res_df = pd.concat([res_df, pd.DataFrame(data=infclusters)])
     res_df['coh_cluster'] = clusters.cpu().numpy().tolist()
     savepath = os.path.join(experpath, "inferredclusters.csv")
     res_df.drop(res_df.columns[res_df.columns.str.contains('unnamed',case = False)],axis = 1, inplace = True)
