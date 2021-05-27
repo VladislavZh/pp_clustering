@@ -14,10 +14,10 @@ import argparse
 
 
 if __name__ == "__main__":
-    
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset', type=str,default="K3_C5")
-    parser.add_argument('--experiment_n', type=str, default="0")
+    parser.add_argument("--dataset", type=str, default="K3_C5")
+    parser.add_argument("--experiment_n", type=str, default="0")
     args = parser.parse_args()
     # path to dataset
     datapath = os.path.join("data", args.dataset)
@@ -72,7 +72,7 @@ if __name__ == "__main__":
         max_computing_size=config["max_computing_size"],
         full_purity=config["full_purity"],
     )
-    
+
     # infer clusters
     if trainer.max_computing_size is None:
         lambdas = trainer.model(trainer.X.to(config["device"]))
@@ -84,17 +84,21 @@ if __name__ == "__main__":
         print(clusters)
         print(clusters.shape)
         print(clusters.max())
-    
+
     end_time = time.time()
     # save results
     res_df = pd.read_csv(os.path.join(datapath, "clusters.csv"))
-    res_df["time"] = round(end_time - start_time,5)
+    res_df["time"] = round(end_time - start_time, 5)
     res_df["seqlength"] = 0
     for index, row in res_df.iterrows():
         seq_df = pd.read_csv(os.path.join(datapath, str(index + 1) + ".csv"))
         res_df.at[index, "seqlength"] = len(seq_df)
-    
-    res_df['coh_cluster'] = clusters.cpu().numpy().tolist()
+
+    res_df["coh_cluster"] = clusters.cpu().numpy().tolist()
     savepath = os.path.join(experpath, "inferredclusters.csv")
-    res_df.drop(res_df.columns[res_df.columns.str.contains('unnamed',case = False)],axis = 1, inplace = True)
+    res_df.drop(
+        res_df.columns[res_df.columns.str.contains("unnamed", case=False)],
+        axis=1,
+        inplace=True,
+    )
     res_df.to_csv(savepath)
