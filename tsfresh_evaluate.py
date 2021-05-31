@@ -47,22 +47,25 @@ def check_dataset(path_to_data, n_classes, n_steps, n_clusters):
     data_feat.fillna(0, inplace=True)
     data_feat.replace([np.inf, -np.inf], 0, inplace=True)
     t2 = time.time()
-
-    model = KMeans(n_clusters=n_clusters)
+    print("KMeans started")
+    model = KMeans(n_clusters=n_clusters, max_iter=200)
     model.fit(data_feat)
     kmeans_clusters = model.predict(data_feat)
     t3 = time.time()
 
-    clustering = AffinityPropagation().fit(data_feat)
+    print("AP started")
+    clustering = AffinityPropagation(max_iter=100).fit(data_feat)
     ap_clusters = clustering.labels_
     t4 = time.time()
 
-    g = mixture.GaussianMixture(n_components=2)
+    print("GMM started")
+    g = mixture.GaussianMixture(n_components=n_clusters, covariance_type='diag', max_iter=100)
     g.fit(data_feat)
     gmm_clusters = g.predict(data_feat)
     t5 = time.time()
 
-    dbscan = DBSCAN()
+    print("DBScan started")
+    dbscan = DBSCAN(eps=1.0)
     dbscan.fit(data_feat)
     dbscan_clusters = dbscan.labels_
 
@@ -96,14 +99,14 @@ def check_dataset(path_to_data, n_classes, n_steps, n_clusters):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, default="K3_C5")
-    parser.add_argument("--experiment_n", type=str, default="0")
+    parser.add_argument("--dataset", type=str, default="sin_K5_C5")
+    parser.add_argument("--experiment_n", type=str, default="exp_0")
     args = parser.parse_args()
     # path to dataset
     datapath = os.path.join("data", args.dataset)
     # path to experiments settings
     experpath = os.path.join("experiments", args.dataset)
-    experpath = os.path.join(experpath, "exp_" + args.experiment_n)
+    experpath = os.path.join(experpath, args.experiment_n)
     with open(os.path.join(experpath, "args.json")) as json_file:
         config = json.load(json_file)
     n_steps = config["n_steps"]

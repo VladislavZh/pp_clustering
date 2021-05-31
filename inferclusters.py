@@ -16,14 +16,14 @@ import argparse
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, default="K3_C5")
-    parser.add_argument("--experiment_n", type=str, default="0")
+    parser.add_argument("--dataset", type=str, default="sin_K5_C5")
+    parser.add_argument("--experiment_n", type=str, default="exp_0")
     args = parser.parse_args()
     # path to dataset
     datapath = os.path.join("data", args.dataset)
     # path to experiment settings and weights
     experpath = os.path.join("experiments", args.dataset)
-    experpath = os.path.join(experpath, "exp_" + args.experiment_n)
+    experpath = os.path.join(experpath, args.experiment_n)
     modelweights = os.path.join(experpath, "last_model.pt")
     with open(os.path.join(experpath, "args.json")) as json_file:
         config = json.load(json_file)
@@ -77,21 +77,34 @@ if __name__ == "__main__":
     if trainer.max_computing_size is None:
         lambdas = trainer.model(trainer.X.to(config["device"]))
         trainer.gamma = trainer.compute_gamma(lambdas)
-        print(trainer.X.shape)
-        print(trainer.n_clusters)
-        print(trainer.gamma.shape)
         clusters = torch.argmax(trainer.gamma, dim=0)
-        print(clusters)
-        print(clusters.shape)
-        print(clusters.max())
+    else:
+        # large datasets
+        trainer_data = trainer.X
+        lenX = len(trainer.X)
+        for i in range(0, lenX // trainer.max_computing_size + 1):
+            trainer.X = trainer_data[
+                i * trainer.max_computing_size : (i + 1) * trainer.max_computing_size
+            ]
+            lambdas = trainer.model(trainer.X.to(config["device"]))
+            trainer.gamma = torch.zeros(trainer.n_clusters, len(trainer.X)).to(
+                config["device"]
+            )
+            trainer.gamma = trainer.compute_gamma(lambdas)
+            if i == 0:
+                clusters = torch.argmax(trainer.gamma, dim=0)
+            else:
+                currclusters = torch.argmax(trainer.gamma, dim=0)
+                clusters = torch.cat((clusters, currclusters), dim=0)
 
     end_time = time.time()
     # save results
     res_df = pd.read_csv(os.path.join(datapath, "clusters.csv"))
     res_df["time"] = round(end_time - start_time, 5)
     res_df["seqlength"] = 0
+    csvfiles = sorted(os.listdir(datapath))
     for index, row in res_df.iterrows():
-        seq_df = pd.read_csv(os.path.join(datapath, str(index + 1) + ".csv"))
+        seq_df = pd.read_csv(os.path.join(datapath, csvfiles[index]))
         res_df.at[index, "seqlength"] = len(seq_df)
 
     res_df["coh_cluster"] = clusters.cpu().numpy().tolist()
