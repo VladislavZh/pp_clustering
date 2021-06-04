@@ -98,7 +98,7 @@ if __name__ == '__main__':
             best_model_path = path_to_results+  '/event_{}'.format(t) +  '/exp_{}'.format(i) + '/best_model.pt'
             os.mkdir(path_to_results +  '/event_{}'.format(t)+'/exp_{}'.format(i))
             exp_folder = path_to_results +  '/event_{}'.format(t) + '/exp_{}'.format(i)
-            trainer = TrainerClusterwise(model, optimizer, args.device, data[t,:,:,:] , args.n_clusters, target=target,
+            trainer = TrainerClusterwise(model, optimizer, args.device, data[:,:,:] , args.n_clusters, target=target,
                                          epsilon=args.epsilon, max_epoch=args.max_epoch,
                                          max_m_step_epoch=args.max_m_step_epoch, lr=args.lr,
                                          random_walking_max_epoch=args.random_walking_max_epoch,
