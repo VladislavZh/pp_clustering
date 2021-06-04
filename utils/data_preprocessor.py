@@ -70,7 +70,7 @@ evnts = {}
 cur = 0
 
 
-def get_partition(df, num_of_steps, num_of_classes, end_time=None):
+def get_partition(df, num_of_steps, num_of_classes, col_to_select: str = None, end_time=None):
     """
         Transforms dataset into partition
 
@@ -83,7 +83,12 @@ def get_partition(df, num_of_steps, num_of_classes, end_time=None):
         outputs:
                 partition - torch.Tensor, size = (num_of_steps, num_of_classes + 1)
     """
-    df = df.loc[:, ['time', 'event']].copy()
+    if col_to_select is None:
+        df = df.loc[:, ['time', 'event']].copy()
+    else:
+        df = df.loc[:, ['time', col_to_select]].copy()
+        df.rename(columns={col_to_select: 'event'}, inplace=True)
+
     df = df.sort_values(by=['time'])
     df = df.reset_index().loc[:, ['time', 'event']].copy()
     # setting end time if None
@@ -126,7 +131,7 @@ def get_partition(df, num_of_steps, num_of_classes, end_time=None):
     return res
 
 
-def get_dataset(path_to_files, n_classes, n_steps, n_files = None):
+def get_dataset(path_to_files, n_classes, n_steps, col_to_select=None, n_files = None):
     """
         Reads dataset
 
@@ -159,8 +164,9 @@ def get_dataset(path_to_files, n_classes, n_steps, n_files = None):
         files = files[:n_files]
     data = torch.zeros(len(files), n_steps, n_classes + 1)
     for i, f in tqdm.tqdm(enumerate(files)):
-        print('File: {}'.format(f))
+        #print('File: {}'.format(f))
         df = pd.read_csv(path_to_files + '/' + f)
-        data[i, :, :] = get_partition(df, n_steps, n_classes)
+        print(f)
+        data[i, :, :] = get_partition(df, n_steps, n_classes, col_to_select)
 
     return data, target

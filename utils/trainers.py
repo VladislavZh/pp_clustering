@@ -206,13 +206,13 @@ class TrainerClusterwise:
         self.device = device
         if max_computing_size is None:
             self.X = data.to(device)
-            if type(target):
+            if target is not None:
                 self.target = target.to(device)
             else:
                 self.target = None
         else:
             self.X = data
-            if type(target):
+            if target is not None:
                 self.target = target
             else:
                 self.target = None
@@ -554,7 +554,7 @@ class TrainerClusterwise:
                     print('Cluster', i, ': ', np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters),
                           ' with pi = ', self.pi[i])
                 cluster_partition = min(cluster_partition, np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters))
-            if type(self.target):
+            if self.target is not None:
                 pur = purity(clusters.to('cpu'),
                              self.target[ids] if (ids is not None) and (not self.full_purity) else self.target.to(
                                  'cpu'))
@@ -581,12 +581,12 @@ class TrainerClusterwise:
         if self.verbose:
             print('Cluster partition')
         cluster_partition = 2
-        for i in np.unique(clusters.cpu()):
+        for i in np.unique(clusters.cpu().detach()):
             if self.verbose:
                 print('Cluster', i, ': ', np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters),
                       ' with pi = ', self.pi[i])
             cluster_partition = min(cluster_partition, np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters))
-        if type(self.target):
+        if self.target is not None:
             pur = purity(clusters.to('cpu'),
                          self.target[ids] if (ids is not None) and (not self.full_purity) else self.target.to('cpu'))
         else:
@@ -643,7 +643,7 @@ class TrainerClusterwise:
                     for i in np.unique(clusters.cpu()):
                         print('Cluster', i, ': ', np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters),
                               ' with pi = ', self.pi[i])
-                if type(self.target):
+                if self.target is not None:
                     random_pur = purity(clusters,
                                         self.target[ids] if (ids is not None) and (
                                             not self.full_purity) else self.target)
