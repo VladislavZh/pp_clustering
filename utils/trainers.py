@@ -889,7 +889,7 @@ class TrainerClusterwise:
                         if (torch.rand(1) > remain_prob)[0]:
                             if self.verbose:
                                 print("Loading model")
-                            self.model = torch.load(os.path.join("tmp.pt"))
+                            self.model = torch.load(os.path.join(self.exper_path, "tmp.pt"))
                             self.n_clusters -= 1
                             self.pi = torch.ones(self.n_clusters) / self.n_clusters
                         else:
@@ -977,7 +977,7 @@ class TrainerClusterwise:
                                         )
                                 if self.verbose:
                                     print("Loading model")
-                                self.model = torch.load(os.path.join("tmp.pt"))
+                                self.model = torch.load(os.path.join(self.exper_path, "tmp.pt"))
                                 self.n_clusters += 1
                                 self.pi = torch.ones(self.n_clusters) / self.n_clusters
                             else:

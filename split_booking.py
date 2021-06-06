@@ -29,17 +29,17 @@ if __name__ == "__main__":
     # label encoding categorical variables
     cat_vars = ["device_class", "city_id", "diff_inout", "diff_checkin"]
     for catvar in cat_vars:
-        #mapping = {k: i for i, k in enumerate(bk_df[catvar].unique())}
-        #bk_df[catvar] = bk_df[catvar].map(mapping)
+        # mapping = {k: i for i, k in enumerate(bk_df[catvar].unique())}
+        # bk_df[catvar] = bk_df[catvar].map(mapping)
         bk_df[catvar] = bk_df[catvar].astype("category")
         bk_df[catvar] = bk_df[catvar].cat.codes
     # seqlen stats
-    grouped_df = bk_df[['user_id', 'seqlen']]
-    grouped_df = bk_df.groupby("user_id").agg({'seqlen': 'mean'}).reset_index()
-    grouped_df = grouped_df[['seqlen']]
-    print('seqlen stats')
-    print('mean', grouped_df['seqlen'].mean())
-    print(grouped_df.quantile([.25, .5, .75]))
+    grouped_df = bk_df[["user_id", "seqlen"]]
+    grouped_df = bk_df.groupby("user_id").agg({"seqlen": "mean"}).reset_index()
+    grouped_df = grouped_df[["seqlen"]]
+    print("seqlen stats")
+    print("mean", grouped_df["seqlen"].mean())
+    print(grouped_df.quantile([0.25, 0.5, 0.75]))
     bk_df.drop(columns=["seqlen"], inplace=True)
     # encoding label
     bk_df["label"] = bk_df["label"].astype("category")
@@ -47,15 +47,14 @@ if __name__ == "__main__":
 
     unique_ids = bk_df["user_id"].unique().tolist()
     gt_clusters = []
-    
+
     # number of classes
-    print('device_class', len(bk_df['device_class'].unique().tolist()))
-    print('city_id', len(bk_df['city_id'].unique().tolist()))
-    print('diff_checkin', len(bk_df['diff_checkin'].unique().tolist()))
-    print('diff_inout', len(bk_df['diff_inout'].unique().tolist()))
+    print("device_class", len(bk_df["device_class"].unique().tolist()))
+    print("city_id", len(bk_df["city_id"].unique().tolist()))
+    print("diff_checkin", len(bk_df["diff_checkin"].unique().tolist()))
+    print("diff_inout", len(bk_df["diff_inout"].unique().tolist()))
     # number of labels
-    print('labels num', len(bk_df['label'].unique().tolist()))
-    
+    print("labels num", len(bk_df["label"].unique().tolist()))
 
     i = 1
     for id0 in unique_ids:
@@ -67,4 +66,6 @@ if __name__ == "__main__":
         i += 1
 
     # saving gt cluster labels
-    pd.DataFrame(gt_clusters, columns=['cluster_id']).to_csv("data/booking/clusters.csv")
+    pd.DataFrame(gt_clusters, columns=["cluster_id"]).to_csv(
+        "data/booking/clusters.csv"
+    )

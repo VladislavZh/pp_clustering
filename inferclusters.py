@@ -16,7 +16,8 @@ import argparse
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, default="sin_K5_C5")
+    parser.add_argument("--dataset", type=str, default="booking")
+    parser.add_argument("--col_to_select", type=str, default=None)
     parser.add_argument("--experiment_n", type=str, default="exp_0")
     args = parser.parse_args()
     # path to dataset
@@ -46,7 +47,7 @@ if __name__ == "__main__":
     model.eval()
     # start
     start_time = time.time()
-    data, target = get_dataset(datapath, model.num_classes, n_steps)
+    data, target = get_dataset(datapath, model.num_classes, n_steps, args.col_to_select)
 
     trainer = TrainerClusterwise(
         model,
@@ -54,6 +55,7 @@ if __name__ == "__main__":
         config["device"],
         data,
         model.num_clusters,
+        exper_path=experpath,
         target=target,
         epsilon=config["epsilon"],
         max_epoch=config["max_epoch"],
@@ -107,7 +109,7 @@ if __name__ == "__main__":
         seq_df = pd.read_csv(os.path.join(datapath, csvfiles[index]))
         res_df.at[index, "seqlength"] = len(seq_df)
 
-    res_df["coh_cluster"] = clusters.cpu().numpy().tolist()
+    res_df["coh_cluster"] = clusters.detach().cpu().numpy().tolist()
     savepath = os.path.join(experpath, "inferredclusters.csv")
     res_df.drop(
         res_df.columns[res_df.columns.str.contains("unnamed", case=False)],
