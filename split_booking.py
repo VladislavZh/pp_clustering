@@ -56,16 +56,16 @@ if __name__ == "__main__":
     # number of labels
     print("labels num", len(bk_df["label"].unique().tolist()))
 
-    i = 1
-    for id0 in unique_ids:
-        curr_df = bk_df[bk_df["user_id"] == id0]
-        gt_clusters.append(int(curr_df["label"].mean()))
-        curr_df.drop(columns=["user_id", "label"], inplace=True)
-        curr_df.reset_index(drop=True, inplace=True)
-        curr_df.to_csv("data/booking/" + str(i) + ".csv")
-        i += 1
+    #i = 1
+    #for id0 in unique_ids:
+    #    curr_df = bk_df[bk_df["user_id"] == id0]
+    #    gt_clusters.append(int(curr_df["label"].mean()))
+    #    curr_df.drop(columns=["user_id", "label"], inplace=True)
+    #    curr_df.reset_index(drop=True, inplace=True)
+    #   curr_df.to_csv("data/booking/" + str(i) + ".csv")
+    #    i += 1
 
     # saving gt cluster labels
-    pd.DataFrame(gt_clusters, columns=["cluster_id"]).to_csv(
-        "data/booking/clusters.csv"
-    )
+    #pd.DataFrame(gt_clusters, columns=["cluster_id"]).to_csv(
+    #    "data/booking/clusters.csv"
+    #)

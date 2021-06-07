@@ -23,9 +23,10 @@ from sklearn import mixture
 import time
 
 
-def check_dataset(path_to_data, n_classes, n_steps, n_clusters):
+def check_dataset(path_to_data, n_classes, n_steps, n_clusters, col_to_select=None):
     t1 = time.time()
-    data, target = get_dataset(path_to_data, n_classes, n_steps)
+    data, target = get_dataset(path_to_data, n_classes, n_steps, col_to_select)
+    print('data shape', data.shape)
     n_classes += 1
     N = data.shape[0]
     data_divided = []
@@ -46,6 +47,9 @@ def check_dataset(path_to_data, n_classes, n_steps, n_clusters):
     )
     data_feat.fillna(0, inplace=True)
     data_feat.replace([np.inf, -np.inf], 0, inplace=True)
+    print('features shape', data_feat.shape)
+    path_to_experiments = os.path.join('experiments', path_to_data.split('/')[-1]) 
+    data_feat.to_pickle(os.path.join(path_to_experiments,'tsfreshfeatures.pkl'))
     t2 = time.time()
     print("KMeans started")
     model = KMeans(n_clusters=n_clusters, max_iter=200)
@@ -101,11 +105,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="sin_K5_C5")
     parser.add_argument("--experiment_n", type=str, default="exp_0")
+    parser.add_argument("--col_to_select", type=str)
     args = parser.parse_args()
     # path to dataset
     datapath = os.path.join("data", args.dataset)
     # path to experiments settings
-    experpath = os.path.join("experiments", args.dataset)
+    if args.col_to_select is not None:
+        experpath = os.path.join("experiments", args.dataset)
+    else:
+        experpath = os.path.join("experiments", args.dataset)
     experpath = os.path.join(experpath, args.experiment_n)
     with open(os.path.join(experpath, "args.json")) as json_file:
         config = json.load(json_file)
@@ -113,7 +121,7 @@ if __name__ == "__main__":
     n_classes = config["n_classes"]
     n_clusters = config["true_clusters"]
 
-    res_dict = check_dataset(datapath, n_classes, n_steps, n_clusters)
+    res_dict = check_dataset(datapath, n_classes, n_steps, n_clusters, args.col_to_select)
     # saving results
     res_df = pd.read_csv(os.path.join(experpath, "inferredclusters.csv"))
     res_df["kmeans_clusters"] = res_dict["kmeans"]["clusters"].tolist()
