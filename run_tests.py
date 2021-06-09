@@ -52,9 +52,7 @@ def experiment_runner(args):
 
         # results check
         if cluster_part is None:
-            if args['verbose']:
-                print('Solution failed')
-            continue
+            print('Solution failed')
 
         # saving results
         with open(exp_folder + '/losses.pkl', 'wb') as f:
@@ -85,8 +83,6 @@ if __name__ == "__main__":
     for key in exp_params.keys():
         params = base_params.copy()
         for param_to_test in exp_params[key]:
-            if params['verbose']:
-                print('Testing', key, '=', param_to_test)
             params[key] = param_to_test
             params['save_dir'] = base_params['save_dir'] + '/test_{}_{}'.format(key, param_to_test)
             print('EXP: {} = {}'.format(key, param_to_test))
