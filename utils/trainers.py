@@ -2,6 +2,7 @@
     This file contains trainers, that conduct training of the model according to considered methods
 """
 import os
+import optuna
 import time
 import numpy as np
 from utils.metrics import purity, info_score
@@ -187,6 +188,7 @@ class TrainerClusterwise:
         best_model_path=None,
         max_computing_size=None,
         full_purity=True,
+        trial=None
     ):
         """
         inputs:
@@ -214,7 +216,8 @@ class TrainerClusterwise:
                 verbose - bool, if True, provides info during training
                 best_model_path - str, where the best model according to loss should be saved or None
                 max_computing_size - int, if not None, then constraints gamma size (one EM-algorithm step)
-                fool_purity - bool, if True, purity is computed on all dataset
+                full_purity - bool, if True, purity is computed on all dataset
+                trial - optuna study object
 
         parameters:
                 N - int, number of data points
@@ -291,6 +294,7 @@ class TrainerClusterwise:
         self.random_walking_max_epoch = random_walking_max_epoch
         self.true_clusters = true_clusters
         self.upper_bound_clusters = upper_bound_clusters
+        self.trial = trial
 
     def loss(self, partitions, lambdas, gamma):
         """
@@ -803,6 +807,15 @@ class TrainerClusterwise:
                 print("lr =", lr)
                 print("lr_update_param =", self.lr_update_param)
             ll, ll_pur, cluster_part = self.m_step(big_batch=big_batch, ids=ids)
+            
+            # optuna part - report purity
+            if self.trial:
+                self.trial.report(ll_pur[1], epoch)
+
+            # Handle pruning based on the intermediate value.
+            if self.trial:
+                if self.trial.should_prune():
+                    raise optuna.exceptions.TrialPruned()
 
             # failure check
             if ll is None:

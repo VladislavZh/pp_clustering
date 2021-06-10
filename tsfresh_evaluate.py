@@ -20,6 +20,8 @@ from sklearn.cluster import DBSCAN
 from sklearn.cluster import KMeans
 from sklearn.cluster import AffinityPropagation
 from sklearn import mixture
+from tsfresh.feature_extraction import MinimalFCParameters
+
 import time
 
 
@@ -31,7 +33,7 @@ def check_dataset(path_to_data, n_classes, n_steps, n_clusters, col_to_select=No
     N = data.shape[0]
     data_divided = []
     for i in range(n_classes):
-        data_divided.append(data[:, :, i].reshape(-1))
+       data_divided.append(data[:, :, i].reshape(-1))
     to_extract = []
     for i in range(n_classes):
         ids = np.arange(N).repeat(n_steps)
@@ -40,62 +42,77 @@ def check_dataset(path_to_data, n_classes, n_steps, n_clusters, col_to_select=No
         to_extract.append(pd.DataFrame(data=tmp, columns=["id", "value"]))
     tfs = []
     for i in range(n_classes):
-        tf = tsfresh.extract_features(to_extract[i], column_id="id")
+        tf = tsfresh.extract_features(to_extract[i], column_id="id", default_fc_parameters = MinimalFCParameters())
         tfs.append(tf)
     data_feat = pd.concat(
         [tfs[i].reindex(tfs[0].index) for i in range(n_classes)], axis=1
     )
     data_feat.fillna(0, inplace=True)
     data_feat.replace([np.inf, -np.inf], 0, inplace=True)
-    print('features shape', data_feat.shape)
     path_to_experiments = os.path.join('experiments', path_to_data.split('/')[-1]) 
-    data_feat.to_pickle(os.path.join(path_to_experiments,'tsfreshfeatures.pkl'))
-    t2 = time.time()
-    print("KMeans started")
-    model = KMeans(n_clusters=n_clusters, max_iter=200)
-    model.fit(data_feat)
-    kmeans_clusters = model.predict(data_feat)
-    t3 = time.time()
-
-    print("AP started")
-    clustering = AffinityPropagation(max_iter=100).fit(data_feat)
-    ap_clusters = clustering.labels_
-    t4 = time.time()
-
-    print("GMM started")
-    g = mixture.GaussianMixture(n_components=n_clusters, covariance_type='diag', max_iter=100)
-    g.fit(data_feat)
-    gmm_clusters = g.predict(data_feat)
-    t5 = time.time()
-
-    print("DBScan started")
-    dbscan = DBSCAN(eps=1.0)
-    dbscan.fit(data_feat)
-    dbscan_clusters = dbscan.labels_
-
-    t6 = time.time()
-
+    data_feat.to_csv(os.path.join(path_to_experiments,'tsfreshfeatures.csv'))
+    #data_feat = pd.read_csv(os.path.join(path_to_experiments,'tsfreshfeatures.csv'))
+    print('data_feat', data_feat.shape) 
+    # obtaining clusters
     res_dict = {}
     res_dict["data"] = path_to_data
     res_dict["n_classes"] = n_classes
     res_dict["n_steps"] = n_steps
     res_dict["n_clusters"] = n_clusters
+    t2 = time.time()
     res_dict["kmeans"] = {
-        "clusters": kmeans_clusters,
-        "time": round(t3 - t2 + t2 - t1, 5),
+        "clusters": [],
+        "time": round(t2 - t1, 5),
     }
     res_dict["ap"] = {
-        "clusters": ap_clusters,
-        "time": round(t4 - t3 + t2 - t1, 5),
+        "clusters": [],
+        "time": round(t2 - t1, 5),
     }
     res_dict["gmm"] = {
-        "clusters": gmm_clusters,
-        "time": round(t5 - t4 + t2 - t1, 5),
+        "clusters": [],
+        "time": round(t2 - t1, 5),
     }
     res_dict["dbscan"] = {
-        "clusters": dbscan_clusters,
-        "time": round(t6 - t5 + t2 - t1, 5),
+        "clusters": [],
+        "time": round(t2 - t1, 5),
     }
+    # iterating over large csv
+    data_iter = pd.read_csv(os.path.join(path_to_experiments,'tsfreshfeatures.csv'), iterator=True,chunksize=15000)
+    
+    for chunk in data_iter: 
+        print('features shape', chunk.shape)
+        t2 = time.time()
+        print("KMeans started")
+        model = KMeans(n_clusters=n_clusters, max_iter=200)
+        model.fit(chunk)
+        kmeans_clusters = model.predict(chunk)
+        t3 = time.time()
+        res_dict["kmeans"]["time"] += round(t3 - t2, 5)
+        res_dict["kmeans"]["clusters"].extend(kmeans_clusters)
+
+        print("AP started")
+        clustering = AffinityPropagation(max_iter=100).fit(chunk)
+        ap_clusters = clustering.labels_
+        t4 = time.time()
+        res_dict["ap"]["time"] += round(t4 - t3, 5)
+        res_dict["ap"]["clusters"].extend(ap_clusters)
+
+        print("GMM started")
+        g = mixture.GaussianMixture(n_components=n_clusters, covariance_type='diag', max_iter=100)
+        g.fit(chunk)
+        gmm_clusters = g.predict(chunk)
+        t5 = time.time()
+        res_dict["gmm"]["time"] += round(t5 - t3, 5)
+        res_dict["gmm"]["clusters"].extend(gmm_clusters)
+
+        print("DBScan started")
+        dbscan = DBSCAN(eps=1.0)
+        dbscan.fit(chunk)
+        dbscan_clusters = dbscan.labels_
+        t6 = time.time()
+        res_dict["dbscan"]["time"] += round(t6 - t5, 5)
+        res_dict["dbscan"]["clusters"].extend(dbscan_clusters)
+
 
     return res_dict
 
@@ -124,15 +141,11 @@ if __name__ == "__main__":
     res_dict = check_dataset(datapath, n_classes, n_steps, n_clusters, args.col_to_select)
     # saving results
     res_df = pd.read_csv(os.path.join(experpath, "inferredclusters.csv"))
-    res_df["kmeans_clusters"] = res_dict["kmeans"]["clusters"].tolist()
-    res_df["kmeans_time"] = res_dict["kmeans"]["time"]
-    res_df["ap_clusters"] = res_dict["ap"]["clusters"].tolist()
-    res_df["ap_time"] = res_dict["ap"]["time"]
-    res_df["gmm_clusters"] = res_dict["gmm"]["clusters"].tolist()
-    res_df["gmm_time"] = res_dict["gmm"]["time"]
-    res_df["dbscan_clusters"] = res_dict["dbscan"]["clusters"].tolist()
-    res_df["dbscan_time"] = res_dict["dbscan"]["time"]
-
+    methods = ["kmeans", "ap", "gmm", "dbscan"]
+    for m in methods:
+        res_df[m+"_clusters"] = np.array(res_dict[m]["clusters"])
+        res_df[m+"_time"] = res_dict[m]["time"]
+        
     savepath = os.path.join(experpath, "compareclusters.csv")
     res_df.drop(
         res_df.columns[res_df.columns.str.contains("unnamed", case=False)],
