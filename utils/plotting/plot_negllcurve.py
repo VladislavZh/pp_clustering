@@ -6,8 +6,8 @@ import numpy as np
 plt.style.use("science")
 
 
-# Figure 6
-exper_path = "../experiments/new_sin_K5_C5/"
+# Figure 11
+exper_path = "../../experiments/new_sin_K5_C5"
 n_runs = 10
 for i in range(0, n_runs):
     res_file = os.path.join(exper_path, "exp_" + str(i), "results.pkl")
@@ -33,5 +33,5 @@ plt.legend(loc="upper right")
 plt.xlabel("epoch")
 plt.ylabel("negative loglikelihood")
 
-
-plt.savefig("fig6.pdf", dpi=400, bbox_inches="tight")
+data_name = exper_path.split('/')[-1]
+plt.savefig(data_name + "_negll.pdf", dpi=400, bbox_inches="tight")

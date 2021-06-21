@@ -5,8 +5,8 @@ import os
 plt.style.use("science")
 
 
-# Figure 3
-exper_path = "../experiments/new_sin_K5_C5/exp_0"
+# Figure 10
+exper_path = "../../experiments/Age/exp_0"
 res_file = os.path.join(exper_path, "results.pkl")
 
 with open(res_file, "rb") as f:
@@ -43,7 +43,7 @@ for i, m in enumerate(metrics):
     axs[i].tick_params(labelsize=4)
     x0, x1 = axs[i].get_xlim()
     y0, y1 = axs[i].get_ylim()
-    axs[i].set_aspect(abs((x1 - x0) / (y1 - y0)))
+    axs[i].set_aspect(2*abs((x1 - x0) / (y1 - y0)))
 
-
-fig.savefig("fig3.pdf", dpi=400, bbox_inches="tight")
+data_name = exper_path.split('/')[-2]
+fig.savefig(data_name + "_learncurve.pdf", dpi=400, bbox_inches="tight")
