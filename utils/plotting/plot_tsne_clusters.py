@@ -17,6 +17,7 @@ from sklearn.manifold import TSNE
 
 # Fig 6-7
 data_name = "K4_C5"
+data_name = "Age"
 data_path = os.path.join("../../data", data_name)
 exper_path = os.path.join("../../experiments", data_name, "exp_0")
 # obtain gt and cohortney labels
@@ -45,7 +46,7 @@ model.eval()
 
 # obtain embeddings from hidden states
 data, target = get_dataset(data_path, model.num_classes, n_steps, col_to_select=None)
-dataloader = DataLoader(data, batch_size=16, shuffle=False, num_workers=1)
+dataloader = DataLoader(data, batch_size=4, shuffle=False, num_workers=1)
 embed_list = []
 for batch_idx, sample in enumerate(dataloader):
     lambdas, hiddens, cells = model.forward(sample.to(config["device"]), return_states=True)
@@ -56,12 +57,13 @@ embeddings = embed_list[0]
 for i in range(1, len(embed_list)):
     embeddings = torch.cat((embeddings, embed_list[i]), dim=2)
 embeddings = embeddings.permute(2,0,1,3)
-embeddings = embeddings[:,:,-1,:]
+#embeddings = embeddings[:,:,-1,:]
 embeddings = torch.flatten(embeddings, start_dim=1)
 
 # tsne and visualization
 embeddings = embeddings.cpu().detach().numpy()
-t_embeddings = TSNE(n_components=2, perplexity=15, learning_rate=10).fit_transform(embeddings)
+#t_embeddings = TSNE(n_components=2, perplexity=15, learning_rate=10).fit_transform(embeddings)
+t_embeddings = TSNE(n_components=2).fit_transform(embeddings)
 print(t_embeddings.shape)
 t_embeddings = pd.DataFrame({'x': t_embeddings[:,0], 'y': t_embeddings[:,1]})
 fig = plt.figure(figsize=(16,7))

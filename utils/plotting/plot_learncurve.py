@@ -1,6 +1,7 @@
-import matplotlib.pyplot as plt
-import pickle
 import os
+import pickle
+
+import matplotlib.pyplot as plt
 
 plt.style.use("science")
 
@@ -24,8 +25,8 @@ n_clust = [r[3] for r in res_list]
 # time
 time_fr_st = [r[4] for r in res_list]
 
-ll = [x / (10**6) for x in ll]
-metrics = [ll , pur, clust_part, n_clust, time_fr_st]
+ll = [x / (10 ** 6) for x in ll]
+metrics = [ll, pur, clust_part, n_clust, time_fr_st]
 fig, axs = plt.subplots(1, len(metrics), constrained_layout=True)
 metrics_name = [
     "Negative\nLog Likelihood",
@@ -43,7 +44,7 @@ for i, m in enumerate(metrics):
     axs[i].tick_params(labelsize=4)
     x0, x1 = axs[i].get_xlim()
     y0, y1 = axs[i].get_ylim()
-    axs[i].set_aspect(2*abs((x1 - x0) / (y1 - y0)))
+    axs[i].set_aspect(2 * abs((x1 - x0) / (y1 - y0)))
 
-data_name = exper_path.split('/')[-2]
+data_name = exper_path.split("/")[-2]
 fig.savefig(data_name + "_learncurve.pdf", dpi=400, bbox_inches="tight")

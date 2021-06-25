@@ -5,7 +5,8 @@ import pandas as pd
 
 if __name__ == "__main__":
 
-    bk_df = pd.read_csv("data/booking_challenge_tpp_labeled.csv")
+    # path to input file
+    bk_df = pd.read_csv("../data/booking_challenge_tpp_labeled.csv")
     print(bk_df.head())
     bk_df = bk_df[
         [
@@ -49,23 +50,24 @@ if __name__ == "__main__":
     gt_clusters = []
 
     # number of classes
-    print("device_class", len(bk_df["device_class"].unique().tolist()))
-    print("city_id", len(bk_df["city_id"].unique().tolist()))
-    print("diff_checkin", len(bk_df["diff_checkin"].unique().tolist()))
-    print("diff_inout", len(bk_df["diff_inout"].unique().tolist()))
+    print("# device_class =", len(bk_df["device_class"].unique().tolist()))
+    print("# city_id =", len(bk_df["city_id"].unique().tolist()))
+    print("# diff_checkin =", len(bk_df["diff_checkin"].unique().tolist()))
+    print("# diff_inout =", len(bk_df["diff_inout"].unique().tolist()))
     # number of labels
-    print("labels num", len(bk_df["label"].unique().tolist()))
-
-    #i = 1
-    #for id0 in unique_ids:
-    #    curr_df = bk_df[bk_df["user_id"] == id0]
-    #    gt_clusters.append(int(curr_df["label"].mean()))
-    #    curr_df.drop(columns=["user_id", "label"], inplace=True)
-    #    curr_df.reset_index(drop=True, inplace=True)
-    #   curr_df.to_csv("data/booking/" + str(i) + ".csv")
-    #    i += 1
+    print("# labels =", len(bk_df["label"].unique().tolist()))
+    
+    save_path = "../data/booking"
+    i = 1
+    for id0 in unique_ids:
+        curr_df = bk_df[bk_df["user_id"] == id0]
+        gt_clusters.append(int(curr_df["label"].mean()))
+        curr_df.drop(columns=["user_id", "label"], inplace=True)
+        curr_df.reset_index(drop=True, inplace=True)
+        curr_df.to_csv(os.path.join(save_path, str(i) + ".csv"))
+        i += 1
 
     # saving gt cluster labels
-    #pd.DataFrame(gt_clusters, columns=["cluster_id"]).to_csv(
-    #    "data/booking/clusters.csv"
-    #)
+    pd.DataFrame(gt_clusters, columns=["cluster_id"]).to_csv(
+        os.path.join(save_path,"clusters.csv")
+    )

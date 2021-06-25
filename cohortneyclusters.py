@@ -1,17 +1,14 @@
-import torch
+import argparse
+import json
+import os
 import time
-import numpy as np
-from utils.metrics import purity
-import math
+
+import pandas as pd
+import torch
+
 from models.LSTM import LSTMMultiplePointProcesses
 from utils.data_preprocessor import get_dataset
 from utils.trainers import TrainerClusterwise
-import pickle
-import json
-import os
-import pandas as pd
-import argparse
-
 
 if __name__ == "__main__":
 
@@ -21,12 +18,11 @@ if __name__ == "__main__":
     parser.add_argument("--experiment_n", type=str, default="exp_0")
     args = parser.parse_args()
     # path to dataset
-    datapath = os.path.join("data", args.dataset)
+    data_path = os.path.join("data", args.dataset)
     # path to experiment settings and weights
-    experpath = os.path.join("experiments", args.dataset)
-    experpath = os.path.join(experpath, args.experiment_n)
-    modelweights = os.path.join(experpath, "last_model.pt")
-    with open(os.path.join(experpath, "args.json")) as json_file:
+    exper_path = os.path.join("experiments", args.dataset, args.experiment_n)
+    model_weights = os.path.join(exper_path, "last_model.pt")
+    with open(os.path.join(exper_path, "args.json")) as json_file:
         config = json.load(json_file)
     n_steps = config["n_steps"]
     n_classes = config["n_classes"]
@@ -43,11 +39,13 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam(
         model.parameters(), config["lr"], weight_decay=config["weight_decay"]
     )
-    model = torch.load(modelweights, map_location=torch.device(config["device"]))
+    model = torch.load(model_weights, map_location=torch.device(config["device"]))
     model.eval()
     # start
     start_time = time.time()
-    data, target = get_dataset(datapath, model.num_classes, n_steps, args.col_to_select)
+    data, target = get_dataset(
+        data_path, model.num_classes, n_steps, args.col_to_select
+    )
 
     trainer = TrainerClusterwise(
         model,
@@ -55,7 +53,7 @@ if __name__ == "__main__":
         config["device"],
         data,
         model.num_clusters,
-        exper_path=experpath,
+        exper_path=exper_path,
         target=target,
         epsilon=config["epsilon"],
         max_epoch=config["max_epoch"],
@@ -96,21 +94,21 @@ if __name__ == "__main__":
             if i == 0:
                 clusters = torch.argmax(trainer.gamma, dim=0)
             else:
-                currclusters = torch.argmax(trainer.gamma, dim=0)
-                clusters = torch.cat((clusters, currclusters), dim=0)
+                curr_clusters = torch.argmax(trainer.gamma, dim=0)
+                clusters = torch.cat((clusters, curr_clusters), dim=0)
 
     end_time = time.time()
     # save results
-    res_df = pd.read_csv(os.path.join(datapath, "clusters.csv"))
+    res_df = pd.read_csv(os.path.join(data_path, "clusters.csv"))
     res_df["time"] = round(end_time - start_time, 5)
     res_df["seqlength"] = 0
-    csvfiles = sorted(os.listdir(datapath))
+    csvfiles = sorted(os.listdir(data_path))
     for index, row in res_df.iterrows():
-        seq_df = pd.read_csv(os.path.join(datapath, csvfiles[index]))
+        seq_df = pd.read_csv(os.path.join(data_path, csvfiles[index]))
         res_df.at[index, "seqlength"] = len(seq_df)
 
     res_df["coh_cluster"] = clusters.detach().cpu().numpy().tolist()
-    savepath = os.path.join(experpath, "inferredclusters.csv")
+    savepath = os.path.join(exper_path, "cohortney_clusters.csv")
     res_df.drop(
         res_df.columns[res_df.columns.str.contains("unnamed", case=False)],
         axis=1,

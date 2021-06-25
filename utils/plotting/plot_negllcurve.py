@@ -1,6 +1,7 @@
-import matplotlib.pyplot as plt
-import pickle
 import os
+import pickle
+
+import matplotlib.pyplot as plt
 import numpy as np
 
 plt.style.use("science")
@@ -33,5 +34,5 @@ plt.legend(loc="upper right")
 plt.xlabel("epoch")
 plt.ylabel("negative loglikelihood")
 
-data_name = exper_path.split('/')[-1]
+data_name = exper_path.split("/")[-1]
 plt.savefig(data_name + "_negll.pdf", dpi=400, bbox_inches="tight")

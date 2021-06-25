@@ -29,7 +29,6 @@ for st in starts:
     for foldername in os.listdir(exper_path):
         # obtaining summary statistics
         if foldername.startswith(st):
-            print(foldername.split("_"))
             x_labels.append(foldername.split("_")[-1])
             n_runs = len(os.listdir(os.path.join(exper_path, foldername)))
             purities = np.zeros(n_runs)
@@ -48,16 +47,9 @@ for st in starts:
     # plotting
     x_labels = [float(x) for x in x_labels]
     sort_index = np.argsort(x_labels)
-    print(x_labels)
-    print(sort_index)
-    x_labels = [x_labels[i] for i in sort_index] 
-    print(x_labels)
-    print(plot_means)
-    plot_means = [plot_means[i] for i in sort_index] 
-    print(plot_means)
-    print(plot_stds)
-    plot_stds = [plot_stds[i] for i in sort_index] 
-    print(plot_stds)
+    x_labels = [x_labels[i] for i in sort_index]
+    plot_means = [plot_means[i] for i in sort_index]
+    plot_stds = [plot_stds[i] for i in sort_index]
     plt.errorbar(x_labels, plot_means, yerr=plot_stds)
     plt.xlabel(x_ax_titles[k])
     plt.ylabel("Purity")
