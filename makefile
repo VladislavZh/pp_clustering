@@ -44,4 +44,3 @@ run:
 
 clean:
 	find . -type d -name "__pycache__" | xargs rm -rf {};
-	rm -r *.project

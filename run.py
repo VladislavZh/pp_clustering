@@ -5,7 +5,7 @@
 from argparse import ArgumentParser
 from utils.data_preprocessor import get_dataset
 from utils.trainers import TrainerClusterwise
-from models.LSTM import LSTMMultiplePointProcesses
+from models.MPP import MultiplePointProcesses
 from utils.file_system_utils import create_folder
 import torch
 import pickle
@@ -25,6 +25,9 @@ def parse_arguments():
     parser = ArgumentParser()
     parser.add_argument(
         "--path_to_files", type=str, required=True, help="path to data, required"
+    )
+    parser.add_argument(
+        "--type_of_model", type=str, default="LSTM", help="backbone model of Cohortney"
     )
     parser.add_argument(
         "--n_steps",
@@ -140,7 +143,7 @@ def parse_arguments():
     parser.add_argument(
         "--device",
         type=str,
-        default="cpu",
+        default="cuda:0",
         help="device that should be used for training, default - " "cpu",
     )
     parser.add_argument(
@@ -152,7 +155,7 @@ def parse_arguments():
     parser.add_argument(
         "--full_purity",
         type=bool,
-        default=False,
+        default=True,
         help="if true, uses all dataset to compute purity",
     )
     parser.add_argument(
@@ -206,7 +209,8 @@ if __name__ == "__main__":
     while i < args.n_runs:
         if args.verbose:
             print("Run {}/{}".format(i + 1, args.n_runs))
-        model = LSTMMultiplePointProcesses(
+        model = MultiplePointProcesses(
+            args.type_of_model,
             args.n_classes + 1,
             args.hidden_size,
             args.num_layers,

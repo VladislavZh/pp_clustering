@@ -9,7 +9,7 @@ from utils.metrics import purity, info_score
 import torch
 import math
 from sklearn.cluster import KMeans
-from models.LSTM import LSTMMultiplePointProcesses
+from models.MPP import MultiplePointProcesses
 
 
 class TrainerSingle:
@@ -188,7 +188,7 @@ class TrainerClusterwise:
         best_model_path=None,
         max_computing_size=None,
         full_purity=True,
-        trial=None
+        trial=None,
     ):
         """
         inputs:
@@ -248,7 +248,7 @@ class TrainerClusterwise:
                 best_model_path - str, where the best model according to loss should be saved or None
                 prev_loss_model - float, loss obtained for the best model
                 max_computing_size - int, if not None, then constraints gamma size (one EM-algorithm step)
-                fool_purity - bool, if True, purity is computed on all dataset
+                full_purity - bool, if True, purity is computed on all dataset
         """
         self.N = data.shape[0]
         self.model = model
@@ -807,7 +807,7 @@ class TrainerClusterwise:
                 print("lr =", lr)
                 print("lr_update_param =", self.lr_update_param)
             ll, ll_pur, cluster_part = self.m_step(big_batch=big_batch, ids=ids)
-            
+
             # optuna part - report purity
             if self.trial:
                 self.trial.report(ll_pur[1], epoch)
@@ -902,7 +902,9 @@ class TrainerClusterwise:
                         if (torch.rand(1) > remain_prob)[0]:
                             if self.verbose:
                                 print("Loading model")
-                            self.model = torch.load(os.path.join(self.exper_path, "tmp.pt"))
+                            self.model = torch.load(
+                                os.path.join(self.exper_path, "tmp.pt")
+                            )
                             self.n_clusters -= 1
                             self.pi = torch.ones(self.n_clusters) / self.n_clusters
                         else:
@@ -990,7 +992,9 @@ class TrainerClusterwise:
                                         )
                                 if self.verbose:
                                     print("Loading model")
-                                self.model = torch.load(os.path.join(self.exper_path, "tmp.pt"))
+                                self.model = torch.load(
+                                    os.path.join(self.exper_path, "tmp.pt")
+                                )
                                 self.n_clusters += 1
                                 self.pi = torch.ones(self.n_clusters) / self.n_clusters
                             else:
