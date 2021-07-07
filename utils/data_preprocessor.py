@@ -1,5 +1,9 @@
+import contextlib
 import os
+
+import dropbox
 import pandas as pd
+import time
 import torch
 import tqdm
 
@@ -68,6 +72,35 @@ def label_dataset(path_to_files, files):
 
 evnts = {}
 cur = 0
+
+
+@contextlib.contextmanager
+def stopwatch(message):
+    """Context manager to print how long a block of code took."""
+    t0 = time.time()
+    try:
+        yield
+    finally:
+        t1 = time.time()
+        print("Total elapsed time for %s: %.3f" % (message, t1 - t0))
+
+
+def dropbox_download(dbx, folder, subfolder, name):
+    """Download a file.
+    Return the bytes of the file, or None if it doesn't exist.
+    """
+    path = "/%s/%s/%s" % (folder, subfolder.replace(os.path.sep, "/"), name)
+    while "//" in path:
+        path = path.replace("//", "/")
+    with stopwatch("download"):
+        try:
+            md, res = dbx.files_download(path)
+        except dropbox.exceptions.HttpError as err:
+            print("*** HTTP error", err)
+            return None
+    data = res.content
+    print(len(data), "bytes; md:", md)
+    return data
 
 
 def get_partition(

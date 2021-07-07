@@ -1,13 +1,24 @@
+import dropbox
 import os
-
+from io import BytesIO
+from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from data_preprocessor import dropbox_download, stopwatch
+
+DROPBOX_TOKEN = "AS74Amc6RgcAAAAAAAAAAZJXpaexESLjcWQa4NerDECUiuYJ_a1IOrlL7oV1BuhU"
+
 if __name__ == "__main__":
 
-    # path to input file
-    bk_df = pd.read_csv("../data/booking_challenge_tpp_labeled.csv")
-    print(bk_df.head())
+    # download from dropbox
+    dbx = dropbox.Dropbox(DROPBOX_TOKEN)
+    dbx_df = dropbox_download(
+        dbx, folder="", subfolder="", name="booking_challenge_tpp_labeled.csv"
+    )
+    bk_df = pd.read_csv(BytesIO(dbx_df))
+    # local path to input file
+    # bk_df = pd.read_csv("../data/booking_challenge_tpp_labeled.csv")
     bk_df = bk_df[
         [
             "user_id",
@@ -56,11 +67,12 @@ if __name__ == "__main__":
     print("# diff_inout =", len(bk_df["diff_inout"].unique().tolist()))
     # number of labels
     print("# labels =", len(bk_df["label"].unique().tolist()))
-    
-    save_path = "../data/booking"
+
+    save_path = "data/booking"
+    Path(save_path).mkdir(parents=True, exist_ok=True)
     i = 1
     for id0 in unique_ids:
-        curr_df = bk_df[bk_df["user_id"] == id0]
+        curr_df = bk_df[bk_df["user_id"] == id0].copy()
         gt_clusters.append(int(curr_df["label"].mean()))
         curr_df.drop(columns=["user_id", "label"], inplace=True)
         curr_df.reset_index(drop=True, inplace=True)
@@ -69,5 +81,5 @@ if __name__ == "__main__":
 
     # saving gt cluster labels
     pd.DataFrame(gt_clusters, columns=["cluster_id"]).to_csv(
-        os.path.join(save_path,"clusters.csv")
+        os.path.join(save_path, "clusters.csv")
     )

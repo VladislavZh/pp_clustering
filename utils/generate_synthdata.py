@@ -1,3 +1,4 @@
+import json
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -69,23 +70,30 @@ def random_me():
 
 
 def random_seed(seed):
+    """
+    Fix seeds for reproducibility
+    """
     np.random.seed(seed)
     torch.manual_seed(seed)
 
 
 def convert_seq_to_df(timestamps):
+    """
+    Format sequence as pandas dataframe
+    """
     ts = []
     cs = []
 
     for c, tc in enumerate(timestamps):
-        cs += [c]*len(tc)
+        cs += [c] * len(tc)
         ts += list(tc)
     s = list(zip(ts, cs))
     s = list(sorted(s, key=lambda x: x[0]))
     s = np.array(s)
-    df = pd.DataFrame(data=s, columns=['time', 'event'])
+    df = pd.DataFrame(data=s, columns=["time", "event"])
 
     return df
+
 
 def convert_clusters_to_dfs(clusters):
     dfs = []
@@ -106,8 +114,8 @@ def simulate_hawkes(
     n_realiz,
     end_time,
     dt,
+    seed,
     max_jumps=1000,
-    seed=None,
     adj_density=0.25,
 ):
     tss = []
@@ -138,9 +146,7 @@ def simulate_hawkes(
     return tss
 
 
-def simulate_hawkes_sin(
-    n_nodes, n_swcays, n_realiz, end_time, dt, max_jumps=1000, seed=20
-):
+def simulate_hawkes_sin(n_nodes, n_swcays, n_realiz, end_time, dt, seed, ax_jumps=1000):
     tss = []
     # The elements of exogenous base intensity are sampled uniformly from [0, 1]
     baseline = np.random.random(n_nodes)
@@ -161,14 +167,14 @@ def simulate_hawkes_sin(
     multi.simulate()
 
     tss = multi.timestamps
-    #for i in range(n_realiz):
+    # for i in range(n_realiz):
     #    plot_point_process(multi.get_single_simulation(i))
 
     return tss
 
 
 def simulate_hawkes_sin_trunc(
-    n_nodes, n_swcays, n_realiz, end_time, dt, max_jumps=1000, seed=20
+    n_nodes, n_swcays, n_realiz, end_time, dt, seed, max_jumps=1000
 ):
     tss = []
     # The elements of exogenous base intensity are sampled uniformly from [0, 1]
@@ -200,14 +206,19 @@ def simulate_clusters(
     n_realiz,
     end_time,
     dt,
+    seed,
     max_jumps,
-    seed=None,
-    adj_density=None,
+    adj_density=0.25,
     sim_type="exp",
 ):
+    """
+    Switch between various types of data generating processes
+    """
     clusters = []
     for i in range(n_clusters):
+        # specific seed for each cluster
         seed_ = seed + i if seed is not None else None
+
         if sim_type == "exp":
             clusters.append(
                 simulate_hawkes(
@@ -216,82 +227,114 @@ def simulate_clusters(
                     n_realiz,
                     end_time,
                     dt,
-                    max_jumps,
                     seed_,
+                    max_jumps,
                     adj_density,
                 )
             )
         elif sim_type == "sin":
             clusters.append(
                 simulate_hawkes_sin(
-                    n_nodes, n_decays, n_realiz, end_time, dt, max_jumps, seed_
+                    n_nodes,
+                    n_decays,
+                    n_realiz,
+                    end_time,
+                    dt,
+                    seed_,
+                    max_jumps,
                 )
             )
         elif sim_type == "trunc":
             clusters.append(
                 simulate_hawkes_sin_trunc(
-                    n_nodes, n_decays, n_realiz, end_time, dt, max_jumps, seed_
+                    n_nodes,
+                    n_decays,
+                    n_realiz,
+                    end_time,
+                    dt,
+                    seed_,
+                    max_jumps,
                 )
             )
         else:
             raise ValueError("Unknown sim type")
+
     return clusters
 
 
-def generate(
-    n_clusters=5,
-    n_nodes=5,
-    n_decays=3,
-    n_realiz_per_cluster=100,
-    end_time=100,
-    dt=0.01,
-    max_jumps=1000,
-    seed=None,
-    adj_density=0.25,
-    sim_type="exp",
-    save_dir="tmp",
-):
-    
+if __name__ == "__main__":
 
-    random_seed(seed=seed)
+    parser = ArgumentParser()
+    parser.add_argument(
+        "--n_clusters", type=int, required=True, help="number of clusters, required"
+    )
+    parser.add_argument(
+        "--n_nodes",
+        type=int,
+        required=True,
+        help="number of classes, required",
+    )
+    parser.add_argument(
+        "--n_per_cluster",
+        type=int,
+        default=400,
+        help="number of realizations per cluster, default is 400",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=23,
+        help="random seed for reproducibility, default is 23",
+    )
+    parser.add_argument(
+        "--sim_type",
+        type=str,
+        required=True,
+        help="type of data generating process",
+    )
+    args = parser.parse_args()
+
+    save_dir = (
+        "../data/"
+        + args.sim_type
+        + "_K"
+        + str(args.n_clusters)
+        + "_C"
+        + str(args.n_nodes)
+    )
+
     print("Simulating...")
+    random_seed(seed=args.seed)
     clusters = simulate_clusters(
-        n_clusters,
-        n_nodes,
-        n_decays,
-        n_realiz_per_cluster,
-        end_time,
-        dt,
-        max_jumps,
-        seed,
-        adj_density,
-        sim_type,
+        args.n_clusters,
+        args.n_nodes,
+        n_decays=3,
+        n_realiz=args.n_per_cluster,
+        end_time=100,
+        dt=0.01,
+        seed=args.seed,
+        max_jumps=1000,
+        adj_density=0.25,
+        sim_type=args.sim_type,
     )
     dfs, cluster_ids = convert_clusters_to_dfs(clusters)
     print("Saving...")
-    save_dir = Path(save_dir)  # 'data/simulated_Hawkes',
-    save_dir.mkdir(exist_ok=True, parents=True)
+    Path(save_dir).mkdir(exist_ok=True, parents=True)
     for i, df in enumerate(dfs):
         df.to_csv(Path(save_dir, f"{i+1}.csv").open("w"))
 
     pd.DataFrame(data=np.array(cluster_ids), columns=["cluster_id"]).to_csv(
         Path(save_dir, f"clusters.csv").open("w")
     )
+    # saving metadata
+    info_json = {}
+    info_json["seed"] = args.seed
+    info_json["number of clusters"] = args.n_clusters
+    info_json["number of classes"] = args.n_nodes
+    info_json["length"] = args.n_per_cluster * args.n_clusters
+    info_json["sim type"] = args.sim_type
+    # to do
+    info_json["log likelihood"] = 0
+    with open(os.path.join(save_dir, "info.json"), "w") as infofile:
+        json.dump(info_json, infofile)
     print("Finished")
-
-
-if __name__ == "__main__":
-
-    generate(
-        n_clusters=5,
-        n_nodes=5,
-        n_decays=3,
-        n_realiz_per_cluster=400,
-        end_time=100,
-        dt=0.01,
-        max_jumps=1000,
-        seed=23,
-        adj_density=0.25,
-        sim_type="sin",
-        save_dir="data/new_sin_K5_C5",
-    )
