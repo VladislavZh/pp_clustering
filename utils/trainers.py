@@ -10,76 +10,94 @@ from sklearn.cluster import KMeans
 from models.LSTM import LSTMMultiplePointProcesses
 
 
-
 class TrainerClusterwise:
     """
-        Trainer for multiple point processes clustering
+    Trainer for multiple point processes clustering
     """
 
-    def __init__(self, model, optimizer, device, data, n_clusters: int, target=None,
-                 epsilon: float = 1e-8, max_epoch: int = 50, max_m_step_epoch: int = 50,
-                 weight_decay: float = 1e-5, lr: float = 1e-3, lr_update_tol: int = 25,
-                 lr_update_param: float = 0.5, random_walking_max_epoch: int = 40, true_clusters: int = 5,
-                 upper_bound_clusters: int = 10, min_lr = None, updated_lr = None, batch_size: int = 150,
-                 verbose: bool  = False, best_model_path = None,
-                 max_computing_size=None, full_purity: bool = True):
+    def __init__(
+        self,
+        model,
+        optimizer,
+        device,
+        data,
+        n_clusters: int,
+        target=None,
+        epsilon: float = 1e-8,
+        max_epoch: int = 50,
+        max_m_step_epoch: int = 50,
+        weight_decay: float = 1e-5,
+        lr: float = 1e-3,
+        lr_update_tol: int = 25,
+        lr_update_param: float = 0.5,
+        random_walking_max_epoch: int = 40,
+        true_clusters: int = 5,
+        upper_bound_clusters: int = 10,
+        min_lr=None,
+        updated_lr=None,
+        batch_size: int = 150,
+        verbose: bool = False,
+        best_model_path=None,
+        max_computing_size=None,
+        full_purity: bool = True,
+    ):
         """
-            inputs:
-                    model - torch.nn.Module, model to train
-                    optimizer - optimizer used for training
-                    device - device, that is used for training
-                    data - torch.Tensor, size = (N, sequence length, number of classes + 1),
-                           partitions of the point processes
-                    n_clusters - int, initial number of different point processes
-                    target - torch.Tensor, size = (N), true labels or None
-                    epsilon - float, used for log-s regularization log(x) -> log(x + epsilon)
-                    max_epoch - int, number of epochs of EM algorithm
-                    max_m_step_epoch - float, number of epochs of neural net training on M-step
-                    lr_update_tol - int, tolerance before updating learning rate
-                    lr_update_param - float, learning rate multiplier
-                    random_walking_max_epoch - int, number of epochs when random walking of the number of clusters
-                                               is available
-                    true_clusters - int, true number of clusters
-                    upper_bound_clusters - int, upper bound of the number of clusters
-                    min_lr - float - minimal lr value, when achieved lr is updated to updated_lr and update params set
-                             to default
-                    updated_lr - float, lr after achieving min_lr
-                    batch_size - int, batch size during neural net training
-                    verbose - bool, if True, provides info during training
-                    best_model_path - str, where the best model according to loss should be saved or None
-                    max_computing_size - int, if not None, then constraints gamma size (one EM-algorithm step)
-                    fool_purity - bool, if True, purity is computed on all dataset
+        inputs:
+                model - torch.nn.Module, model to train
+                optimizer - optimizer used for training
+                device - device, that is used for training
+                data - torch.Tensor, size = (N, sequence length, number of classes + 1),
+                       partitions of the point processes
+                n_clusters - int, initial number of different point processes
+                target - torch.Tensor, size = (N), true labels or None
+                epsilon - float, used for log-s regularization log(x) -> log(x + epsilon)
+                max_epoch - int, number of epochs of EM algorithm
+                max_m_step_epoch - float, number of epochs of neural net training on M-step
+                lr_update_tol - int, tolerance before updating learning rate
+                lr_update_param - float, learning rate multiplier
+                random_walking_max_epoch - int, number of epochs when random walking of the number of clusters
+                                           is available
+                true_clusters - int, true number of clusters
+                upper_bound_clusters - int, upper bound of the number of clusters
+                min_lr - float - minimal lr value, when achieved lr is updated to updated_lr and update params set
+                         to default
+                updated_lr - float, lr after achieving min_lr
+                batch_size - int, batch size during neural net training
+                verbose - bool, if True, provides info during training
+                best_model_path - str, where the best model according to loss should be saved or None
+                max_computing_size - int, if not None, then constraints gamma size (one EM-algorithm step)
+                fool_purity - bool, if True, purity is computed on all dataset
 
-            parameters:
-                    N - int, number of data points
-                    model - torch.nn.Module, model to train
-                    optimizer - optimizer used for training
-                    device - device used for training
-                    X - torch.Tensor, size = (N, sequence length, number of classes + 1),
-                        partitions of the point processes
-                    target - torch.Tensor, size = (N), true labels or None
-                    n_clusters - int, number of different point processes
-                    max_epoch - int, number of epochs of EM algorithm
-                    lr_update_tol - int, tolerance before updating learning rate
-                    update_checker - int, checker, that is compared to tolerance, increased by one every time loss is
-                                     greater then on the previous iteration
-                    lr_update_param - float, learning rate multiplier
-                    random_walking_max_epoch - int, number of epochs when random walking of the number of clusters
-                                               is available
-                    true_clusters - int, true number of clusters
-                    upper_bound_clusters - int, upper bound of the number of clusters
-                    min_lr - float - minimal lr value, when achieved lr is updated to updated_lr and update params set
-                             to default
-                    updated_lr - float, lr after achieving min_lr
-                    epsilon - float, used for log-s regularization log(x) -> log(x + epsilon)
-                    prev_loss - float, loss on previous iteration, used for updating update_checker
-                    batch_size - int, batch size during neural net training
-                    pi - torch.Tensor, size = (n_clusters), mixing coefficients, here are fixed and equal 1/n_clusters
-                    gamma - torch.Tensor, size = (n_clusters, number of data points), probabilities p(k|x_n)
-                    best_model_path - str, where the best model according to loss should be saved or None
-                    prev_loss_model - float, loss obtained for the best model
-                    max_computing_size - int, if not None, then constraints gamma size (one EM-algorithm step)
-                    fool_purity - bool, if True, purity is computed on all dataset
+        parameters:
+                N - int, number of data points
+                model - torch.nn.Module, model to train
+                optimizer - optimizer used for training
+                device - device used for training
+                X - torch.Tensor, size = (N, sequence length, number of classes + 1),
+                    partitions of the point processes
+                target - torch.Tensor, size = (N), true labels or None
+                n_clusters - int, number of different point processes
+                max_epoch - int, number of epochs of EM algorithm
+                lr_update_tol - int, tolerance before updating learning rate
+                update_checker - int, checker, that is compared to tolerance, increased by one every time loss is
+                                 greater then on the previous iteration
+                lr_update_param - float, learning rate multiplier
+                random_walking_max_epoch - int, number of epochs when random walking of the number of clusters
+                                           is available
+                true_clusters - int, true number of clusters
+                upper_bound_clusters - int, upper bound of the number of clusters
+                min_lr - float - minimal lr value, when achieved lr is updated to updated_lr and update params set
+                         to default
+                updated_lr - float, lr after achieving min_lr
+                epsilon - float, used for log-s regularization log(x) -> log(x + epsilon)
+                prev_loss - float, loss on previous iteration, used for updating update_checker
+                batch_size - int, batch size during neural net training
+                pi - torch.Tensor, size = (n_clusters), mixing coefficients, here are fixed and equal 1/n_clusters
+                gamma - torch.Tensor, size = (n_clusters, number of data points), probabilities p(k|x_n)
+                best_model_path - str, where the best model according to loss should be saved or None
+                prev_loss_model - float, loss obtained for the best model
+                max_computing_size - int, if not None, then constraints gamma size (one EM-algorithm step)
+                fool_purity - bool, if True, purity is computed on all dataset
         """
         self.N = data.shape[0]
         self.model = model
@@ -127,16 +145,16 @@ class TrainerClusterwise:
 
     def loss(self, partitions, lambdas, gamma):
         """
-            Computes loss
+        Computes loss
 
-            inputs:
-                    partitions - torch.Tensor, size = (batch_size, seq_len, number of classes + 1)
-                    lambdas - torch.Tensor, size = (batch_size, seq_len, number of classes), model output
-                    gamma - torch.Tensor, size = (n_clusters, batch_size), probabilities p(k|x_n)
+        inputs:
+                partitions - torch.Tensor, size = (batch_size, seq_len, number of classes + 1)
+                lambdas - torch.Tensor, size = (batch_size, seq_len, number of classes), model output
+                gamma - torch.Tensor, size = (n_clusters, batch_size), probabilities p(k|x_n)
 
-            outputs:
-                    loss - torch.Tensor, size = (1), sum of output log likelihood weighted with convoluted gamma
-                           and prior distribution log likelihood
+        outputs:
+                loss - torch.Tensor, size = (1), sum of output log likelihood weighted with convoluted gamma
+                       and prior distribution log likelihood
         """
         # computing poisson parameters
         dts = partitions[:, 0, 0].to(self.device)
@@ -158,19 +176,19 @@ class TrainerClusterwise:
 
         return loss
 
-    def compute_gamma(self, lambdas, x=None, size=None, device='cpu'):
+    def compute_gamma(self, lambdas, x=None, size=None, device="cpu"):
         """
-            Computes gamma
+        Computes gamma
 
-            inputs:
-                    lambdas - torch.Tensor, size = (batch_size or N, seq_len, number of classes), model output
-                    x - torch.Tensor, size = (batch_size or N, seq_len, number of classes + 1),
-                        data, that was processed or None
-                    size - tuple, gamma size or None
-                    device - device to compute
+        inputs:
+                lambdas - torch.Tensor, size = (batch_size or N, seq_len, number of classes), model output
+                x - torch.Tensor, size = (batch_size or N, seq_len, number of classes + 1),
+                    data, that was processed or None
+                size - tuple, gamma size or None
+                device - device to compute
 
-            outputs:
-                    gamma - torch.Tensor, size = (n_clusters, batch_size or N), probabilities p(k|x_n)
+        outputs:
+                gamma - torch.Tensor, size = (n_clusters, batch_size or N), probabilities p(k|x_n)
         """
         # preparing gamma template
         if size is None:
@@ -202,9 +220,15 @@ class TrainerClusterwise:
 
             # computing gamma for k-th cluster
             tmp_sub = (lambdas.to(device) - lambdas_k.to(device)) * dts.to(device)
-            tmp = torch.sum(- tmp_sub + partitions * (
-                    torch.log(lambdas.to(device) + self.epsilon) - torch.log(lambdas_k.to(device) + self.epsilon)),
-                            dim=(2, 3))
+            tmp = torch.sum(
+                -tmp_sub
+                + partitions
+                * (
+                    torch.log(lambdas.to(device) + self.epsilon)
+                    - torch.log(lambdas_k.to(device) + self.epsilon)
+                ),
+                dim=(2, 3),
+            )
             tmp = 1 / (torch.sum(w * torch.exp(tmp), dim=0))
 
             # resolving nans
@@ -216,59 +240,59 @@ class TrainerClusterwise:
 
     def get_gamma_stats(self):
         """
-            Obtains gamma (probabilities) stats
+        Obtains gamma (probabilities) stats
 
-            inputs:
-                    None
+        inputs:
+                None
 
-            outputs:
-                    stats - dict:
-                                  stats['min'] - minimal probability per cluster
-                                  stats['max'] - maximal probability per cluster
-                                  stats['min_main'] - minimal probability of predicted cluster
-                                  stats['max_main'] - maximal probability of predicted cluster
-                                  stats['mean_main'] - mean probability of predicted cluster
-                                  stats['std_main'] - std of probabilities of predicted cluster
-                                  stats['median_main'] - median of probabilities of predicted cluster
+        outputs:
+                stats - dict:
+                              stats['min'] - minimal probability per cluster
+                              stats['max'] - maximal probability per cluster
+                              stats['min_main'] - minimal probability of predicted cluster
+                              stats['max_main'] - maximal probability of predicted cluster
+                              stats['mean_main'] - mean probability of predicted cluster
+                              stats['std_main'] - std of probabilities of predicted cluster
+                              stats['median_main'] - median of probabilities of predicted cluster
         """
         stats = dict()
 
         # computing stats
-        stats['min'] = torch.min(self.gamma, dim=1).values
-        stats['max'] = torch.max(self.gamma, dim=1).values
-        stats['min_main'] = torch.min(torch.max(self.gamma, dim=0).values)
-        stats['max_main'] = torch.max(torch.max(self.gamma, dim=0).values)
-        stats['mean_main'] = torch.mean(torch.max(self.gamma, dim=0).values)
-        stats['std_main'] = torch.std(torch.max(self.gamma, dim=0).values)
-        stats['median_main'] = torch.median(torch.max(self.gamma, dim=0).values)
+        stats["min"] = torch.min(self.gamma, dim=1).values
+        stats["max"] = torch.max(self.gamma, dim=1).values
+        stats["min_main"] = torch.min(torch.max(self.gamma, dim=0).values)
+        stats["max_main"] = torch.max(torch.max(self.gamma, dim=0).values)
+        stats["mean_main"] = torch.mean(torch.max(self.gamma, dim=0).values)
+        stats["std_main"] = torch.std(torch.max(self.gamma, dim=0).values)
+        stats["median_main"] = torch.median(torch.max(self.gamma, dim=0).values)
 
         return stats
 
     def get_model_stats(self):
         """
-            Obtains model parameters stats
+        Obtains model parameters stats
 
-            inputs:
-                    None
+        inputs:
+                None
 
-            outputs:
-                    stats - list of dicts:
-                                  stats[i]['min'] - minimal value in weighs of i-th parameter
-                                  stats[i]['max'] - maximal value in weighs of i-th parameter
-                                  stats[i]['mean'] - mean value of weighs of i-th parameter
-                                  stats[i]['std'] - std of values of weighs of i-th parameter
-                                  stats[i]['median'] - median of values of weighs of i-th parameter
+        outputs:
+                stats - list of dicts:
+                              stats[i]['min'] - minimal value in weighs of i-th parameter
+                              stats[i]['max'] - maximal value in weighs of i-th parameter
+                              stats[i]['mean'] - mean value of weighs of i-th parameter
+                              stats[i]['std'] - std of values of weighs of i-th parameter
+                              stats[i]['median'] - median of values of weighs of i-th parameter
         """
         stats = []
 
         # iterations over model parameters
         for param in self.model.parameters():
             sub_stats = dict()
-            sub_stats['min'] = torch.min(param.data)
-            sub_stats['max'] = torch.max(param.data)
-            sub_stats['mean'] = torch.mean(param.data)
-            sub_stats['std'] = torch.std(param.data)
-            sub_stats['median'] = torch.median(param.data)
+            sub_stats["min"] = torch.min(param.data)
+            sub_stats["max"] = torch.max(param.data)
+            sub_stats["mean"] = torch.mean(param.data)
+            sub_stats["std"] = torch.std(param.data)
+            sub_stats["median"] = torch.median(param.data)
             stats.append(sub_stats)
 
         return stats
@@ -276,39 +300,39 @@ class TrainerClusterwise:
     @staticmethod
     def get_lambda_stats(lambdas):
         """
-            Obtains lambda stats
+        Obtains lambda stats
 
-            inputs:
-                    lambdas - torch.Tensor, size = (batch_size or N, seq_len, number of classes), model output
+        inputs:
+                lambdas - torch.Tensor, size = (batch_size or N, seq_len, number of classes), model output
 
-            outputs;
-                    stats - dict:
-                                  stats['min'] - minimal value of lambdas in cluster for each type of event
-                                  stats['max'] - maximal value of lambdas in cluster for each type of event
-                                  stats['mean'] - mean value of lambdas in each cluster for each type of event
-                                  stats['std'] - std of values of lambdas in each cluster for each type of event
+        outputs;
+                stats - dict:
+                              stats['min'] - minimal value of lambdas in cluster for each type of event
+                              stats['max'] - maximal value of lambdas in cluster for each type of event
+                              stats['mean'] - mean value of lambdas in each cluster for each type of event
+                              stats['std'] - std of values of lambdas in each cluster for each type of event
         """
         stats = dict()
 
         # computing stats
-        stats['min'] = torch.min(lambdas, dim=1).values
-        stats['min'] = torch.min(stats['min'], dim=1).values
-        stats['max'] = torch.max(lambdas, dim=1).values
-        stats['max'] = torch.max(stats['max'], dim=1).values
-        stats['mean'] = torch.mean(lambdas, dim=(1, 2))
-        stats['std'] = torch.std(lambdas, dim=(1, 2))
+        stats["min"] = torch.min(lambdas, dim=1).values
+        stats["min"] = torch.min(stats["min"], dim=1).values
+        stats["max"] = torch.max(lambdas, dim=1).values
+        stats["max"] = torch.max(stats["max"], dim=1).values
+        stats["mean"] = torch.mean(lambdas, dim=(1, 2))
+        stats["std"] = torch.std(lambdas, dim=(1, 2))
 
         return stats
 
     def e_step(self, ids=None):
         """
-            Conducts E-step of EM-algorithms, saves the result to self.gamma
+        Conducts E-step of EM-algorithms, saves the result to self.gamma
 
-            inputs:
-                    None
+        inputs:
+                None
 
-            outputs:
-                    None
+        outputs:
+                None
         """
         self.model.eval()
         with torch.no_grad():
@@ -317,17 +341,19 @@ class TrainerClusterwise:
                 self.gamma = self.compute_gamma(lambdas)
             else:
                 lambdas = self.model(self.X[ids].to(self.device))
-                self.gamma = self.compute_gamma(lambdas, x=self.X[ids], size=(self.n_clusters, len(ids)))
+                self.gamma = self.compute_gamma(
+                    lambdas, x=self.X[ids], size=(self.n_clusters, len(ids))
+                )
 
     def train_epoch(self, big_batch=None):
         """
-            Conducts one epoch of Neural Net training
+        Conducts one epoch of Neural Net training
 
-            inputs:
-                    None
+        inputs:
+                None
 
-            outputs:
-                    log_likelihood - list of losses obtained during iterations over minibatches
+        outputs:
+                log_likelihood - list of losses obtained during iterations over minibatches
         """
         # preparing random indices
         if self.max_computing_size is None:
@@ -340,10 +366,16 @@ class TrainerClusterwise:
         log_likelihood = []
 
         # iterations over minibatches
-        for iteration, start in enumerate(range(0, (self.N if self.max_computing_size is None
-                                          else self.max_computing_size) - self.batch_size, self.batch_size)):
+        for iteration, start in enumerate(
+            range(
+                0,
+                (self.N if self.max_computing_size is None else self.max_computing_size)
+                - self.batch_size,
+                self.batch_size,
+            )
+        ):
             # preparing batch
-            batch_ids = indices[start:start + self.batch_size]
+            batch_ids = indices[start : start + self.batch_size]
             if self.max_computing_size is None:
                 batch = self.X[batch_ids].to(self.device)
             else:
@@ -365,11 +397,11 @@ class TrainerClusterwise:
                 self.update_checker = 0
                 lr = 0
                 for param_group in self.optimizer.param_groups:
-                    param_group['lr'] *= self.lr_update_param
-                    lr = param_group['lr']
+                    param_group["lr"] *= self.lr_update_param
+                    lr = param_group["lr"]
                     if self.min_lr is not None:
                         if lr < self.min_lr:
-                            param_group['lr'] = self.updated_lr
+                            param_group["lr"] = self.updated_lr
                 if self.min_lr is not None:
                     if lr < self.min_lr:
                         lr = self.updated_lr
@@ -382,17 +414,17 @@ class TrainerClusterwise:
 
     def m_step(self, big_batch=None, ids=None):
         """
-            Conducts M-step of EM-algorithm
+        Conducts M-step of EM-algorithm
 
-            inputs:
-                    None
+        inputs:
+                None
 
-            outputs:
-                    log_likelihood_curve - list of floats, losses, obtained during iterations over M-step epochs
-                                           and minibatches
-                    m_step_results - [log_likelihood, purity], mean value of log_likelihood on the last epoch
-                                     and purity on the last epoch
-                    cluster_partitions - float, the minimal value of cluster partition
+        outputs:
+                log_likelihood_curve - list of floats, losses, obtained during iterations over M-step epochs
+                                       and minibatches
+                m_step_results - [log_likelihood, purity], mean value of log_likelihood on the last epoch
+                                 and purity on the last epoch
+                cluster_partitions - float, the minimal value of cluster partition
         """
 
         # preparing output template
@@ -411,37 +443,69 @@ class TrainerClusterwise:
 
             # logs
             if epoch % 10 == 0 and self.verbose:
-                print('Loss on sub_epoch {}/{}: {}'.format(epoch + 1,
-                                                           self.max_m_step_epoch,
-                                                           np.mean(ll)))
+                print(
+                    "Loss on sub_epoch {}/{}: {}".format(
+                        epoch + 1, self.max_m_step_epoch, np.mean(ll)
+                    )
+                )
 
         # evaluating model
         self.model.eval()
         with torch.no_grad():
             if (self.max_computing_size is None) or self.full_purity:
                 lambdas = self.model(self.X.to(self.device))
-                gamma = self.compute_gamma(lambdas, x=self.X, size=(self.n_clusters, self.N))
-                loss = self.loss(self.X.to(self.device), lambdas.to(self.device), gamma.to(self.device)).item()
+                gamma = self.compute_gamma(
+                    lambdas, x=self.X, size=(self.n_clusters, self.N)
+                )
+                loss = self.loss(
+                    self.X.to(self.device),
+                    lambdas.to(self.device),
+                    gamma.to(self.device),
+                ).item()
             else:
                 lambdas = self.model(big_batch)
-                gamma = self.compute_gamma(lambdas, x=big_batch, size=(self.n_clusters, self.max_computing_size))
-                loss = self.loss(big_batch.to(self.device), lambdas.to(self.device), gamma.to(self.device)).item()
+                gamma = self.compute_gamma(
+                    lambdas,
+                    x=big_batch,
+                    size=(self.n_clusters, self.max_computing_size),
+                )
+                loss = self.loss(
+                    big_batch.to(self.device),
+                    lambdas.to(self.device),
+                    gamma.to(self.device),
+                ).item()
             clusters = torch.argmax(gamma, dim=0)
             if self.verbose:
-                print('Cluster partition')
+                print("Cluster partition")
             cluster_partition = 2
             for i in np.unique(clusters.cpu()):
                 if self.verbose:
-                    print('Cluster', i, ': ', np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters),
-                          ' with pi = ', self.pi[i])
-                cluster_partition = min(cluster_partition, np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters))
+                    print(
+                        "Cluster",
+                        i,
+                        ": ",
+                        np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters),
+                        " with pi = ",
+                        self.pi[i],
+                    )
+                cluster_partition = min(
+                    cluster_partition,
+                    np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters),
+                )
             if type(self.target):
-                pur = purity(clusters.to('cpu'),
-                             self.target[ids] if (ids is not None) and (not self.full_purity) else self.target.to(
-                                 'cpu'))
-                info = info_score(clusters.to('cpu'),
-                                  self.target[ids] if (ids is not None) and (not self.full_purity) else \
-                                  self.target.to('cpu'), len(np.unique(self.target.to('cpu'))))
+                pur = purity(
+                    clusters.to("cpu"),
+                    self.target[ids]
+                    if (ids is not None) and (not self.full_purity)
+                    else self.target.to("cpu"),
+                )
+                info = info_score(
+                    clusters.to("cpu"),
+                    self.target[ids]
+                    if (ids is not None) and (not self.full_purity)
+                    else self.target.to("cpu"),
+                    len(np.unique(self.target.to("cpu"))),
+                )
             else:
                 pur = -1
                 info = -1
@@ -451,43 +515,66 @@ class TrainerClusterwise:
     def compute_ll(self, big_batch, ids, to_print):
         if (self.max_computing_size is None) or self.full_purity:
             lambdas = self.model(self.X.to(self.device))
-            gamma = self.compute_gamma(lambdas, x=self.X, size=(self.n_clusters, self.N))
-            ll = self.loss(self.X.to(self.device), lambdas.to(self.device), gamma.to(self.device)).item()
+            gamma = self.compute_gamma(
+                lambdas, x=self.X, size=(self.n_clusters, self.N)
+            )
+            ll = self.loss(
+                self.X.to(self.device), lambdas.to(self.device), gamma.to(self.device)
+            ).item()
         else:
             lambdas = self.model(big_batch)
-            gamma = self.compute_gamma(lambdas, x=big_batch, size=(self.n_clusters, self.max_computing_size))
-            ll = self.loss(big_batch.to(self.device), lambdas.to(self.device), gamma.to(self.device)).item()
+            gamma = self.compute_gamma(
+                lambdas, x=big_batch, size=(self.n_clusters, self.max_computing_size)
+            )
+            ll = self.loss(
+                big_batch.to(self.device),
+                lambdas.to(self.device),
+                gamma.to(self.device),
+            ).item()
 
         clusters = torch.argmax(gamma, dim=0)
         if self.verbose:
-            print('Cluster partition')
+            print("Cluster partition")
         cluster_partition = 2
         for i in np.unique(clusters.cpu()):
             if self.verbose:
-                print('Cluster', i, ': ', np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters),
-                      ' with pi = ', self.pi[i])
-            cluster_partition = min(cluster_partition, np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters))
+                print(
+                    "Cluster",
+                    i,
+                    ": ",
+                    np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters),
+                    " with pi = ",
+                    self.pi[i],
+                )
+            cluster_partition = min(
+                cluster_partition,
+                np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters),
+            )
         if type(self.target):
-            pur = purity(clusters.to('cpu'),
-                         self.target[ids] if (ids is not None) and (not self.full_purity) else self.target.to('cpu'))
+            pur = purity(
+                clusters.to("cpu"),
+                self.target[ids]
+                if (ids is not None) and (not self.full_purity)
+                else self.target.to("cpu"),
+            )
         else:
             pur = None
         if self.verbose:
-            print('{} loss = {}, purity = {}'.format(to_print, ll, pur))
+            print("{} loss = {}, purity = {}".format(to_print, ll, pur))
         return ll
 
     def train(self):
         """
-            Conducts training
+        Conducts training
 
-            inputs:
-                    None
+        inputs:
+                None
 
-            outputs:
-                    losses - list, list of losses obtained during training
-                    purities - list of [loss, purity, cluster_partition]
-                    cluster_part - the last cluster partition
-                    all_stats - all_stats on every EM-algorithm epoch
+        outputs:
+                losses - list, list of losses obtained during training
+                purities - list of [loss, purity, cluster_partition]
+                cluster_part - the last cluster partition
+                all_stats - all_stats on every EM-algorithm epoch
         """
         self.start_time = time.time()
 
@@ -500,10 +587,10 @@ class TrainerClusterwise:
         # iterations over EM-algorithm epochs
         for epoch in range(self.max_epoch):
             if self.verbose:
-                print('Beginning e-step')
+                print("Beginning e-step")
             # preparing big_batch if needed
             if self.max_computing_size is not None:
-                ids = np.random.permutation(self.N)[:self.max_computing_size]
+                ids = np.random.permutation(self.N)[: self.max_computing_size]
                 big_batch = self.X[ids].to(self.device)
             else:
                 ids = None
@@ -517,40 +604,55 @@ class TrainerClusterwise:
                 if (ids is None) or (not self.full_purity):
                     clusters = torch.argmax(self.gamma, dim=0)
                 else:
-                    clusters = torch.argmax(self.compute_gamma(self.model(self.X.to(self.device)), x=self.X,
-                                                               size=(self.n_clusters, self.N)), dim=0)
+                    clusters = torch.argmax(
+                        self.compute_gamma(
+                            self.model(self.X.to(self.device)),
+                            x=self.X,
+                            size=(self.n_clusters, self.N),
+                        ),
+                        dim=0,
+                    )
                 if self.verbose:
-                    print('Cluster partition')
+                    print("Cluster partition")
                     for i in np.unique(clusters.cpu()):
-                        print('Cluster', i, ': ', np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters),
-                              ' with pi = ', self.pi[i])
+                        print(
+                            "Cluster",
+                            i,
+                            ": ",
+                            np.sum((clusters.cpu() == i).cpu().numpy()) / len(clusters),
+                            " with pi = ",
+                            self.pi[i],
+                        )
                 if type(self.target):
-                    random_pur = purity(clusters,
-                                        self.target[ids] if (ids is not None) and (
-                                            not self.full_purity) else self.target)
+                    random_pur = purity(
+                        clusters,
+                        self.target[ids]
+                        if (ids is not None) and (not self.full_purity)
+                        else self.target,
+                    )
                 else:
                     random_pur = None
                 if self.verbose:
-                    print('Purity for random model: {}'.format(random_pur))
+                    print("Purity for random model: {}".format(random_pur))
 
                 # saving stats
                 all_stats.append(dict())
-                all_stats[-1]['gamma'] = self.get_gamma_stats()
-                all_stats[-1]['model'] = self.get_model_stats()
+                all_stats[-1]["gamma"] = self.get_gamma_stats()
+                all_stats[-1]["model"] = self.get_model_stats()
                 if big_batch is not None:
                     lambdas = self.model(big_batch)
                 else:
                     lambdas = self.model(self.X)
-                all_stats[-1]['lambdas'] = self.get_lambda_stats(lambdas)
+                all_stats[-1]["lambdas"] = self.get_lambda_stats(lambdas)
 
             # M-step
             if self.verbose:
-                print('Beginning m-step')
+                print("Beginning m-step")
                 for param_group in self.optimizer.param_groups:
-                    lr = param_group['lr']
+                    lr = param_group["lr"]
                     break
-                print('lr =', lr)
-                print('lr_update_param =', self.lr_update_param)
+                print("lr =", lr)
+                print("lr_update_param =", self.lr_update_param)
             ll, ll_pur, cluster_part = self.m_step(big_batch=big_batch, ids=ids)
 
             # failure check
@@ -561,16 +663,23 @@ class TrainerClusterwise:
             losses += ll
             t = time.time()
             time_from_start = t - self.start_time
-            purities.append(ll_pur[:2] + [cluster_part, self.n_clusters, time_from_start])
+            purities.append(
+                ll_pur[:2] + [cluster_part, self.n_clusters, time_from_start]
+            )
             if self.verbose:
-                print('On epoch {}/{} loss = {}, purity = {}, info = {}'.format(epoch + 1, self.max_epoch,
-                                                                                ll_pur[0], ll_pur[1], ll_pur[2]))
-                print('Time from start = {}'.format(time_from_start))
+                print(
+                    "On epoch {}/{} loss = {}, purity = {}, info = {}".format(
+                        epoch + 1, self.max_epoch, ll_pur[0], ll_pur[1], ll_pur[2]
+                    )
+                )
+                print("Time from start = {}".format(time_from_start))
 
             # saving model
-            if self.best_model_path and (ll_pur[0] < self.prev_loss_model or epoch == 0):
+            if self.best_model_path and (
+                ll_pur[0] < self.prev_loss_model or epoch == 0
+            ):
                 if self.verbose:
-                    print('Saving model')
+                    print("Saving model")
                 torch.save(self.model, self.best_model_path)
                 self.prev_loss_model = ll_pur[0]
 
@@ -578,46 +687,60 @@ class TrainerClusterwise:
             self.model.eval()
             with torch.no_grad():
                 all_stats.append(dict())
-                all_stats[-1]['gamma'] = self.get_gamma_stats()
-                all_stats[-1]['model'] = self.get_model_stats()
+                all_stats[-1]["gamma"] = self.get_gamma_stats()
+                all_stats[-1]["model"] = self.get_model_stats()
                 if big_batch is not None:
                     lambdas = self.model(big_batch)
                 else:
                     lambdas = self.model(self.X)
-                all_stats[-1]['lambdas'] = self.get_lambda_stats(lambdas)
+                all_stats[-1]["lambdas"] = self.get_lambda_stats(lambdas)
 
-            if epoch > self.random_walking_max_epoch and self.n_clusters > self.true_clusters:
+            if (
+                epoch > self.random_walking_max_epoch
+                and self.n_clusters > self.true_clusters
+            ):
                 enforce = True
             else:
                 enforce = False
                 # updating number of clusters
             if epoch <= self.random_walking_max_epoch or enforce:
-                if ((torch.rand(1) > 0.5)[
-                        0] or self.n_clusters == 1) and self.n_clusters < self.upper_bound_clusters and not enforce:
+                if (
+                    ((torch.rand(1) > 0.5)[0] or self.n_clusters == 1)
+                    and self.n_clusters < self.upper_bound_clusters
+                    and not enforce
+                ):
                     split = True
                 else:
                     split = False
-                torch.save(self.model, 'tmp.pt')
-                pre_ll = float(self.compute_ll(big_batch, ids, 'Before:'))
+                torch.save(self.model, "tmp.pt")
+                pre_ll = float(self.compute_ll(big_batch, ids, "Before:"))
                 if split:
                     if self.verbose:
-                        print('Splitting')
+                        print("Splitting")
                     for cluster in range(self.n_clusters):
-                        self.model.to('cpu')
+                        self.model.to("cpu")
                         self.model.eval()
                         with torch.no_grad():
-                            self.model.split_cluster(cluster, 'cpu')
+                            self.model.split_cluster(cluster, "cpu")
                         self.n_clusters += 1
                         self.model.to(self.device)
                         self.pi = torch.ones(self.n_clusters) / self.n_clusters
-                        post_ll = float(self.compute_ll(big_batch, ids, 'After splitting {} cluster:'.format(cluster)))
-                        remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
+                        post_ll = float(
+                            self.compute_ll(
+                                big_batch,
+                                ids,
+                                "After splitting {} cluster:".format(cluster),
+                            )
+                        )
+                        remain_prob = min(
+                            1, math.exp(min(-post_ll + pre_ll, math.log(math.e)))
+                        )
                         if self.verbose:
-                            print('Remain probability: {}'.format(remain_prob))
+                            print("Remain probability: {}".format(remain_prob))
                         if (torch.rand(1) > remain_prob)[0]:
                             if self.verbose:
-                                print('Loading model')
-                            self.model = torch.load('tmp.pt')
+                                print("Loading model")
+                            self.model = torch.load("tmp.pt")
                             self.n_clusters -= 1
                             self.pi = torch.ones(self.n_clusters) / self.n_clusters
                         else:
@@ -625,77 +748,96 @@ class TrainerClusterwise:
                             break
                 else:
                     if enforce:
-                        best_loss_enf = 1e+9
+                        best_loss_enf = 1e9
                     if (torch.rand(1) > 0.5)[0]:
                         merge = True
                     else:
                         merge = False
                     if merge and not enforce:
                         if self.verbose:
-                            print('Merging')
+                            print("Merging")
                         cluster_0 = int(torch.randint(self.n_clusters, size=(1,))[0])
                         for cluster_1 in range(self.n_clusters):
                             if cluster_1 == cluster_0:
                                 continue
-                            self.model.to('cpu')
+                            self.model.to("cpu")
                             self.model.eval()
                             with torch.no_grad():
-                                self.model.merge_clusters(cluster_0, cluster_1, 'cpu')
+                                self.model.merge_clusters(cluster_0, cluster_1, "cpu")
                             self.n_clusters -= 1
                             self.pi = torch.ones(self.n_clusters) / self.n_clusters
                             self.model.to(self.device)
-                            post_ll = float(self.compute_ll(big_batch, ids,
-                                                            'After merging {} and {} clusters:'.format(cluster_0,
-                                                                                                       cluster_1)))
-                            remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
+                            post_ll = float(
+                                self.compute_ll(
+                                    big_batch,
+                                    ids,
+                                    "After merging {} and {} clusters:".format(
+                                        cluster_0, cluster_1
+                                    ),
+                                )
+                            )
+                            remain_prob = min(
+                                1, math.exp(min(-post_ll + pre_ll, math.log(math.e)))
+                            )
                             if self.verbose:
-                                print('Remain probability: {}'.format(remain_prob))
+                                print("Remain probability: {}".format(remain_prob))
                             if (torch.rand(1) > remain_prob)[0]:
                                 if self.verbose:
-                                    print('Loading model')
-                                self.model = torch.load('tmp.pt')
+                                    print("Loading model")
+                                self.model = torch.load("tmp.pt")
                                 self.n_clusters += 1
                                 self.pi = torch.ones(self.n_clusters) / self.n_clusters
                             else:
                                 break
                     else:
                         if self.verbose:
-                            print('Deleting')
+                            print("Deleting")
                         for cluster in range(self.n_clusters):
-                            self.model.to('cpu')
+                            self.model.to("cpu")
                             self.model.eval()
                             with torch.no_grad():
-                                self.model.delete_cluster(cluster, 'cpu')
+                                self.model.delete_cluster(cluster, "cpu")
                             self.n_clusters -= 1
                             self.pi = torch.ones(self.n_clusters) / self.n_clusters
                             self.model.to(self.device)
                             post_ll = float(
-                                self.compute_ll(big_batch, ids, 'After deleting {} cluster:'.format(cluster)))
-                            remain_prob = min(1, math.exp(min(- post_ll + pre_ll, math.log(math.e))))
+                                self.compute_ll(
+                                    big_batch,
+                                    ids,
+                                    "After deleting {} cluster:".format(cluster),
+                                )
+                            )
+                            remain_prob = min(
+                                1, math.exp(min(-post_ll + pre_ll, math.log(math.e)))
+                            )
                             if self.verbose:
-                                print('Remain probability: {}'.format(remain_prob))
+                                print("Remain probability: {}".format(remain_prob))
                             if (torch.rand(1) > remain_prob)[0]:
                                 if enforce:
                                     if post_ll < best_loss_enf:
                                         if self.verbose:
-                                            print('Saving enforced model')
+                                            print("Saving enforced model")
                                         best_loss_enf = post_ll
-                                        torch.save(self.model, 'best_tmp.pt')
+                                        torch.save(self.model, "best_tmp.pt")
                                 if self.verbose:
-                                    print('Loading model')
-                                self.model = torch.load('tmp.pt')
+                                    print("Loading model")
+                                self.model = torch.load("tmp.pt")
                                 self.n_clusters += 1
                                 self.pi = torch.ones(self.n_clusters) / self.n_clusters
                             else:
                                 break
                 if enforce:
-                    self.model = torch.load('best_tmp.pt')
+                    self.model = torch.load("best_tmp.pt")
                     self.n_clusters -= 1
                     self.pi = torch.ones(self.n_clusters) / self.n_clusters
-                self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+                self.optimizer = torch.optim.Adam(
+                    self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay
+                )
                 if self.max_computing_size is None:
                     self.gamma = torch.zeros(self.n_clusters, self.N).to(self.device)
                 else:
-                    self.gamma = torch.zeros(self.n_clusters, self.max_computing_size).to(self.device)
+                    self.gamma = torch.zeros(
+                        self.n_clusters, self.max_computing_size
+                    ).to(self.device)
 
         return losses, purities, cluster_part, all_stats
