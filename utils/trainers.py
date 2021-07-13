@@ -10,138 +10,19 @@ from sklearn.cluster import KMeans
 from models.LSTM import LSTMMultiplePointProcesses
 
 
-class TrainerSingle:
-    """
-        Trainer for single point process model
-    """
-
-    def __init__(self, model, optimizer, criterion, x, val,
-                 max_epochs=100, batch_size=30, generator_model=None):
-        """
-            input:
-                  model - torch.nn.Module, model to train
-                  optimizer - optimizer to train model
-                  criterion - loss to optimize, takes batch, lambdas, dts
-                  x - torch.Tensor, training data
-                  val - torch.Tensor, validation data
-                  max_epochs - int, number of epochs for sgd training
-                  batch_size - int, batch size
-                  generator_model - torch.nn.Module, true model, that was used for generation or None
-            model parameters:
-                  the same as inputs
-        """
-        self.N = x.shape[0]
-        self.model = model
-        self.optimizer = optimizer
-        self.criterion = criterion
-        self.x = x
-        self.val = val
-        self.max_epochs = max_epochs
-        self.batch_size = batch_size
-        self.generator_model = generator_model
-
-    def train_epoch(self):
-        """
-            Conducts one epoch training
-
-            input:
-                   None
-
-            output:
-                   log_likelihood - list, list of all losses obtained during batch iterations
-                   mse - list, list of mean squared errors between obtained lambdas and lambdas of true model,
-                         if true model is not provided, then the list is empty
-                   val_ll - torch.Tensor, size = (1), log likelihood on validation dataset
-                   val_mse - float, mean squared error between obtained lambdas and lambdas of true model on validation,
-                             if true model is not provided, then None
-        """
-        indices = np.random.permutation(self.N)
-        self.model.train()
-
-        # initializing outputs
-        log_likelihood = []
-        mse = []
-        val_mse = None
-
-        # iterations over minibatches
-        for iteration, start in enumerate(range(0, self.N - self.batch_size, self.batch_size)):
-            batch_ids = indices[start:start + self.batch_size]
-            batch = self.x[batch_ids]
-
-            # optimization
-            self.optimizer.zero_grad()
-            lambdas = self.model(batch)
-            loss = self.criterion(batch, lambdas, batch[:, 0, 0])
-            loss.backward()
-            self.optimizer.step()
-
-            # saving results
-            log_likelihood.append(loss.item())
-            if self.generator_model:
-                true_lambdas = self.generator_model(batch)
-                mse.append(np.var((lambdas.detach().numpy() - true_lambdas.detach().numpy())))
-
-        # validation
-        self.model.eval()
-        lambdas = self.model(self.val)
-        val_ll = self.criterion(self.val, lambdas, self.val[:, 0, 0])
-        if self.generator_model:
-            true_lambdas = self.generator_model(self.val)
-            val_mse = np.var((lambdas.detach().numpy() - true_lambdas.detach().numpy()))
-
-        return log_likelihood, mse, val_ll, val_mse
-
-    def train(self):
-        """
-            Conducts training
-
-            input:
-                   None
-
-            output:
-                   losses - list, list of all mean log likelihoods obtained during training on each epoch
-                   val_losses - list, list of all log likelihoods obtained during training on each epoch on validation
-                   mses - list, list of all mean squared errors between obtained lambdas and true lambdas on each epoch
-                   val_mses - list, the same but on validation
-        """
-        self.generator_model.eval()
-
-        # initializing outputs
-        losses = []
-        val_losses = []
-        mses = []
-        val_mses = []
-
-        # iterations over epochs
-        for epoch in range(self.max_epochs):
-            ll, mse, val_ll, val_mse = self.train_epoch()
-            losses.append(np.mean(ll))
-            val_losses.append(val_ll)
-            mses.append(np.mean(mse))
-            val_mses.append(val_mse)
-
-            # logs
-            if len(mse):
-                print('On epoch {}/{}, ll = {}, mse = {}, val_ll = {}, val_mse = {}'
-                      .format(epoch, self.max_epochs,
-                              np.mean(ll), np.mean(mse), val_ll, val_mse))
-            else:
-                print('On epoch {}/{}, ll = {}, val_ll = {}'.format(epoch, self.max_epochs,
-                                                                    np.mean(ll), val_ll))
-
-        return losses, val_losses, mses, val_mses
-
 
 class TrainerClusterwise:
     """
         Trainer for multiple point processes clustering
     """
 
-    def __init__(self, model, optimizer, device, data, n_clusters, target=None,
-                 epsilon=1e-8, max_epoch=50, max_m_step_epoch=50, weight_decay=1e-5, lr=1e-3, lr_update_tol=25,
-                 lr_update_param=0.5, random_walking_max_epoch=40, true_clusters=5, upper_bound_clusters=10,
-                 min_lr=None, updated_lr=None, batch_size=150, verbose=False, best_model_path=None,
-                 max_computing_size=None, full_purity=True):
+    def __init__(self, model, optimizer, device, data, n_clusters: int, target=None,
+                 epsilon: float = 1e-8, max_epoch: int = 50, max_m_step_epoch: int = 50,
+                 weight_decay: float = 1e-5, lr: float = 1e-3, lr_update_tol: int = 25,
+                 lr_update_param: float = 0.5, random_walking_max_epoch: int = 40, true_clusters: int = 5,
+                 upper_bound_clusters: int = 10, min_lr = None, updated_lr = None, batch_size: int = 150,
+                 verbose: bool  = False, best_model_path = None,
+                 max_computing_size=None, full_purity: bool = True):
         """
             inputs:
                     model - torch.nn.Module, model to train

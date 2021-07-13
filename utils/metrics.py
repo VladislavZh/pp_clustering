@@ -21,7 +21,7 @@ def log_likelihood_single(partitions, lambdas, dts):
     return torch.sum(tmp1) - torch.sum(p * torch.log(tmp1))
 
 
-def info_score(learned_ids, gt_ids, K):
+def info_score(learned_ids, gt_ids, K: int):
     """
         input:
                learned_ids - torch.Tensor, labels obtained from model

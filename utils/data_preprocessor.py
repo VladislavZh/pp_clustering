@@ -126,7 +126,7 @@ def get_partition(df, num_of_steps, num_of_classes, end_time=None):
     return res
 
 
-def get_dataset(path_to_files, n_classes, n_steps, n_files = None):
+def get_dataset(path_to_files: str, n_classes: int, n_steps: int, n_files=None):
     """
         Reads dataset
 

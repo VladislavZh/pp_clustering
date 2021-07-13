@@ -16,8 +16,8 @@ from models.LSTM import LSTMSinglePointProcess
 import torch
 
 
-def generate_dataset(n_classes, n_clusters, n_points_per_cluster, n_timestamps,
-                     hidden_size, num_layers, dt_scaling_param):
+def generate_dataset(n_classes: int, n_clusters: int, n_points_per_cluster: int, n_timestamps: int,
+                     hidden_size: int, num_layers: int, dt_scaling_param: float):
     """
         input:
                n_classes - int, number of event types, that can occur
