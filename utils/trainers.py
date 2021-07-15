@@ -20,7 +20,7 @@ class TrainerClusterwise:
         model,
         optimizer,
         device,
-        data,
+        data: torch.Tensor,
         n_clusters: int,
         target=None,
         epsilon: float = 1e-8,

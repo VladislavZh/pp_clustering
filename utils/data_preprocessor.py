@@ -40,7 +40,7 @@ def compare(a, b):
     return tmp1 - tmp2
 
 
-def label_dataset(path_to_files, files):
+def label_dataset(path_to_files: str, files: list):
     """
     Does label enconding and replaces dataset
 
@@ -70,7 +70,7 @@ evnts = {}
 cur = 0
 
 
-def get_partition(df, num_of_steps, num_of_classes, end_time=None):
+def get_partition(df: pd.DataFrame, num_of_steps: int, num_of_classes: int, end_time=None):
     """
     Transforms dataset into partition
 

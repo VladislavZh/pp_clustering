@@ -6,7 +6,7 @@ from sklearn.metrics.cluster import normalized_mutual_info_score
 import numpy as np
 
 
-def log_likelihood_single(partitions, lambdas, dts):
+def log_likelihood_single(partitions: torch.Tensor, lambdas: torch.Tensor, dts: torch.Tensor):
     """
     input:
            partitions - torch.Tensor, size = (batch size, sequence length, number of classes + 1), input data
@@ -21,7 +21,7 @@ def log_likelihood_single(partitions, lambdas, dts):
     return torch.sum(tmp1) - torch.sum(p * torch.log(tmp1))
 
 
-def info_score(learned_ids, gt_ids, K: int):
+def info_score(learned_ids: torch.Tensor, gt_ids: torch.Tensor, K: int):
     """
     input:
            learned_ids - torch.Tensor, labels obtained from model
@@ -48,7 +48,7 @@ def info_score(learned_ids, gt_ids, K: int):
     return info_score
 
 
-def purity(learned_ids, gt_ids):
+def purity(learned_ids: torch.Tensor, gt_ids: torch.Tensor):
     """
     input:
            learned_ids - torch.Tensor, labels obtained from model
