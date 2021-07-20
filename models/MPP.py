@@ -266,8 +266,24 @@ class MultiplePointProcesses(nn.Module):
                 self.init_weight(num_clusters, num_layers * bidir_coef, hidden_size)
             )
             self.W = Parameter(self.init_weight(hidden_size * bidir_coef, num_classes))
+        elif self.modelname == "cnn":
+            self.model = nn.RNN(
+                input_size,
+                hidden_size,
+                num_layers,
+                batch_first=batch_first,
+                dropout=dropout,
+                bidirectional=bidirectional,
+            )
+            self.hidden0 = Parameter(
+                self.init_weight(num_clusters, num_layers * bidir_coef, hidden_size)
+            )
+            self.cell0 = Parameter(
+                self.init_weight(num_clusters, num_layers * bidir_coef, hidden_size)
+            )
+            self.W = Parameter(self.init_weight(hidden_size * bidir_coef, num_classes))
         else:
-            print("Error: backbone model is not correct; options are lstm or rnn")
+            print("Error: backbone model is not correct; options are lstm, cnn or rnn")
             quit()
 
         for k in range(num_clusters):
