@@ -2,11 +2,17 @@ PYTHON = python3
 
 .PHONY = help setup train run clean
 
+# available proprietary datasets
 DATASETS = ATM Linkedin Age IPTV  
+# default ds for inference
 INFER_DS = ATM 
+# synth datasets settings
 NCLUSTERS = 2 3 4 5
 SYNTH = sin_K5_C5
 TRUECLUSTERS = 5
+SYNTHTYPE = exp sin trunc
+# experiment names for inference 
+NEXPERIMENTS = 0 1 2 3 4
 
 .DEFAULT_GOAL = help
 
@@ -19,6 +25,7 @@ help:
 	@echo "To infer clusters and compare results type make run"
 	@echo "    To run inference on specific dataset type make infer INFER_DS=name_of_dataset"
 	@echo "    To run inference on booking dataset type make infer_booking"
+	@echo "To obtain metrics of dataset type make summarize INFER_DS=name_of_dataset" 
 	@echo "------------------------------------"
 
 # download data
@@ -88,33 +95,54 @@ infer_all:
 	@echo "Inference is starting...";
 	# proprietary datasets
 	for DS in ${DATASETS}; do \
-		${PYTHON} cohortneyclusters.py --dataset $${DS} --experiment_n exp_0; \
-		${PYTHON} tsfreshclusters.py --dataset $${DS} --experiment_n exp_0; \
+		for E in ${NEXPERIMENTS}; do \
+			${PYTHON} cohortneyclusters.py --dataset $${DS} --experiment_n exp_$${E}; \
+			${PYTHON} tsfreshclusters.py --dataset $${DS} --experiment_n exp_$${E}; \
+		done
 	done
 	# synthetic datasets 
 	for C in ${NCLUSTERS}; do \
-		${PYTHON} cohortneyclusters.py --dataset K$${C}_C5 --experiment_n exp_0; \
-		${PYTHON} tsfreshclusters.py --dataset K$${C}_C5 --experiment_n exp_0; \
-		${PYTHON} cohortneyclusters.py --dataset sin_K$${C}_C5 --experiment_n exp_0; \
-		${PYTHON} tsfreshclusters.py --dataset sin_K$${C}_C5 --experiment_n exp_0; \
-		${PYTHON} cohortneyclusters.py --dataset exp_K$${C}_C5 --experiment_n exp_0; \
-		${PYTHON} tsfreshclusters.py --dataset exp_K$${C}_C5 --experiment_n exp_0; \
+		for E in ${NEXPERIMENTS}; do \
+			${PYTHON} cohortneyclusters.py --dataset K$${C}_C5 --experiment_n exp_$${E}; \
+			${PYTHON} tsfreshclusters.py --dataset K$${C}_C5 --experiment_n exp_$${E}; \
+			${PYTHON} cohortneyclusters.py --dataset sin_K$${C}_C5 --experiment_n exp_$${E}; \
+			${PYTHON} tsfreshclusters.py --dataset sin_K$${C}_C5 --experiment_n exp_$${E}; \
+			${PYTHON} cohortneyclusters.py --dataset exp_K$${C}_C5 --experiment_n exp_$${E}; \
+			${PYTHON} tsfreshclusters.py --dataset exp_K$${C}_C5 --experiment_n exp_$${E}; \
+		done
 	done
 
 infer_booking:
 	# booking dataset
-	${PYTHON} cohortneyclusters.py --dataset booking --experiment_n deviceclass/exp_0 --col_to_select device_class; 
-	${PYTHON} tsfreshclusters.py --dataset booking --experiment_n deviceclass/exp_0 --col_to_select device_class; 
-	${PYTHON} cohortneyclusters.py --dataset booking --experiment_n diffcheckin/exp_0 --col_to_select diff_checkin; 
-	${PYTHON} tsfreshclusters.py --dataset booking --experiment_n diffcheckin/exp_0 --col_to_select diff_checkin; 
-	${PYTHON} cohortneyclusters.py --dataset booking --experiment_n diffinout/exp_0 --col_to_select diff_inout; 
-	${PYTHON} tsfreshclusters.py --dataset booking --experiment_n diffinout/exp_0 --col_to_select diff_inout; 
-	${PYTHON} utils/vote_booking.py
+	for E in ${NEXPERIMENTS}; do \
+		${PYTHON} cohortneyclusters.py --dataset booking --experiment_n deviceclass/exp_$${E} --col_to_select device_class; \ 
+		${PYTHON} tsfreshclusters.py --dataset booking --experiment_n deviceclass/exp_$${E} --col_to_select device_class; \
+		${PYTHON} cohortneyclusters.py --dataset booking --experiment_n diffcheckin/exp_$${E} --col_to_select diff_checkin; \ 
+		${PYTHON} tsfreshclusters.py --dataset booking --experiment_n diffcheckin/exp_$${E} --col_to_select diff_checkin; \ 
+		${PYTHON} cohortneyclusters.py --dataset booking --experiment_n diffinout/exp_$${E} --col_to_select diff_inout; \ 
+		${PYTHON} tsfreshclusters.py --dataset booking --experiment_n diffinout/exp_$${E} --col_to_select diff_inout; \
+		${PYTHON} utils/vote_booking.py; \
+	done
 
 infer: 
 	# run inference on specific dataset
-	${PYTHON} cohortneyclusters.py --dataset ${INFER_DS} --experiment_n exp_0;
-	${PYTHON} tsfreshclusters.py --dataset ${INFER_DS} --experiment_n exp_0; 
+	for E in ${NEXPERIMENTS}; do \
+		${PYTHON} cohortneyclusters.py --dataset ${INFER_DS} --experiment_n exp_$${E}; \
+		${PYTHON} tsfreshclusters.py --dataset ${INFER_DS} --experiment_n exp_$${E}; \
+	done
+
+# obtain statistics
+summarize:
+	${PYTHON} utils/calc_purity.py --dataset ${INFER_DS}
+summarize_all:
+	# proprietary datasets
+	for DS in ${DATASETS}; do \
+		${PYTHON} utils/calc_purity.py --dataset $${DS}; \
+	done
+	# synthetic datasets
+	for C in ${NCLUSTERS}; do \
+		${PYTHON} utils/calc_purity.py --dataset sin_K$${C}_C5; \
+	done
 
 # clean tmp files
 clean:
