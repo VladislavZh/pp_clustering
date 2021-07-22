@@ -1,20 +1,20 @@
 PYTHON = python3
 
 .PHONY = help setup train run clean
+.DEFAULT_GOAL = help
 
 # available proprietary datasets
 DATASETS = ATM Linkedin Age IPTV  
-# default ds for inference
+# default dataset for inference
 INFER_DS = ATM 
+# experiment numbers for inference 
+NEXPERIMENTS = 0 1 2 3 4 5 6 7 8 9
 # synth datasets settings
 NCLUSTERS = 2 3 4 5
 SYNTH = sin_K5_C5
 TRUECLUSTERS = 5
-SYNTHTYPE = exp sin trunc
-# experiment names for inference 
-NEXPERIMENTS = 0 1 2 3 4
+SYNTHTYPE = exp
 
-.DEFAULT_GOAL = help
 
 help:
 	@echo "---------------HELP-----------------"
@@ -25,33 +25,34 @@ help:
 	@echo "To infer clusters and compare results type make run"
 	@echo "    To run inference on specific dataset type make infer INFER_DS=name_of_dataset"
 	@echo "    To run inference on booking dataset type make infer_booking"
-	@echo "To obtain metrics of dataset type make summarize INFER_DS=name_of_dataset" 
+	@echo "To obtain metrics of all datasets type make summarize_all"
+	@echo "	   To obtain metrics of dataset type make summarize INFER_DS=name_of_dataset" 
 	@echo "------------------------------------"
 
 # download data
-setup: bookingdata syntheticdata
+setup: bookingdata atmdata syntheticdata
 
 bookingdata: 
 	@echo "Checking if booking dataset is in place...";
 	@[ -d data/booking ] || (echo "Booking data is preparing" && ${PYTHON} utils/split_booking.py);
 	@echo "Booking data is in place";
 
+atmdata: 
+	@echo "Checking if ATM dataset is in place...";
+	@[ -d data/ATM ] || (echo "ATM data is preparing" && ${PYTHON} utils/split_atm.py);
+	@echo "ATM data is in place";
+
 syntheticdata: 
 	@echo "Checking if synthetic datasets are in place...";
-	for C in ${NCLUSTERS}; do \
-		echo "Current data directory is sin_K$${C}_C5"; \
-		[ -d data/sin_K$${C}_C5 ] || (echo "No directory found, generating..." && \
-		${PYTHON} generate_synthdata.py --n_clusters $${C} --n_nodes 5 --sim_type sin); \
-		echo "Directory is in place"; \
-		echo "Current data directory is trunc_K$${C}_C5"; \
-		[ -d data/trunc_K$${C}_C5 ] || (echo "No directory found, generating..." && \
-		${PYTHON} generate_synthdata.py --n_clusters $${C} --n_nodes 5 --sim_type trunc); \
-		echo "Directory is in place"; \
-		echo "Current data directory is K$${C}_C5"; \
-		[ -d data/K$${C}_C5 ] || (echo "No directory found, generating..." && \
-		${PYTHON} generate_synthdata.py --n_clusters $${C} --n_nodes 5 --sim_type exp); \
-		echo "Directory is in place"; \
+	for T in ${SYNTHTYPE}; do \
+		for C in ${NCLUSTERS}; do \
+			echo "Current data directory is $${T}_K$${C}_C5"; \
+			[ -d data/$${T}_K$${C}_C5 ] || (echo "No directory found, generating..." && \
+			${PYTHON} utils/generate_synthdata.py --n_clusters $${C} --n_nodes 5 --sim_type $${T}  --seed 23); \
+			echo "Directory is in place"; \
+		done; \
 	done
+	
 # train models
 train: train_ATM train_booking train_Age train_IPTV train_Linkedin train_all_synthetic
 
@@ -74,18 +75,21 @@ train_IPTV:
 	${PYTHON} run.py --path_to_files data/IPTV --n_steps 256 --n_clusters 1 --n_classes 16 --save_dir IPTV --true_clusters 16
 
 train_Linkedin:
+	@echo "Training on LinkedIn dataset..."
 	${PYTHON} run.py --path_to_files data/Linkedin --n_steps 6 --n_clusters 1 --n_classes 82 --save_dir Linkedin --true_clusters 9
 
 # train all synth data
 train_all_synthetic:
 	@echo "Training on all synthetic datasets..."
-	for C in ${NCLUSTERS}; do \
-		${PYTHON} run.py --path_to_files data/K$${C}_C5 --n_steps 128 --n_clusters 1 --n_classes 5 --save_dir K$${C}_C5 --true_clusters $${C}; \
-		${PYTHON} run.py --path_to_files data/trunc_K$${C}_C5 --n_steps 128 --n_clusters 1 --n_classes 5 --save_dir trunc_K$${C}_C5 --true_clusters $${C}; \
-		${PYTHON} run.py --path_to_files data/sin_K$${C}_C5 --n_steps 128 --n_clusters 1 --n_classes 5 --save_dir sin_K$${C}_C5 --true_clusters $${C}; \
+	for T in ${SYNTHTYPE}; do \
+		for C in ${NCLUSTERS}; do \
+			echo "Training on synthetic dataset $${T}_K$${C}_C5..."; \
+			${PYTHON} run.py --path_to_files data/$${T}_K$${C}_C5 --n_steps 128 --n_clusters 1 --n_classes 5 --save_dir $${T}_K$${C}_C5 --true_clusters $${C}; \
+		done; \
 	done
 # train specific synth dataset
 train_synthetic:
+	@echo "Training on synthetic dataset ${SYNTH}..."
 	${PYTHON} run.py --path_to_files data/${SYNTH} --n_steps 128 --n_clusters 1 --n_classes 5 --save_dir ${SYNTH} --true_clusters ${TRUECLUSTERS}
 
 # run inference
@@ -96,25 +100,26 @@ infer_all:
 	# proprietary datasets
 	for DS in ${DATASETS}; do \
 		for E in ${NEXPERIMENTS}; do \
+			echo "Running inference: $${DS} dataset, experiment number is $${E}"; \
 			${PYTHON} cohortneyclusters.py --dataset $${DS} --experiment_n exp_$${E}; \
 			${PYTHON} tsfreshclusters.py --dataset $${DS} --experiment_n exp_$${E}; \
-		done
+		done; \
 	done
-	# synthetic datasets 
-	for C in ${NCLUSTERS}; do \
-		for E in ${NEXPERIMENTS}; do \
-			${PYTHON} cohortneyclusters.py --dataset K$${C}_C5 --experiment_n exp_$${E}; \
-			${PYTHON} tsfreshclusters.py --dataset K$${C}_C5 --experiment_n exp_$${E}; \
-			${PYTHON} cohortneyclusters.py --dataset sin_K$${C}_C5 --experiment_n exp_$${E}; \
-			${PYTHON} tsfreshclusters.py --dataset sin_K$${C}_C5 --experiment_n exp_$${E}; \
-			${PYTHON} cohortneyclusters.py --dataset exp_K$${C}_C5 --experiment_n exp_$${E}; \
-			${PYTHON} tsfreshclusters.py --dataset exp_K$${C}_C5 --experiment_n exp_$${E}; \
-		done
+	# synthetic datasets
+	for T in ${SYNTHTYPE}; do \ 
+		for C in ${NCLUSTERS}; do \
+			for E in ${NEXPERIMENTS}; do \
+				echo "Running inference: dataset $${T}_K$${C}_C5, experiment number is $${E}"; \
+				${PYTHON} cohortneyclusters.py --dataset $${T}_K$${C}_C5 --experiment_n exp_$${E}; \
+				${PYTHON} tsfreshclusters.py --dataset $${T}_K$${C}_C5 --experiment_n exp_$${E}; \
+			done; \
+		done; \
 	done
 
 infer_booking:
 	# booking dataset
 	for E in ${NEXPERIMENTS}; do \
+		echo "Running inference: Booking dataset, experiment number is $${E}"; \
 		${PYTHON} cohortneyclusters.py --dataset booking --experiment_n deviceclass/exp_$${E} --col_to_select device_class; \ 
 		${PYTHON} tsfreshclusters.py --dataset booking --experiment_n deviceclass/exp_$${E} --col_to_select device_class; \
 		${PYTHON} cohortneyclusters.py --dataset booking --experiment_n diffcheckin/exp_$${E} --col_to_select diff_checkin; \ 
@@ -127,21 +132,27 @@ infer_booking:
 infer: 
 	# run inference on specific dataset
 	for E in ${NEXPERIMENTS}; do \
+		echo "Running inference: dataset ${INFER_DS}, experiment number is $${E}"; \
 		${PYTHON} cohortneyclusters.py --dataset ${INFER_DS} --experiment_n exp_$${E}; \
 		${PYTHON} tsfreshclusters.py --dataset ${INFER_DS} --experiment_n exp_$${E}; \
 	done
 
 # obtain statistics
 summarize:
+	@echo "Printing metrics' scores, dataset ${INFER_DS}"
 	${PYTHON} utils/calc_purity.py --dataset ${INFER_DS}
 summarize_all:
 	# proprietary datasets
 	for DS in ${DATASETS}; do \
+		echo "Printing metrics' scores, dataset $${DS}"; \
 		${PYTHON} utils/calc_purity.py --dataset $${DS}; \
 	done
 	# synthetic datasets
-	for C in ${NCLUSTERS}; do \
-		${PYTHON} utils/calc_purity.py --dataset sin_K$${C}_C5; \
+	for T in ${SYNTHTYPE}; do \
+		for C in ${NCLUSTERS}; do \
+			echo "Printing metrics' scores, dataset $${T}_K$${C}_C5"; \
+			${PYTHON} utils/calc_purity.py --dataset $${T}_K$${C}_C5; \
+		done; \
 	done
 
 # clean tmp files
