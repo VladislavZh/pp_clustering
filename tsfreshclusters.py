@@ -95,13 +95,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="sin_K5_C5")
-    parser.add_argument("--experiment_n", type=str, default="exp_0")
     parser.add_argument("--col_to_select", type=str)
     args = parser.parse_args()
     # path to dataset
     data_path = os.path.join("data", args.dataset)
     # path to experiments settings
-    exper_path = os.path.join("experiments", args.dataset, args.experiment_n)
+    exper_path = os.path.join("experiments", args.dataset, "exp_0")
     with open(os.path.join(exper_path, "args.json")) as json_file:
         config = json.load(json_file)
     n_steps = config["n_steps"]
@@ -112,13 +111,20 @@ if __name__ == "__main__":
         data_path, n_classes, n_steps, n_clusters, args.col_to_select
     )
     # saving results
-    res_df = pd.read_csv(os.path.join(exper_path, "cohortney_clusters.csv"))
+    res_df = pd.read_csv(os.path.join(data_path, "clusters.csv"))
+    res_df["seqlength"] = 0
+    csvfiles = sorted(os.listdir(data_path))
+    for index, row in res_df.iterrows():
+        seq_df = pd.read_csv(os.path.join(data_path, csvfiles[index]))
+        res_df.at[index, "seqlength"] = len(seq_df)
+    #res_df = pd.read_csv(os.path.join(exper_path, "cohortney_clusters.csv"))
     methods = ["kmeans", "gmm"]
     for m in methods:
         res_df[m + "_clusters"] = np.array(res_dict[m]["clusters"])
         res_df[m + "_time"] = res_dict[m]["time"]
 
-    save_path = os.path.join(exper_path, "compare_clusters.csv")
+    #save_path = os.path.join(exper_path, "compare_clusters.csv")
+    save_path = os.path.join(exper_path, "tsfresh_clusters.csv")
     res_df.drop(
         res_df.columns[res_df.columns.str.contains("unnamed", case=False)],
         axis=1,

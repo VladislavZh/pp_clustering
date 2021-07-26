@@ -20,12 +20,14 @@ if __name__ == "__main__":
     # path to dataset
     data_path = os.path.join("data", args.dataset)
     # path to experiment settings and weights
+    tsfresh_path = os.path.join("experiments", args.dataset, "exp_0")
     exper_path = os.path.join("experiments", args.dataset, args.experiment_n)
     model_weights = os.path.join(exper_path, "last_model.pt")
     with open(os.path.join(exper_path, "args.json")) as json_file:
         config = json.load(json_file)
     n_steps = config["n_steps"]
     n_classes = config["n_classes"]
+    #modeltype = "LSTM"
     # init model
     model = LSTMMultiplePointProcesses(
         n_classes + 1,
@@ -40,6 +42,7 @@ if __name__ == "__main__":
         model.parameters(), config["lr"], weight_decay=config["weight_decay"]
     )
     model = torch.load(model_weights, map_location=torch.device(config["device"]))
+    model.modelname = "lstm"
     model.eval()
     # start
     start_time = time.time()
@@ -98,17 +101,11 @@ if __name__ == "__main__":
                 clusters = torch.cat((clusters, curr_clusters), dim=0)
 
     end_time = time.time()
-    # save results
-    res_df = pd.read_csv(os.path.join(data_path, "clusters.csv"))
+    # saving results
+    res_df = pd.read_csv(os.path.join(tsfresh_path, "tsfresh_clusters.csv"))
     res_df["time"] = round(end_time - start_time, 5)
-    res_df["seqlength"] = 0
-    csvfiles = sorted(os.listdir(data_path))
-    for index, row in res_df.iterrows():
-        seq_df = pd.read_csv(os.path.join(data_path, csvfiles[index]))
-        res_df.at[index, "seqlength"] = len(seq_df)
-
     res_df["coh_cluster"] = clusters.detach().cpu().numpy().tolist()
-    savepath = os.path.join(exper_path, "cohortney_clusters.csv")
+    savepath = os.path.join(exper_path, "compare_clusters.csv")
     res_df.drop(
         res_df.columns[res_df.columns.str.contains("unnamed", case=False)],
         axis=1,

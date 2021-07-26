@@ -28,9 +28,11 @@ help:
 	@echo "To obtain metrics of all datasets type make summarize_all"
 	@echo "	   To obtain metrics of dataset type make summarize INFER_DS=name_of_dataset" 
 	@echo "------------------------------------"
+# run all
+run_all: setup train run summarize_all
 
 # download data
-setup: bookingdata atmdata syntheticdata
+setup: bookingdata atmdata linkedindata syntheticdata
 
 bookingdata: 
 	@echo "Checking if booking dataset is in place...";
@@ -41,6 +43,11 @@ atmdata:
 	@echo "Checking if ATM dataset is in place...";
 	@[ -d data/ATM ] || (echo "ATM data is preparing" && ${PYTHON} utils/split_atm.py);
 	@echo "ATM data is in place";
+
+linkedindata: 
+	@echo "Checking if LinkedIn dataset is in place...";
+	@[ -d data/Linkedin ] || (echo "LinkedIn data is preparing" && ${PYTHON} utils/split_linkedin.py);
+	@echo "LinkedIn data is in place";
 
 syntheticdata: 
 	@echo "Checking if synthetic datasets are in place...";
@@ -99,42 +106,42 @@ infer_all:
 	@echo "Inference is starting...";
 	# proprietary datasets
 	for DS in ${DATASETS}; do \
+		${PYTHON} tsfreshclusters.py --dataset $${DS}; \
 		for E in ${NEXPERIMENTS}; do \
 			echo "Running inference: $${DS} dataset, experiment number is $${E}"; \
 			${PYTHON} cohortneyclusters.py --dataset $${DS} --experiment_n exp_$${E}; \
-			${PYTHON} tsfreshclusters.py --dataset $${DS} --experiment_n exp_$${E}; \
 		done; \
 	done
 	# synthetic datasets
 	for T in ${SYNTHTYPE}; do \ 
 		for C in ${NCLUSTERS}; do \
+			${PYTHON} tsfreshclusters.py --dataset $${T}_K$${C}_C5; \
 			for E in ${NEXPERIMENTS}; do \
 				echo "Running inference: dataset $${T}_K$${C}_C5, experiment number is $${E}"; \
 				${PYTHON} cohortneyclusters.py --dataset $${T}_K$${C}_C5 --experiment_n exp_$${E}; \
-				${PYTHON} tsfreshclusters.py --dataset $${T}_K$${C}_C5 --experiment_n exp_$${E}; \
 			done; \
 		done; \
 	done
 
 infer_booking:
 	# booking dataset
+	${PYTHON} tsfreshclusters.py --dataset booking --experiment_n  --col_to_select device_class; \
+	${PYTHON} tsfreshclusters.py --dataset booking --experiment_n  --col_to_select diff_checkin; \ 
+	${PYTHON} tsfreshclusters.py --dataset booking --experiment_n  --col_to_select diff_inout; \
 	for E in ${NEXPERIMENTS}; do \
 		echo "Running inference: Booking dataset, experiment number is $${E}"; \
 		${PYTHON} cohortneyclusters.py --dataset booking --experiment_n deviceclass/exp_$${E} --col_to_select device_class; \ 
-		${PYTHON} tsfreshclusters.py --dataset booking --experiment_n deviceclass/exp_$${E} --col_to_select device_class; \
 		${PYTHON} cohortneyclusters.py --dataset booking --experiment_n diffcheckin/exp_$${E} --col_to_select diff_checkin; \ 
-		${PYTHON} tsfreshclusters.py --dataset booking --experiment_n diffcheckin/exp_$${E} --col_to_select diff_checkin; \ 
 		${PYTHON} cohortneyclusters.py --dataset booking --experiment_n diffinout/exp_$${E} --col_to_select diff_inout; \ 
-		${PYTHON} tsfreshclusters.py --dataset booking --experiment_n diffinout/exp_$${E} --col_to_select diff_inout; \
 		${PYTHON} utils/vote_booking.py; \
 	done
 
 infer: 
 	# run inference on specific dataset
+	${PYTHON} tsfreshclusters.py --dataset ${INFER_DS} ; \
 	for E in ${NEXPERIMENTS}; do \
 		echo "Running inference: dataset ${INFER_DS}, experiment number is $${E}"; \
 		${PYTHON} cohortneyclusters.py --dataset ${INFER_DS} --experiment_n exp_$${E}; \
-		${PYTHON} tsfreshclusters.py --dataset ${INFER_DS} --experiment_n exp_$${E}; \
 	done
 
 # obtain statistics
