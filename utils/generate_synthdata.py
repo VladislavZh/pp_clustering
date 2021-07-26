@@ -1,4 +1,5 @@
 import json
+import os
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -9,16 +10,10 @@ import scipy as sp
 import scipy.sparse as spsp
 import torch
 from tick.base import TimeFunction
-from tick.hawkes import (
-    HawkesKernel0,
-    HawkesKernelExp,
-    HawkesKernelPowerLaw,
-    HawkesKernelTimeFunc,
-    SimuHawkes,
-    SimuHawkesExpKernels,
-    SimuHawkesMulti,
-    SimuHawkesSumExpKernels,
-)
+from tick.hawkes import (HawkesKernel0, HawkesKernelExp, HawkesKernelPowerLaw,
+                         HawkesKernelTimeFunc, SimuHawkes,
+                         SimuHawkesExpKernels, SimuHawkesMulti,
+                         SimuHawkesSumExpKernels)
 from tick.plot import plot_point_process
 
 
@@ -141,7 +136,7 @@ def simulate_hawkes(
         hawkes.simulate()
         tss.append(hawkes.timestamps)
 
-        plot_point_process(hawkes)
+        #plot_point_process(hawkes)
 
     return tss
 
@@ -295,7 +290,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     save_dir = (
-        "../data/"
+        "data/"
         + args.sim_type
         + "_K"
         + str(args.n_clusters)
