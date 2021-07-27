@@ -110,10 +110,7 @@ def format_for_table2(arr: np.array) -> str:
     Formats summary statistics of np.array as "mean +- std"
     """
     cell = (
-        str(round(np.mean(arr), ROUND_DEC))
-        + "+-"
-        + str(round(np.std(arr), ROUND_DEC))
-        + "$"
+        str(round(np.mean(arr), ROUND_DEC)) + " " + str(round(np.std(arr), ROUND_DEC))
     )
 
     return cell
@@ -121,23 +118,23 @@ def format_for_table2(arr: np.array) -> str:
 
 if __name__ == "__main__":
 
-    datasets = ["exp_K2_C5", "exp_K3_C5"]
+    datasets = ["exp_K2_C5", "exp_K3_C5", "exp_K4_C5", "exp_K5_C5"]
     methods = ["cohortney", "gmm", "kmeans"]
     # print table 2
     print("Printing Table 2...")
-    table2 = pd.DataFrame(
-        columns=[
-            "\0333[1m" + "Dataset" + "\033[0m",
-            "COHORTNEY",
-            "DMHP",
-            "Soft",
-            "K-",
-            "K-means",
-            "K-means",
-            "GMM",
-        ]
-    )
-    table2.loc[0] = [
+    cols = [
+        "Dataset",
+        "COHORTNEY",
+        "DMHP",
+        "Soft",
+        "K-",
+        "K-means",
+        "K-means0",
+        "GMM",
+    ]
+    cols = ["\textbf{" + c + "}" for c in cols]
+    table2 = pd.DataFrame(columns=cols)
+    seccols = [
         "",
         "(ours)",
         "[45]",
@@ -147,17 +144,22 @@ if __name__ == "__main__":
         "tsfresh",
         "tsfresh",
     ]
+    seccols = ["\textbf{" + c + "}" for c in seccols]
+    table2.loc[0] = seccols
+    nr_wins = [0] * (len(cols) - 1)
     for i in range(0, len(datasets)):
         print("Formatting results of dataset", datasets[i])
         res_dict = cohortney_tsfresh_stats(datasets[i], methods)
         coh = np.array(res_dict["cohortney"]["purities"])
+        coh_cell = format_for_table2(coh)
+
         kmeans_ts = np.array(res_dict["kmeans"]["purities"])
         gmm_ts = np.array(res_dict["gmm"]["purities"])
-        coh_cell = format_for_table2(coh)
-        kmeansts_cell = format_for_table2(kmeans_ts)
-        gmmts_cell = format_for_table2(gmm_ts)
-        table2.loc[i+1] = [
-            datasets[i],
+        kmeansts_cell = str(round(np.mean(kmeans_ts), ROUND_DEC))
+        gmmts_cell = str(round(np.mean(gmm_ts), ROUND_DEC))
+
+        symbolic = [
+            datasets[i].replace("_", "\_"),
             coh_cell,
             outside_results["DMHP"][datasets[i]],
             outside_results["Soft DTW"][datasets[i]],
@@ -166,43 +168,100 @@ if __name__ == "__main__":
             kmeansts_cell,
             gmmts_cell,
         ]
+        # finding max and 2nd max
+        numeric = [
+            float(symbolic[i].split(" ")[0]) if symbolic[i] != "-" else 0.0
+            for i in range(1, len(symbolic))
+        ]
+        first = second = -1
+        for j in range(0, len(numeric)):
+            if first < numeric[j]:
+                second = first
+                first = numeric[j]
+            elif second < numeric[j] and first != numeric[j]:
+                second = numeric[j]
 
-    table2.to_latex(buf="table2.tex", index=False, column_format="lccc")
+        for j in range(0, len(numeric)):
+            if numeric[j] == first:
+                nr_wins[j] += 1
+                # make max bold
+                symbolic[j + 1] = "\textbf{" + symbolic[j + 1] + "}"
+            elif numeric[j] == second:
+                # make second max underlined
+                symbolic[j + 1] = "\\underline{" + symbolic[j + 1] + "}"
+        # add plus-minus
+        symbolic = [symbolic[0]] + [
+            symbolic[i].replace(" ", "$\pm$") for i in range(1, len(symbolic))
+        ]
+        table2.loc[i + 1] = symbolic
+    
+    maxnum = max(nr_wins)
+    for i in range(len(nr_wins)):
+        if nr_wins[i] == maxnum:
+            nr_wins[i] = "\textbf{" + str(nr_wins[i]) + "}"
+
+    table2.loc[i + 2] = ["Nr. of wins"] + nr_wins
+
+    table2.to_latex(
+        buf="table2.tex", index=False, escape=False, column_format="lccccccc"
+    )
     print("Finished")
+    
     # print table 3
     print("Printing Table 3...")
-    ldatasets = ["exp_K2_C5", "exp_K3_C5", "exp_K4_C5", "exp_K5_C5", "sin_K2_C5", "sin_K3_C5", "sin_K4_C5", "sin_K5_C5"]
-    rdatasets = ["trunc_K2_C5", "trunc_K3_C5", "trunc_K4_C5", "trunc_K5_C5", "IPTV", "Age", "Linkedin", "-"]
+    ldatasets = [
+        "exp_K2_C5",
+        "exp_K3_C5",
+        "exp_K4_C5",
+        "exp_K5_C5",
+        "sin_K2_C5",
+        "sin_K3_C5",
+        "sin_K4_C5",
+        "sin_K5_C5",
+    ]
+    rdatasets = [
+        "trunc_K2_C5",
+        "trunc_K3_C5",
+        "trunc_K4_C5",
+        "trunc_K5_C5",
+        "IPTV",
+        "Age",
+        "Linkedin",
+        "-",
+    ]
     methods = ["cohortney"]
     assert len(ldatasets) == len(rdatasets), "error: table is not balanced"
+    cols = ["Dataset", "COHORTNEY", "DMHP", "Dataset0", "COHORTNEY0", "DMHP0"]
+    cols = ["\textbf{" + c + "}" for c in cols]
     table3 = pd.DataFrame(
-        columns=["Dataset", "COHORTNEY", "DMHP", "Dataset0", "COHORTNEY0", "DMHP0"]
+        columns = cols
     )
 
     for i in range(0, len(ldatasets)):
         print("Formatting results of dataset", ldatasets[i])
         if ldatasets[i] != "-":
             res_dict = cohortney_tsfresh_stats(ldatasets[i], methods)
-            print(res_dict["n_runs"])
             coh_l = res_dict["cohortney"]["train_time"] / res_dict["n_runs"]
-            coh_l = str(round(coh_l, ROUND_DEC))
+            # coh_l = str(round(coh_l, ROUND_DEC))
+            coh_l = str(int(coh_l))
         else:
-            coh_l = "-" 
+            coh_l = "-"
         print("Formatting results of dataset", rdatasets[i])
         if rdatasets[i] != "-":
             res_dict = cohortney_tsfresh_stats(rdatasets[i], methods)
             coh_r = res_dict["cohortney"]["train_time"] / res_dict["n_runs"]
-            coh_r = str(round(coh_r, ROUND_DEC))
+            # coh_r = str(round(coh_r, ROUND_DEC))
+            coh_r = str(int(coh_r))
         else:
             coh_r = "-"
         table3.loc[i] = [
-            ldatasets[i],
+            ldatasets[i].replace('_','\_'),
             coh_l,
             outside_results["DMHP_time"][ldatasets[i]],
-            rdatasets[i],
+            rdatasets[i].replace('_','\_'),
             coh_r,
             outside_results["DMHP_time"][rdatasets[i]],
         ]
 
-    table3.to_latex(buf="table3.tex", index=False, column_format="cccccc")
+    table3.to_latex(buf="table3.tex", index=False, escape=False, column_format="cccccc")
     print("Finished")
