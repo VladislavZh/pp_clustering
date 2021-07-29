@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from calc_purity import cohortney_tsfresh_stats
+from get_metrics import cohortney_tsfresh_stats
 
 ROUND_DEC = 2
 
@@ -23,26 +23,6 @@ outside_results["DMHP"] = {
     "Linkedin": "0.31 0.01",
     "ATM": "0.64 0.02",
     "Booking": "-",
-}
-
-outside_results["Soft DTW"] = {
-    "exp_K2_C5": "0.50 0.00",
-    "exp_K3_C5": "0.33 0.00",
-    "exp_K4_C5": "0.25 0.00",
-    "exp_K5_C5": "-",
-    "sin_K2_C5": "0.50 0.00",
-    "sin_K3_C5": "0.33 0.00",
-    "sin_K4_C5": "0.25 0.00",
-    "sin_K5_C5": "0.20 0.00",
-    "trunc_K2_C5": "0.50 0.00",
-    "trunc_K3_C5": "0.33 0.00",
-    "trunc_K4_C5": "0.25 0.00",
-    "trunc_K5_C5": "0.20 0.00",
-    "IPTV": "0.32 0.00",
-    "Age": "-",
-    "Linkedin": "0.20 0.00",
-    "ATM": "0.14 0.00",
-    "Booking": "0.33 0.00",
 }
 
 outside_results["K-shape"] = {
@@ -110,7 +90,9 @@ def format_for_table2(arr: np.array) -> str:
     Formats summary statistics of np.array as "mean +- std"
     """
     cell = (
-        str(round(np.mean(arr), ROUND_DEC)) + " " + str(round(np.std(arr), ROUND_DEC))
+        "{:.2f}".format(round(np.mean(arr), ROUND_DEC))
+        + " "
+        + "{:.2f}".format(round(np.std(arr), ROUND_DEC))
     )
 
     return cell
@@ -118,16 +100,29 @@ def format_for_table2(arr: np.array) -> str:
 
 if __name__ == "__main__":
 
-    datasets = ["exp_K2_C5", "exp_K3_C5", "exp_K4_C5", "exp_K5_C5"]
+    datasets = [
+        "exp_K2_C5",
+        "exp_K3_C5",
+        "exp_K4_C5",
+        "exp_K5_C5",
+        "sin_K2_C5",
+        "sin_K3_C5",
+        "sin_K4_C5",
+        "sin_K5_C5",
+        "trunc_K2_C5",
+        "trunc_K3_C5",
+        "trunc_K4_C5",
+        "trunc_K5_C5",
+    ]
     methods = ["cohortney", "gmm", "kmeans"]
     # print table 2
-    print("Printing Table 2...")
+    table2_metric = "purities"
+    print("Printing Table 2 with", table2_metric)
     cols = [
         "Dataset",
         "COHORTNEY",
         "DMHP",
-        "Soft",
-        "K-",
+        "K-shape",
         "K-means",
         "K-means0",
         "GMM",
@@ -138,8 +133,7 @@ if __name__ == "__main__":
         "",
         "(ours)",
         "[45]",
-        "DTW",
-        "Shape",
+        "(soft DTW)",
         "partitions",
         "tsfresh",
         "tsfresh",
@@ -150,21 +144,25 @@ if __name__ == "__main__":
     for i in range(0, len(datasets)):
         print("Formatting results of dataset", datasets[i])
         res_dict = cohortney_tsfresh_stats(datasets[i], methods)
-        coh = np.array(res_dict["cohortney"]["purities"])
+        coh = np.array(res_dict["cohortney"][table2_metric])
         coh_cell = format_for_table2(coh)
-
-        kmeans_ts = np.array(res_dict["kmeans"]["purities"])
-        gmm_ts = np.array(res_dict["gmm"]["purities"])
-        kmeansts_cell = str(round(np.mean(kmeans_ts), ROUND_DEC))
-        gmmts_cell = str(round(np.mean(gmm_ts), ROUND_DEC))
+        dmhp = np.array(res_dict["zhu"][table2_metric])
+        dmhp_cell = format_for_table2(dmhp)
+        kmeans_ts = np.array(res_dict["kmeans"][table2_metric])
+        kmeansts_cell = "{:.2f}".format(round(np.mean(kmeans_ts), ROUND_DEC))
+        gmm_ts = np.array(res_dict["gmm"][table2_metric])
+        gmmts_cell = "{:.2f}".format(round(np.mean(gmm_ts), ROUND_DEC))
+        kshape = np.array(res_dict["kshape"][table2_metric])
+        kshape_cell = "{:.2f}".format(round(np.mean(kshape), ROUND_DEC))
+        kmeansps = np.array(res_dict["kmeans_ps"][table2_metric])
+        kmeansps_cell = "{:.2f}".format(round(np.mean(kmeansps), ROUND_DEC))
 
         symbolic = [
             datasets[i].replace("_", "\_"),
             coh_cell,
-            outside_results["DMHP"][datasets[i]],
-            outside_results["Soft DTW"][datasets[i]],
-            outside_results["K-shape"][datasets[i]],
-            outside_results["K-means ps"][datasets[i]],
+            dmhp_cell,
+            kshape_cell,
+            kmeansps_cell,
             kmeansts_cell,
             gmmts_cell,
         ]
@@ -194,19 +192,20 @@ if __name__ == "__main__":
             symbolic[i].replace(" ", "$\pm$") for i in range(1, len(symbolic))
         ]
         table2.loc[i + 1] = symbolic
-    
-    maxnum = max(nr_wins)
-    for i in range(len(nr_wins)):
-        if nr_wins[i] == maxnum:
-            nr_wins[i] = "\textbf{" + str(nr_wins[i]) + "}"
+        last_row = i + 1
 
-    table2.loc[i + 2] = ["Nr. of wins"] + nr_wins
+    maxnum = max(nr_wins)
+    for j in range(len(nr_wins)):
+        if nr_wins[j] == maxnum:
+            nr_wins[j] = "\textbf{" + str(nr_wins[j]) + "}"
+
+    table2.loc[last_row + 1] = ["Nr. of wins"] + nr_wins
 
     table2.to_latex(
-        buf="table2.tex", index=False, escape=False, column_format="lccccccc"
+        buf= table2_metric+"_table2.tex", index=False, escape=False, column_format="lccccccc"
     )
     print("Finished")
-    
+
     # print table 3
     print("Printing Table 3...")
     ldatasets = [
@@ -233,9 +232,7 @@ if __name__ == "__main__":
     assert len(ldatasets) == len(rdatasets), "error: table is not balanced"
     cols = ["Dataset", "COHORTNEY", "DMHP", "Dataset0", "COHORTNEY0", "DMHP0"]
     cols = ["\textbf{" + c + "}" for c in cols]
-    table3 = pd.DataFrame(
-        columns = cols
-    )
+    table3 = pd.DataFrame(columns=cols)
 
     for i in range(0, len(ldatasets)):
         print("Formatting results of dataset", ldatasets[i])
@@ -255,10 +252,10 @@ if __name__ == "__main__":
         else:
             coh_r = "-"
         table3.loc[i] = [
-            ldatasets[i].replace('_','\_'),
+            ldatasets[i].replace("_", "\_"),
             coh_l,
             outside_results["DMHP_time"][ldatasets[i]],
-            rdatasets[i].replace('_','\_'),
+            rdatasets[i].replace("_", "\_"),
             coh_r,
             outside_results["DMHP_time"][rdatasets[i]],
         ]
