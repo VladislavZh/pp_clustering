@@ -9,13 +9,27 @@ import numpy as np
 import pandas as pd
 import torch
 from metrics import purity
+from sklearn.metrics.cluster import (adjusted_mutual_info_score,
+                                     adjusted_rand_score,
+                                     fowlkes_mallows_score,
+                                     normalized_mutual_info_score,
+                                     v_measure_score)
 
 
-from sklearn.metrics.cluster import normalized_mutual_info_score
-from sklearn.metrics.cluster import adjusted_mutual_info_score
-from sklearn.metrics.cluster import adjusted_rand_score
-from sklearn.metrics.cluster import v_measure_score
-from sklearn.metrics.cluster import fowlkes_mallows_score
+def metrics_map(metrics_name: str):
+    """
+    Maps metrics name from results dictionary to metrics function
+    """
+    metrics_dict = {
+        "purities": purity,
+        "adj_mut_info_score": adjusted_mutual_info_score,
+        "adj_rand_score": adjusted_rand_score,
+        "v_meas_score": v_measure_score,
+        "f_m_score": fowlkes_mallows_score,
+    }
+
+    return metrics_dict[metrics_name]
+
 
 def cohortney_tsfresh_stats(dataset: str, methods: List[str]):
     """
@@ -24,7 +38,13 @@ def cohortney_tsfresh_stats(dataset: str, methods: List[str]):
     exp_folder = os.path.join("experiments", dataset)
     experiments = glob.glob(exp_folder + "/exp_*")
     res_dict = collections.defaultdict(dict)
-    mtrcs = ["purities", "adj_mut_info_score", "adj_rand_score", "v_meas_score", "f_m_score"]
+    mtrcs = [
+        "purities",
+        "adj_mut_info_score",
+        "adj_rand_score",
+        "v_meas_score",
+        "f_m_score",
+    ]
     for m in methods:
         res_dict[m]["time"] = 0
         res_dict[m]["train_time"] = 0
@@ -39,7 +59,7 @@ def cohortney_tsfresh_stats(dataset: str, methods: List[str]):
     # iterating over experiments resuls
     n_runs = 0
     for exp in experiments:
-        
+
         clusters = os.path.join(exp, "compare_clusters.csv")
         if os.path.exists(clusters):
             df = pd.read_csv(clusters)
@@ -52,19 +72,10 @@ def cohortney_tsfresh_stats(dataset: str, methods: List[str]):
                 else:
                     pred_labels = df[m + "_clusters"].to_list()
                     res_dict[m]["time"] += df[m + "_time"][0]
-                pur = purity(
-                    torch.FloatTensor(pred_labels), torch.FloatTensor(true_labels)
-                )
-                res_dict[m]["purities"].append(pur)
-                ami = adjusted_mutual_info_score(true_labels, pred_labels)
-                res_dict[m]["adj_mut_info_score"].append(ami)
-                ari = adjusted_rand_score(true_labels, pred_labels)
-                res_dict[m]["adj_rand_score"].append(ari)
-                vmeas = v_measure_score(true_labels, pred_labels)
-                res_dict[m]["v_meas_score"].append(vmeas)
-                fm = fowlkes_mallows_score(true_labels, pred_labels)
-                res_dict[m]["f_m_score"].append(fm)
-        
+                for metrics_name in mtrcs:
+                    single_score = metrics_map(metrics_name)(true_labels, pred_labels)
+                    res_dict[m][metrics_name].append(single_score)
+
         # training time
         res_file = os.path.join(exp, "results.pkl")
         if os.path.exists(res_file):
@@ -85,16 +96,9 @@ def cohortney_tsfresh_stats(dataset: str, methods: List[str]):
                 df = pd.read_csv(clusters)
                 true_labels = df["cluster_id"].to_list()
                 pred_labels = df["zhu_cluster"].to_list()
-                pur = purity(torch.FloatTensor(pred_labels), torch.FloatTensor(true_labels))
-                res_dict["zhu"]["purities"].append(pur)
-                ami = adjusted_mutual_info_score(true_labels, pred_labels)
-                res_dict["zhu"]["adj_mut_info_score"].append(ami)
-                ari = adjusted_rand_score(true_labels, pred_labels)
-                res_dict["zhu"]["adj_rand_score"].append(ari)
-                vmeas = v_measure_score(true_labels, pred_labels)
-                res_dict["zhu"]["v_meas_score"].append(vmeas)
-                fm = fowlkes_mallows_score(true_labels, pred_labels)
-                res_dict["zhu"]["f_m_score"].append(fm)
+                for metrics_name in mtrcs:
+                    single_score = metrics_map(metrics_name)(true_labels, pred_labels)
+                    res_dict["zhu"][metrics_name].append(single_score)
 
     # kmeans kshape
     k_exp_folder = os.path.join("experiments", "Kmeans_Kshape_experiments", dataset)
@@ -103,27 +107,13 @@ def cohortney_tsfresh_stats(dataset: str, methods: List[str]):
         df = pd.read_csv(clusters)
         true_labels = df["cluster_id"].to_list()
         kmeans_labels = df["kmeans_cluster"].to_list()
-        pur = purity(torch.FloatTensor(kmeans_labels), torch.FloatTensor(true_labels))
-        res_dict["kmeans_ps"]["purities"] = [pur]
-        ami = adjusted_mutual_info_score(true_labels, kmeans_labels)
-        res_dict["kmeans_ps"]["adj_mut_info_score"] = [ami]
-        ari = adjusted_rand_score(true_labels, kmeans_labels)
-        res_dict["kmeans_ps"]["adj_rand_score"] = [ari]
-        vmeas = v_measure_score(true_labels, kmeans_labels)
-        res_dict["kmeans_ps"]["v_meas_score"] = [vmeas]
-        fm = fowlkes_mallows_score(true_labels, kmeans_labels)
-        res_dict["kmeans_ps"]["f_m_score"] = [fm]
+        for metrics_name in mtrcs:
+            single_score = metrics_map(metrics_name)(true_labels, kmeans_labels)
+            res_dict["kmeans_ps"][metrics_name] = [single_score]
         kshape_labels = df["kshape_cluster"].to_list()
-        pur = purity(torch.FloatTensor(kshape_labels), torch.FloatTensor(true_labels))
-        res_dict["kshape"]["purities"] = [pur]
-        ami = adjusted_mutual_info_score(true_labels, kshape_labels)
-        res_dict["kshape"]["adj_mut_info_score"] = [ami]
-        ari = adjusted_rand_score(true_labels, kshape_labels)
-        res_dict["kshape"]["adj_rand_score"] = [ari]
-        vmeas = v_measure_score(true_labels, kshape_labels)
-        res_dict["kshape"]["v_meas_score"] = [vmeas]
-        fm = fowlkes_mallows_score(true_labels, kshape_labels)
-        res_dict["kshape"]["f_m_score"] = [fm]
+        for metrics_name in mtrcs:
+            single_score = metrics_map(metrics_name)(true_labels, kshape_labels)
+            res_dict["kshape"][metrics_name] = [single_score]
 
     res_dict["n_runs"] = n_runs
     res_dict["n_clusters"] = len(np.unique(np.array(true_labels)))
