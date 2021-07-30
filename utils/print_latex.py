@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy as np
 import pandas as pd
 from get_metrics import cohortney_tsfresh_stats
@@ -85,6 +87,40 @@ outside_results["DMHP_time"] = {
 }
 
 
+def format_row_table2(symbolic: List[str], nr_wins: List[int]) -> List[str]:
+    """
+    Make max value bold and second max value underlined,
+    adjust nr_wins row accordingly
+    """
+    # finding max and 2nd max
+    numeric = [
+        float(symbolic[j].split(" ")[0]) if symbolic[j] != "-" else 0.0
+        for j in range(1, len(symbolic))
+    ]
+    first = second = -1
+    for j in range(0, len(numeric)):
+        if first < numeric[j]:
+            second = first
+            first = numeric[j]
+        elif second < numeric[j] and first != numeric[j]:
+            second = numeric[j]
+
+    for j in range(0, len(numeric)):
+        if numeric[j] == first:
+            nr_wins[j] += 1
+            # make max bold
+            symbolic[j + 1] = "\textbf{" + symbolic[j + 1] + "}"
+        elif numeric[j] == second:
+            # make second max underlined
+            symbolic[j + 1] = "\\underline{" + symbolic[j + 1] + "}"
+    # add plus-minus
+    symbolic = [symbolic[0]] + [
+        symbolic[j].replace(" ", "$\pm$") for j in range(1, len(symbolic))
+    ]
+
+    return symbolic, nr_wins
+
+
 def format_for_table2(arr: np.array) -> str:
     """
     Formats summary statistics of np.array as "mean +- std"
@@ -100,22 +136,15 @@ def format_for_table2(arr: np.array) -> str:
 
 if __name__ == "__main__":
 
-    datasets = [
-        "exp_K2_C5",
-        "exp_K3_C5",
-        "exp_K4_C5",
-        "exp_K5_C5",
-        "sin_K2_C5",
-        "sin_K3_C5",
-        "sin_K4_C5",
-        "sin_K5_C5",
-        "trunc_K2_C5",
-        "trunc_K3_C5",
-        "trunc_K4_C5",
-        "trunc_K5_C5",
-    ]
+    datasets_cat = {
+        "Exp": ["exp_K2_C5", "exp_K3_C5", "exp_K4_C5", "exp_K5_C5"],
+        "Sin": ["sin_K2_C5", "sin_K3_C5", "sin_K4_C5", "sin_K5_C5"],
+        "Trunc": ["trunc_K2_C5", "trunc_K3_C5", "trunc_K4_C5", "trunc_K5_C5"],
+        "Real": ["Age", "IPTV", "Linkedin"],
+    }
     methods = ["cohortney", "gmm", "kmeans"]
     # print table 2
+    # metrics options are purities, adj_mut_info_score, adj_rand_score, v_meas_score, f_m_score
     table2_metric = "purities"
     print("Printing Table 2 with", table2_metric)
     cols = [
@@ -129,6 +158,7 @@ if __name__ == "__main__":
     ]
     cols = ["\textbf{" + c + "}" for c in cols]
     table2 = pd.DataFrame(columns=cols)
+    table2_sum = pd.DataFrame(columns=cols)
     seccols = [
         "",
         "(ours)",
@@ -140,25 +170,67 @@ if __name__ == "__main__":
     ]
     seccols = ["\textbf{" + c + "}" for c in seccols]
     table2.loc[0] = seccols
+    table2_sum.loc[0] = seccols
     nr_wins = [0] * (len(cols) - 1)
-    for i in range(0, len(datasets)):
-        print("Formatting results of dataset", datasets[i])
-        res_dict = cohortney_tsfresh_stats(datasets[i], methods)
-        coh = np.array(res_dict["cohortney"][table2_metric])
-        coh_cell = format_for_table2(coh)
-        dmhp = np.array(res_dict["zhu"][table2_metric])
-        dmhp_cell = format_for_table2(dmhp)
-        kmeans_ts = np.array(res_dict["kmeans"][table2_metric])
-        kmeansts_cell = "{:.2f}".format(round(np.mean(kmeans_ts), ROUND_DEC))
-        gmm_ts = np.array(res_dict["gmm"][table2_metric])
-        gmmts_cell = "{:.2f}".format(round(np.mean(gmm_ts), ROUND_DEC))
-        kshape = np.array(res_dict["kshape"][table2_metric])
-        kshape_cell = "{:.2f}".format(round(np.mean(kshape), ROUND_DEC))
-        kmeansps = np.array(res_dict["kmeans_ps"][table2_metric])
-        kmeansps_cell = "{:.2f}".format(round(np.mean(kmeansps), ROUND_DEC))
+    nr_wins_sum = [0] * (len(cols) - 1)
 
+    table2_index = 0
+    table2_sum_index = 0
+    for ds_type, ds_list in datasets_cat.items():
+        table2_sum_index += 1
+        print("Formatting results of type", ds_type)
+        coh_total = []
+        dmhp_total = []
+        kmeansts_total = []
+        gmmts_total = []
+        kshape_total = []
+        kmeansps_total = []
+
+        for ds in ds_list:
+            table2_index += 1
+            print("Formatting results of dataset", ds)
+            res_dict = cohortney_tsfresh_stats(ds, methods)
+            coh = np.array(res_dict["cohortney"][table2_metric])
+            coh_total.extend(coh)
+            coh_cell = format_for_table2(coh)
+            dmhp = np.array(res_dict["zhu"][table2_metric])
+            dmhp_total.extend(dmhp)
+            dmhp_cell = format_for_table2(dmhp)
+            kmeansts = np.array(res_dict["kmeans"][table2_metric])
+            kmeansts_total.extend(kmeansts)
+            kmeansts_cell = "{:.2f}".format(round(np.mean(kmeansts), ROUND_DEC))
+            gmmts = np.array(res_dict["gmm"][table2_metric])
+            gmmts_total.extend(gmmts)
+            gmmts_cell = "{:.2f}".format(round(np.mean(gmmts), ROUND_DEC))
+            kshape = np.array(res_dict["kshape"][table2_metric])
+            kshape_total.extend(kshape)
+            kshape_cell = "{:.2f}".format(round(np.mean(kshape), ROUND_DEC))
+            kmeansps = np.array(res_dict["kmeans_ps"][table2_metric])
+            kmeansps_total.extend(kmeansps)
+            kmeansps_cell = "{:.2f}".format(round(np.mean(kmeansps), ROUND_DEC))
+
+            symbolic = [
+                ds.replace("_", "\_"),
+                coh_cell,
+                dmhp_cell,
+                kshape_cell,
+                kmeansps_cell,
+                kmeansts_cell,
+                gmmts_cell,
+            ]
+            symbolic, nr_wins = format_row_table2(symbolic, nr_wins)
+            table2.loc[table2_index] = symbolic
+            last_row = table2_index
+
+        # summarizing
+        coh_cell = format_for_table2(coh_total)
+        dmhp_cell = format_for_table2(dmhp_total)
+        kmeansts_cell = "{:.2f}".format(round(np.mean(kmeansts_total), ROUND_DEC))
+        gmmts_cell = "{:.2f}".format(round(np.mean(gmmts_total), ROUND_DEC))
+        kshape_cell = "{:.2f}".format(round(np.mean(kshape_total), ROUND_DEC))
+        kmeansps_cell = "{:.2f}".format(round(np.mean(kmeansps_total), ROUND_DEC))
         symbolic = [
-            datasets[i].replace("_", "\_"),
+            ds_type,
             coh_cell,
             dmhp_cell,
             kshape_cell,
@@ -166,43 +238,33 @@ if __name__ == "__main__":
             kmeansts_cell,
             gmmts_cell,
         ]
-        # finding max and 2nd max
-        numeric = [
-            float(symbolic[i].split(" ")[0]) if symbolic[i] != "-" else 0.0
-            for i in range(1, len(symbolic))
-        ]
-        first = second = -1
-        for j in range(0, len(numeric)):
-            if first < numeric[j]:
-                second = first
-                first = numeric[j]
-            elif second < numeric[j] and first != numeric[j]:
-                second = numeric[j]
-
-        for j in range(0, len(numeric)):
-            if numeric[j] == first:
-                nr_wins[j] += 1
-                # make max bold
-                symbolic[j + 1] = "\textbf{" + symbolic[j + 1] + "}"
-            elif numeric[j] == second:
-                # make second max underlined
-                symbolic[j + 1] = "\\underline{" + symbolic[j + 1] + "}"
-        # add plus-minus
-        symbolic = [symbolic[0]] + [
-            symbolic[i].replace(" ", "$\pm$") for i in range(1, len(symbolic))
-        ]
-        table2.loc[i + 1] = symbolic
-        last_row = i + 1
+        symbolic, nr_wins_sum = format_row_table2(symbolic, nr_wins_sum)
+        table2_sum.loc[table2_sum_index] = symbolic
+        last_row_sum = table2_sum_index
 
     maxnum = max(nr_wins)
     for j in range(len(nr_wins)):
         if nr_wins[j] == maxnum:
             nr_wins[j] = "\textbf{" + str(nr_wins[j]) + "}"
+    maxnum = max(nr_wins_sum)
+    for j in range(len(nr_wins_sum)):
+        if nr_wins_sum[j] == maxnum:
+            nr_wins_sum[j] = "\textbf{" + str(nr_wins_sum[j]) + "}"
 
     table2.loc[last_row + 1] = ["Nr. of wins"] + nr_wins
+    table2_sum.loc[last_row_sum + 1] = ["Nr. of wins"] + nr_wins_sum
 
     table2.to_latex(
-        buf= table2_metric+"_table2.tex", index=False, escape=False, column_format="lccccccc"
+        buf=table2_metric + "_table2.tex",
+        index=False,
+        escape=False,
+        column_format="lccccccc",
+    )
+    table2_sum.to_latex(
+        buf=table2_metric + "_sum_table2.tex",
+        index=False,
+        escape=False,
+        column_format="lccccccc",
     )
     print("Finished")
 
