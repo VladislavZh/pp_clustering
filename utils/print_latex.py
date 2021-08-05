@@ -145,7 +145,7 @@ if __name__ == "__main__":
     methods = ["cohortney", "gmm", "kmeans"]
     # print table 2
     # metrics options are purities, adj_mut_info_score, adj_rand_score, v_meas_score, f_m_score
-    table2_metric = "purities"
+    table2_metric = "f_m_score"
     print("Printing Table 2 with", table2_metric)
     cols = [
         "Dataset",
@@ -156,6 +156,8 @@ if __name__ == "__main__":
         "K-means0",
         "GMM",
     ]
+    dolanmore_res = pd.DataFrame(columns=cols)
+    dolanmore_res_sum = pd.DataFrame(columns=cols)
     cols = ["\textbf{" + c + "}" for c in cols]
     table2 = pd.DataFrame(columns=cols)
     table2_sum = pd.DataFrame(columns=cols)
@@ -218,8 +220,18 @@ if __name__ == "__main__":
                 kmeansts_cell,
                 gmmts_cell,
             ]
+            dm_row = [
+                ds, 
+                float(coh_cell.split(" ")[0]) if coh_cell != "-" else 0.0,
+                float(dmhp_cell.split(" ")[0]) if coh_cell != "-" else 0.0,
+                float(kshape_cell),
+                float(kmeansps_cell),
+                float(kmeansts_cell),
+                float(gmmts_cell),
+            ]
             symbolic, nr_wins = format_row_table2(symbolic, nr_wins)
             table2.loc[table2_index] = symbolic
+            dolanmore_res.loc[table2_index-1] = dm_row
             last_row = table2_index
 
         # summarizing
@@ -238,8 +250,18 @@ if __name__ == "__main__":
             kmeansts_cell,
             gmmts_cell,
         ]
+        dm_row = [
+            ds_type, 
+            float(coh_cell.split(" ")[0]) if coh_cell != "-" else 0.0,
+            float(dmhp_cell.split(" ")[0]) if coh_cell != "-" else 0.0,
+            float(kshape_cell),
+            float(kmeansps_cell),
+            float(kmeansts_cell),
+            float(gmmts_cell),
+        ]
         symbolic, nr_wins_sum = format_row_table2(symbolic, nr_wins_sum)
         table2_sum.loc[table2_sum_index] = symbolic
+        dolanmore_res_sum.loc[table2_index-1] = dm_row
         last_row_sum = table2_sum_index
 
     maxnum = max(nr_wins)
@@ -295,6 +317,31 @@ if __name__ == "__main__":
     cols = ["Dataset", "COHORTNEY", "DMHP", "Dataset0", "COHORTNEY0", "DMHP0"]
     cols = ["\textbf{" + c + "}" for c in cols]
     table3 = pd.DataFrame(columns=cols)
+    cols = ["Dataset", "COHORTNEY", "DMHP"]
+    cols = ["\textbf{" + c + "}" for c in cols]
+    table3_sum = pd.DataFrame(columns=cols)
+
+    print("Formatting summarized version...")
+    i = 0
+    for ds_type, ds_list in datasets_cat.items():
+        total_time_coh = 0
+        total_time_dmhp = 0
+        total_runs = 0
+        for ds in ds_list:
+            res_dict = cohortney_tsfresh_stats(ds, methods)
+            total_time_coh += res_dict["cohortney"]["train_time"]
+            total_runs += res_dict["n_runs"]
+            total_time_dmhp += int(outside_results["DMHP_time"][ds])
+        table3_sum.loc[i] = [
+            ds_type,
+            str(int(total_time_coh / total_runs)),
+            str(int(total_time_dmhp / len(ds_list))),
+        ]
+        i += 1
+
+    table3_sum.to_latex(
+        buf="sum_table3.tex", index=False, escape=False, column_format="lcc"
+    )
 
     for i in range(0, len(ldatasets)):
         print("Formatting results of dataset", ldatasets[i])
@@ -324,3 +371,6 @@ if __name__ == "__main__":
 
     table3.to_latex(buf="table3.tex", index=False, escape=False, column_format="cccccc")
     print("Finished")
+    dolanmore_res.to_csv("utils/plotting/"+ table2_metric + "_dm_res.csv")
+    dolanmore_res_sum.to_csv("utils/plotting/" + table2_metric + "_sum_dm_res.csv")
+
