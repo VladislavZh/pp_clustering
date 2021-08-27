@@ -1,8 +1,11 @@
+import json
 import os
 import pickle
 
 import matplotlib.pyplot as plt
 import numpy as np
+
+from plotting_utils import save_formatted
 
 
 def set_box_color(bp, color):
@@ -46,26 +49,38 @@ data_coh = coh_ll
 data_zhu = [[3 * 10 ** 6], [3 * 10 ** 5], [2 * 10 ** 6]]
 dataset_names = ["sin\_K5\_C5", "K3\_C5", "Age"]
 
-plt.figure()
-bpl = plt.boxplot(
-    data_coh, positions=np.array(range(len(data_coh))) * 2.0 - 0.4, sym="", widths=0.6
-)
-bpr = plt.boxplot(
-    data_zhu, positions=np.array(range(len(data_zhu))) * 2.0 + 0.4, sym="", widths=0.6
-)
-# colors are from http://colorbrewer2.org/
-set_box_color(bpl, "#D7191C")
-set_box_color(bpr, "#2C7BB6")
+with open("plot_config.json") as config:
+    plot_settings = json.load(config)
 
-# draw temporary red and blue lines and use them to create a legend
-plt.plot([], c="#D7191C", label="Cohortney")
-plt.plot([], c="#2C7BB6", label="Zhu")
-plt.legend(fontsize="x-small")
-# label x-ticks
-plt.xticks(range(0, len(dataset_names) * 2, 2), dataset_names)
-plt.xlim(-2, len(dataset_names) * 2)
-# TODO: automate
-# draw gray strips
-plt.axvspan(-0.9, 0.9, facecolor="gray", alpha=0.5)
-plt.axvspan(3.1, 4.9, facecolor="gray", alpha=0.5)
-plt.savefig("fig9.pdf", dpi=400, bbox_inches="tight")
+with plt.style.context(plot_settings["style"]):
+    fig, ax = plt.subplots()
+    bpl = ax.boxplot(
+        data_coh,
+        positions=np.array(range(len(data_coh))) * 2.0 - 0.4,
+        sym="",
+        widths=0.6,
+    )
+    bpr = ax.boxplot(
+        data_zhu,
+        positions=np.array(range(len(data_zhu))) * 2.0 + 0.4,
+        sym="",
+        widths=0.6,
+    )
+    # colors are from http://colorbrewer2.org/
+    set_box_color(bpl, "#D7191C")
+    set_box_color(bpr, "#2C7BB6")
+
+    # draw temporary red and blue lines and use them to create a legend
+    ax.plot([], c="#D7191C", label="Cohortney")
+    ax.plot([], c="#2C7BB6", label="Zhu")
+    ax.legend(fontsize="x-small")
+    # label x-ticks
+    ax.set_xticks(range(0, len(dataset_names) * 2, 2), dataset_names)
+    ax.set_xlim(-2, len(dataset_names) * 2)
+
+    # TODO: automate
+    # draw gray strips
+    ax.axvspan(-0.9, 0.9, facecolor="gray", alpha=0.5)
+    ax.axvspan(3.1, 4.9, facecolor="gray", alpha=0.5)
+
+save_formatted(fig, ax, plot_settings, "fig9.pdf", xlabel=None, ylabel=None, title=None)

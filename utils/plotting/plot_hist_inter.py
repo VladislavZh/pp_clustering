@@ -1,10 +1,14 @@
+import json
 import os
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib import ticker
 
-dfolders = ["../../data/ATM", "../../data/IPTV", "../../data/Linkedin"]
+from plotting_utils import save_formatted
+
+dfolders = ["../../data/ATM", "../../data/Linkedin"]
 plot_array = []
 
 
@@ -37,19 +41,28 @@ for df in dfolders:
 
 # plot hist for Fig 3
 plt.style.use("science")
+with open("plot_config.json") as config:
+    plot_settings = json.load(config)
 
 for i in range(len(plot_array)):
 
     data_name = dfolders[i].split("/")[-1]
     currdata = plot_array[i]
 
-    # q25, q75 = np.percentile(currdata,[.25,.75])
-    # bin_width = 2*(q75 - q25)*len(currdata)**(-1/3)
-    # bins = round((currdata[-1] - currdata[0])/bin_width)
-    # print("Freedman–Diaconis number of bins:", bins)
-    plt.hist(currdata, bins=20)
-    plt.ylabel("Count")
-    plt.xlabel("Log inter-event time")
-    plt.title(data_name)
-    plt.savefig(data_name + "_hist.pdf", dpi=400)
-    plt.clf()
+    with plt.style.context(plot_settings["style"]):
+        fig, ax = plt.subplots()
+        formatter = ticker.ScalarFormatter(useMathText=True)
+        formatter.set_scientific(True)
+        formatter.set_powerlimits((-2, 2))
+        ax.yaxis.set_major_formatter(formatter)
+        plt.hist(currdata, bins=20)
+
+    save_formatted(
+        fig,
+        ax,
+        plot_settings,
+        save_path=data_name + "_hist.pdf",
+        xlabel="Log inter-event time",
+        ylabel="Count",
+        title=data_name,
+    )

@@ -1,12 +1,12 @@
 import glob
+import json
 import os
 import pickle
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-plt.style.use("science")
-
+from plotting_utils import save_formatted
 
 # Fig 8
 exper_path = "../../experiments/ablation_study"
@@ -18,6 +18,8 @@ x_ax_titles = [
     "Number of steps in partitions",
     "Upper bound of the number of clusters",
 ]
+with open("plot_config.json") as config:
+    plot_settings = json.load(config)
 
 k = 0
 for st in starts:
@@ -50,9 +52,16 @@ for st in starts:
     x_labels = [x_labels[i] for i in sort_index]
     plot_means = [plot_means[i] for i in sort_index]
     plot_stds = [plot_stds[i] for i in sort_index]
-    plt.errorbar(x_labels, plot_means, yerr=plot_stds)
-    plt.xlabel(x_ax_titles[k])
-    plt.ylabel("Purity")
-    plt.savefig(st + "purity.pdf", dpi=400, bbox_inches="tight")
-    plt.clf()
+    with plt.style.context(plot_settings["style"]):
+        fig, ax = plt.subplots()
+        plt.errorbar(x_labels, plot_means, yerr=plot_stds)
+    save_formatted(
+        fig,
+        ax,
+        plot_settings,
+        save_path=st + "purity.pdf",
+        xlabel=x_ax_titles[k],
+        ylabel="Purity",
+        title=None,
+    )
     k += 1
