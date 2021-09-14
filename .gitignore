@@ -7,3 +7,4 @@ checkpoints/
 *.pyc
 *.pt
 *.pdf
+*.tex
