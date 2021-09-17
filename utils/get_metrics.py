@@ -48,13 +48,14 @@ def cohortney_tsfresh_stats(dataset: str, methods: List[str]):
     for m in methods:
         res_dict[m]["time"] = 0
         res_dict[m]["train_time"] = 0
-        for metr in mtrcs:
-            res_dict[m][metr] = []
 
-    other_methods = ["zhu", "kmeans_ps", "kshape"]
-    for om in other_methods:
+    other_methods = ["k_means_softdtw", "k_shape"]
+    all_methods = methods + other_methods
+    for method in all_methods:
         for metr in mtrcs:
-            res_dict[om][metr] = []
+            res_dict[method][metr] = []
+    for metr in mtrcs:
+        res_dict["zhu"][metr] = []
 
     # iterating over experiments resuls
     n_runs = 0
@@ -65,13 +66,16 @@ def cohortney_tsfresh_stats(dataset: str, methods: List[str]):
             df = pd.read_csv(clusters)
             true_labels = df["cluster_id"].to_list()
             for m in methods:
+                if m == "cohortney":
+                    res_dict[m]["time"] += df["time"][0]
+                else:
+                    res_dict[m]["time"] += df[m + "_time"][0]
+            for m in all_methods:
                 # cohortney
                 if m == "cohortney":
                     pred_labels = df["coh_cluster"].to_list()
-                    res_dict["cohortney"]["time"] += df["time"][0]
                 else:
                     pred_labels = df[m + "_clusters"].to_list()
-                    res_dict[m]["time"] += df[m + "_time"][0]
                 for metrics_name in mtrcs:
                     single_score = metrics_map(metrics_name)(true_labels, pred_labels)
                     res_dict[m][metrics_name].append(single_score)
@@ -100,21 +104,7 @@ def cohortney_tsfresh_stats(dataset: str, methods: List[str]):
                     single_score = metrics_map(metrics_name)(true_labels, pred_labels)
                     res_dict["zhu"][metrics_name].append(single_score)
 
-    # kmeans kshape
-    k_exp_folder = os.path.join("experiments", "Kmeans_Kshape_experiments", dataset)
-    clusters = os.path.join(k_exp_folder, "inferredclusters.csv")
-    if os.path.exists(clusters):
-        df = pd.read_csv(clusters)
-        true_labels = df["cluster_id"].to_list()
-        kmeans_labels = df["kmeans_cluster"].to_list()
-        for metrics_name in mtrcs:
-            single_score = metrics_map(metrics_name)(true_labels, kmeans_labels)
-            res_dict["kmeans_ps"][metrics_name] = [single_score]
-        kshape_labels = df["kshape_cluster"].to_list()
-        for metrics_name in mtrcs:
-            single_score = metrics_map(metrics_name)(true_labels, kshape_labels)
-            res_dict["kshape"][metrics_name] = [single_score]
-
+    
     res_dict["n_runs"] = n_runs
     res_dict["n_clusters"] = len(np.unique(np.array(true_labels)))
 

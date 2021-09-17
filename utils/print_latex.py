@@ -1,8 +1,11 @@
 from typing import List
 
+import argparse
 import numpy as np
 import pandas as pd
+import sys
 from get_metrics import cohortney_tsfresh_stats
+
 
 ROUND_DEC = 2
 
@@ -83,6 +86,7 @@ outside_results["DMHP_time"] = {
     "IPTV": "74135",
     "Age": "55327",
     "Linkedin": "57404",
+    "ATM": "0",
     "-": "-",
 }
 
@@ -140,12 +144,20 @@ if __name__ == "__main__":
         "Exp": ["exp_K2_C5", "exp_K3_C5", "exp_K4_C5", "exp_K5_C5"],
         "Sin": ["sin_K2_C5", "sin_K3_C5", "sin_K4_C5", "sin_K5_C5"],
         "Trunc": ["trunc_K2_C5", "trunc_K3_C5", "trunc_K4_C5", "trunc_K5_C5"],
-        "Real": ["Age", "IPTV", "Linkedin"],
+        "Real": ["Age", "IPTV", "Linkedin", "ATM"],
     }
     methods = ["cohortney", "gmm", "kmeans"]
     # print table 2
-    # metrics options are purities, adj_mut_info_score, adj_rand_score, v_meas_score, f_m_score
-    table2_metric = "f_m_score"
+    available_metrics = [ "purities", "adj_mut_info_score", "adj_rand_score", "v_meas_score", "f_m_score"]
+    parser = argparse.ArgumentParser(description='settings for table 2')
+    parser.add_argument("--table2_metric", default="purities")
+    args = parser.parse_args() 
+    table2_metric = args.table2_metric
+    if table2_metric not in available_metrics:
+        print("please choose available metrics, they are:")
+        print(available_metrics)
+        sys.exit(1)
+
     print("Printing Table 2 with", table2_metric)
     cols = [
         "Dataset",
@@ -204,12 +216,14 @@ if __name__ == "__main__":
             gmmts = np.array(res_dict["gmm"][table2_metric])
             gmmts_total.extend(gmmts)
             gmmts_cell = "{:.2f}".format(round(np.mean(gmmts), ROUND_DEC))
-            kshape = np.array(res_dict["kshape"][table2_metric])
+            kshape = np.array(res_dict["k_shape"][table2_metric])
             kshape_total.extend(kshape)
-            kshape_cell = "{:.2f}".format(round(np.mean(kshape), ROUND_DEC))
-            kmeansps = np.array(res_dict["kmeans_ps"][table2_metric])
+            kshape_cell = format_for_table2(kshape)
+            #kshape_cell = "{:.2f}".format(round(np.mean(kshape), ROUND_DEC))
+            kmeansps = np.array(res_dict["k_means_softdtw"][table2_metric])
             kmeansps_total.extend(kmeansps)
-            kmeansps_cell = "{:.2f}".format(round(np.mean(kmeansps), ROUND_DEC))
+            kmeansps_cell = format_for_table2(kmeansps)
+            #kmeansps_cell = "{:.2f}".format(round(np.mean(kmeansps), ROUND_DEC))
 
             symbolic = [
                 ds.replace("_", "\_"),
@@ -223,9 +237,9 @@ if __name__ == "__main__":
             dm_row = [
                 ds, 
                 float(coh_cell.split(" ")[0]) if coh_cell != "-" else 0.0,
-                float(dmhp_cell.split(" ")[0]) if coh_cell != "-" else 0.0,
-                float(kshape_cell),
-                float(kmeansps_cell),
+                float(dmhp_cell.split(" ")[0]) if dmhp_cell != "-" else 0.0,
+                float(kshape_cell.split(" ")[0]) if kshape_cell != "-" else 0.0,
+                float(kmeansps_cell.split(" ")[0]) if kmeansps_cell != "-" else 0.0,
                 float(kmeansts_cell),
                 float(gmmts_cell),
             ]
@@ -237,10 +251,12 @@ if __name__ == "__main__":
         # summarizing
         coh_cell = format_for_table2(coh_total)
         dmhp_cell = format_for_table2(dmhp_total)
+        kshape_cell = format_for_table2(kshape_total)
+        kmeansps_cell = format_for_table2(kmeansps_total)
         kmeansts_cell = "{:.2f}".format(round(np.mean(kmeansts_total), ROUND_DEC))
         gmmts_cell = "{:.2f}".format(round(np.mean(gmmts_total), ROUND_DEC))
-        kshape_cell = "{:.2f}".format(round(np.mean(kshape_total), ROUND_DEC))
-        kmeansps_cell = "{:.2f}".format(round(np.mean(kmeansps_total), ROUND_DEC))
+        #kshape_cell = "{:.2f}".format(round(np.mean(kshape_total), ROUND_DEC))
+        #kmeansps_cell = "{:.2f}".format(round(np.mean(kmeansps_total), ROUND_DEC))
         symbolic = [
             ds_type,
             coh_cell,
@@ -254,8 +270,8 @@ if __name__ == "__main__":
             ds_type, 
             float(coh_cell.split(" ")[0]) if coh_cell != "-" else 0.0,
             float(dmhp_cell.split(" ")[0]) if coh_cell != "-" else 0.0,
-            float(kshape_cell),
-            float(kmeansps_cell),
+            float(kshape_cell.split(" ")[0]) if kshape_cell != "-" else 0.0,
+            float(kmeansps_cell.split(" ")[0]) if kmeansps_cell != "-" else 0.0,
             float(kmeansts_cell),
             float(gmmts_cell),
         ]
@@ -288,6 +304,8 @@ if __name__ == "__main__":
         escape=False,
         column_format="lccccccc",
     )
+    dolanmore_res.to_csv("utils/plotting/"+ table2_metric + "_dm_res.csv")
+    dolanmore_res_sum.to_csv("utils/plotting/" + table2_metric + "_sum_dm_res.csv")
     print("Finished")
 
     # print table 3
@@ -310,7 +328,7 @@ if __name__ == "__main__":
         "IPTV",
         "Age",
         "Linkedin",
-        "-",
+        "ATM",
     ]
     methods = ["cohortney"]
     assert len(ldatasets) == len(rdatasets), "error: table is not balanced"
@@ -371,6 +389,4 @@ if __name__ == "__main__":
 
     table3.to_latex(buf="table3.tex", index=False, escape=False, column_format="cccccc")
     print("Finished")
-    dolanmore_res.to_csv("utils/plotting/"+ table2_metric + "_dm_res.csv")
-    dolanmore_res_sum.to_csv("utils/plotting/" + table2_metric + "_sum_dm_res.csv")
 
